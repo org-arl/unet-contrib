@@ -18,17 +18,17 @@ enum AlohaANParam implements Parameter {
  *So nodeList = [12,11,13,14] 
  *<p>
  */
-	nodeList,
+    nodeList,
 
 /**
  * The dataMsgDuration is the transmit time (in milliseconds) for a DATA Packet. 
- */			
-	dataMsgDuration,
+ */         
+    dataMsgDuration,
 
 /**
  * The controlMsgDuration is the transmit time (in milliseconds) for a CONTROL Packet. 
- */			
-	controlMsgDuration,
+ */         
+    controlMsgDuration,
 
 /**
  * The propagationDelay is propagation delay in the network for all pair of nodes within one hop of the node.
@@ -42,7 +42,7 @@ enum AlohaANParam implements Parameter {
  *It is an ArrayList each element containing propagation delays between two nodes.
  *<p>
  */
-	propagationDelay
+    propagationDelay
 }
 
 

@@ -13,18 +13,18 @@ enum SlottedFamaParam implements Parameter {
 
 /**
  * The controlMsgDuration is the transmit time (in milliseconds) for a CONTROL Packet. 
- */		
-	controlMsgDuration, 
+ */     
+    controlMsgDuration, 
 
 /**
  * The dataMsgDuration is the transmit time (in milliseconds) for a DATA Packet.
  */
-	dataMsgDuration,
+    dataMsgDuration,
 
 /**
  * The maxPropagationDelay is the maximum propagation delay in the network for a pair of nodes.
  */
-	maxPropagationDelay,
+    maxPropagationDelay,
 
 /**
  * timerCtsTimeoutOpMode defines the mode in which the timer set due to CTS_Timeout will operate.
@@ -34,6 +34,6 @@ enum SlottedFamaParam implements Parameter {
  * 2 means that the CTS_TIMEOUT timer will restart whenever a node returns to the state, BACKOFF_CTS_TIMEOUT, after having left it due to a carrier sense.
  *<p>
  */
-	timerCtsTimeoutOpMode
+    timerCtsTimeoutOpMode
 }
 
