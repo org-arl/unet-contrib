@@ -39,6 +39,6 @@ platform = RealTimePlatform   // use real-time mode
 // run the simulation forever
 simulate {
   node '1', remote: 1101, address: 1, location: [ 0.km, 0.km, -15.m], shell: [CONSOLE, WEB(8080,'/1')], web: 8081, stack: "$home/etc/initrc-stack"
-  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: [TCP(5102), WEB(8080,'/2')], web: 8082, stack: "$home/etc/initrc-stack"
-  node '3', remote: 1103, address: 3, location: [-1.km, 0.km, -15.m], shell: [TCP(5103), WEB(8080,'/3')], web: 8083, stack: "$home/etc/initrc-stack"
+  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: [WEB(8080,'/2')], web: 8082, stack: "$home/etc/initrc-stack"
+  node '3', remote: 1103, address: 3, location: [-1.km, 0.km, -15.m], shell: [WEB(8080,'/3')], web: 8083, stack: "$home/etc/initrc-stack"
 }
