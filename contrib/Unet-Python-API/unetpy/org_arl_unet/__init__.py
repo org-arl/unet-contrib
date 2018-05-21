@@ -12,6 +12,8 @@ def _value(v):
         if 'clazz' in v:
             if v['clazz'] == 'java.util.Date':
                 return v['data']
+            if v['clazz'] == 'java.util.ArrayList':
+                return v['data']
             return v['clazz']+'(...)'
         if 'data' in v:
             return v['data']
@@ -35,7 +37,7 @@ class Services:
 class ParameterReq(_Message):
 
     def __init__(self, index=-1, *kwargs):
-        super(ParameterReq, self).__init__()
+        super().__init__()
         self.index = index
         self.requests = []
         self.perf = _Performative.REQUEST
@@ -59,7 +61,7 @@ class ParameterReq(_Message):
 class ParameterRsp(_Message):
 
     def __init__(self, **kwargs):
-        super(ParameterRsp, self).__init__()
+        super().__init__()
         self.index = -1
         self.values = dict()
         self.perf = _Performative.REQUEST
@@ -105,7 +107,7 @@ class ParameterRsp(_Message):
 class DatagramNtf(_Message):
 
     def __init__(self, **kwargs):
-        super(DatagramNtf, self).__init__()
+        super().__init__()
         self.perf = _Performative.INFORM
         self.data = list()
         self.from_ = None
@@ -126,7 +128,7 @@ class DatagramNtf(_Message):
 class DatagramReq(_Message):
 
     def __init__(self, **kwargs):
-        super(DatagramReq, self).__init__()
+        super().__init__()
         self.perf = _Performative.REQUEST
         self.data = list()
         self.to = None
@@ -142,10 +144,10 @@ class DatagramReq(_Message):
     def _repr_pretty_(self, p, cycle):
        p.text(str(self) if not cycle else '...')
 
-class UnetAgentID(_AgentID):
+class AgentID(_AgentID):
 
-    def __init__(self, name, gw):
-        self.is_topic = False
+    def __init__(self, gw, name, is_topic=False):
+        self.is_topic = is_topic
         self.name = name
         self.index = -1
         self.gw = gw
@@ -181,7 +183,7 @@ class UnetAgentID(_AgentID):
         return v
 
     def __getitem__(self, index):
-        c = UnetAgentID(self.name, self.gw)
+        c = AgentID(self.gw, self.name)
         c.index = index
         return c
 

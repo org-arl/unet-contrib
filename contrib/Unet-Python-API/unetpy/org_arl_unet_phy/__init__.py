@@ -8,7 +8,7 @@ class Physical:
 class TxFrameReq(_Message):
 
     def __init__(self, **kwargs):
-        super(TxFrameReq, self).__init__()
+        super().__init__()
         self.to = 0
         self.type = 1
         self.timestamped = None
@@ -26,7 +26,7 @@ class TxFrameReq(_Message):
 class RangeReq(_Message):
 
     def __init__(self, **kwargs):
-        super(RangeReq, self).__init__()
+        super().__init__()
         self.to = 0
         self.channel = 0
         self.txBeacon = False
@@ -43,7 +43,7 @@ class RangeReq(_Message):
 class RangeNtf(_Message):
 
     def __init__(self, **kwargs):
-        super(RangeNtf, self).__init__()
+        super().__init__()
         self.to = None
         self.range = float('nan')
         self.isValid = True
@@ -71,7 +71,7 @@ class RangeNtf(_Message):
 class RxFrameNtf(_Message):
 
     def __init__(self, **kwargs):
-        super(RxFrameNtf, self).__init__()
+        super().__init__()
         self.type = None
         self.timestamp = None
         self.is16BitTS = False

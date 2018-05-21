@@ -5,7 +5,7 @@ import numpy as _np
 class RecordBasebandSignalReq(_Message):
 
     def __init__(self, **kwargs):
-        super(RecordBasebandSignalReq, self).__init__()
+        super().__init__()
         self.perf = _Performative.REQUEST
         self.recTime = None
         self.recLen = None
@@ -20,7 +20,7 @@ class RecordBasebandSignalReq(_Message):
 class BasebandSignal(_Message):
 
     def __init__(self, **kwargs):
-        super(BasebandSignal, self).__init__()
+        super().__init__()
         self.fc = 0
         self.fs = 0
         self.preamble = 0
@@ -60,7 +60,7 @@ class BasebandSignal(_Message):
 class RxBasebandSignalNtf(BasebandSignal):
 
     def __init__(self, **kwargs):
-        super(RxBasebandSignalNtf, self).__init__()
+        super().__init__()
         self.perf = _Performative.INFORM
         self.rxTime = None
         self.__dict__.update(kwargs)
@@ -68,7 +68,7 @@ class RxBasebandSignalNtf(BasebandSignal):
 class TxBasebandSignalReq(BasebandSignal):
 
     def __init__(self, **kwargs):
-        super(TxBasebandSignalReq, self).__init__()
+        super().__init__()
         self.perf = _Performative.REQUEST
         self.txTime = None
         self.dac = None
