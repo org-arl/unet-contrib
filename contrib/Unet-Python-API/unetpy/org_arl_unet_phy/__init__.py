@@ -1,9 +1,11 @@
 from fjagepy.org_arl_fjage import Message as _Message
 from fjagepy.org_arl_fjage import Performative as _Performative
 
+
 class Physical:
     CONTROL = 0
     DATA = 1
+
 
 class TxFrameReq(_Message):
 
@@ -21,13 +23,36 @@ class TxFrameReq(_Message):
         return self.__class__.__name__ + ":" + self.perf + "[type:" + str(self.type) + " to:" + str(self.to) + " protocol:" + " (" + (str(len(self.data)) if self.data else "0") + " bytes)]"
 
     def _repr_pretty_(self, p, cycle):
-       p.text(str(self) if not cycle else '...')
+        p.text(str(self) if not cycle else '...')
+
+
+class TxFrameNtf(_Message):
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.perf = _Performative.INFORM
+        self.txTime = None
+        self.type - None
+        self.__dict__.update(kwargs)
+
+    def setTxTime(self, time):
+        self.timestamp = time
+
+    def getTxTime(self):
+        return self.timestamp
+
+    def setType(self, type):
+        self.type = type
+
+    def getType(self):
+        return self.type
+
 
 class RangeReq(_Message):
 
     def __init__(self, **kwargs):
         super().__init__()
-        self.to = 0
+        self.type = 0
         self.channel = 0
         self.txBeacon = False
         self.reqBeacon = False
@@ -38,7 +63,8 @@ class RangeReq(_Message):
         return self.__class__.__name__ + ":" + self.perf + "[to:" + str(self.to) + " channel:" + str(self.channel) + " txBeacon:" + str(self.txBeacon) + " reqBeacon:" + str(self.reqBeacon) + "]"
 
     def _repr_pretty_(self, p, cycle):
-       p.text(str(self) if not cycle else '...')
+        p.text(str(self) if not cycle else '...')
+
 
 class RangeNtf(_Message):
 
@@ -66,7 +92,8 @@ class RangeNtf(_Message):
         return self.__class__.__name__ + ":" + self.perf + "[from:" + str(self.from_) + " to:" + str(self.to) + " Range:" + str(self.range) + " offset:" + str(self.timeOffset) + " validity:" + str(self.isValid) + "]"
 
     def _repr_pretty_(self, p, cycle):
-       p.text(str(self) if not cycle else '...')
+        p.text(str(self) if not cycle else '...')
+
 
 class RxFrameNtf(_Message):
 
@@ -97,4 +124,4 @@ class RxFrameNtf(_Message):
         return self.__class__.__name__ + ":" + self.perf + "[type:" + typestr + " from:" + str(self.from_) + " to:" + str(self.to) + " protocol:" + str(self.protocol) + " rxTime:" + str(self.rxTime) + ((" txTime:" + str(self.timestamp)) if self.timestamp else "") + " (" + (str(len(self.data)) if self.data else "0") + " bytes)]"
 
     def _repr_pretty_(self, p, cycle):
-       p.text(str(self) if not cycle else '...')
+        p.text(str(self) if not cycle else '...')
