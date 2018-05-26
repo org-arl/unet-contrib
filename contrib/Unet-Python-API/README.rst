@@ -24,8 +24,12 @@ To import all general modules::
 
     from unetpy import *
 
+Sample notebook:
+
+    `python-gateway-tutorial.ipynb <https://github.com/org-arl/unet-contrib/blob/master/contrib/Unet-Python-API/python-gateway-tutorial.ipynb>`_
+
 Useful links
 ------------
 
-        * `unetpy home <https://github.com/org-arl/unet-contrib/tree/master/contrib/Unet-Python-API>`
-        * `unetpy documentation <>`
+        * `unetpy home <https://github.com/org-arl/unet-contrib/tree/master/contrib/Unet-Python-API>`_
+        * `Unet project home <http://www.unetstack.net>`_
