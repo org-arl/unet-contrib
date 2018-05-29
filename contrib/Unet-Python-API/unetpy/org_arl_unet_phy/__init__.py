@@ -32,7 +32,7 @@ class TxFrameNtf(_Message):
         super().__init__()
         self.perf = _Performative.INFORM
         self.txTime = None
-        self.type - None
+        self.type = None
         self.__dict__.update(kwargs)
 
     def setTxTime(self, time):
