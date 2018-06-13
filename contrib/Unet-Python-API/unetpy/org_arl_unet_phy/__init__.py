@@ -1,5 +1,6 @@
 from fjagepy.org_arl_fjage import Message as _Message
 from fjagepy.org_arl_fjage import Performative as _Performative
+from unetpy.org_arl_unet import DatagramNtf as _DatagramNtf
 
 
 class Physical:
@@ -95,7 +96,7 @@ class RangeNtf(_Message):
         p.text(str(self) if not cycle else '...')
 
 
-class RxFrameNtf(_Message):
+class RxFrameNtf(_DatagramNtf):
 
     def __init__(self, **kwargs):
         super().__init__()
