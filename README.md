@@ -12,6 +12,8 @@ The directory structure is as shown below:
 
 ## Contributing
 
+We thank you for your contributions.
+
 ### Contribute directly to the unet-contrib repository
 
 If you wish to contribute your own code, please make sure it is working and that you
@@ -27,4 +29,7 @@ works too. Just send us a link by posting an [issue](https://github.com/org-arl/
 and we'll collate and udpate the UnetStack web site to point to your contribution, with
 appropriate credits.
 
-We thank you for your contributions.
+### Correctness
+
+The correctness of contributions is the responsibility of the contributor, and not checked by
+the administrators of this repository.
