@@ -1,5 +1,6 @@
+//! Simulation: Slotted FAMA
 ///////////////////////////////////////////////////////////////////////////////
-/// 
+///
 /// To run simulation:
 ///   bin/unet Slotted FAMA/BenchmarkedScenario1Sim.groovy
 ///
@@ -41,7 +42,7 @@ channel.detectionRange = 5.km
 // simulation settings
 
 def nodes = 1..6                     // list of nodes
-def loadRange = [0.1, 1.5, 0.1] 
+def loadRange = [0.1, 1.5, 0.1]
 def T = 100.minutes                  // simulation horizon
 trace.warmup =  10.minutes           // collect statistics after a while
 
@@ -60,13 +61,13 @@ def nodeLocation = [:]
 nodes.each { myAddr ->
   if(myAddr == 1)
   {
-    nodeLocation[myAddr] = [0, 0, -10.m]    
+    nodeLocation[myAddr] = [0, 0, -10.m]
   }
   else
-  {    
+  {
     double theta = rnd(0,2*Math.PI)
     double radius = rnd(2.0, max_range)
-    nodeLocation[myAddr] = [radius*Math.cos(theta), radius*Math.sin(theta), -10.m]     
+    nodeLocation[myAddr] = [radius*Math.cos(theta), radius*Math.sin(theta), -10.m]
   }
 }
 
@@ -89,24 +90,24 @@ def avgRange = sum/n
 println """Average internode distance: ${Math.round(avgRange)} m, delay: ${Math.round(1000*avgRange/channel.soundSpeed)} ms
 
 TX Count\tRX Count\tLoss %\t\tOffered Load\tThroughput
---------\t--------\t------\t\t------------\t----------"""   
+--------\t--------\t------\t\t------------\t----------"""
 
 File out = new File("logs/results.txt")
 out.text = ''
 
 // simulate at various arrival rates
-for (def load = loadRange[0]; load <= loadRange[1]; load += loadRange[2]) 
+for (def load = loadRange[0]; load <= loadRange[1]; load += loadRange[2])
 {
   simulate T, {
     def node_list = []
-    // setup nodes 
+    // setup nodes
     nodes.each { myAddr ->
-    
+
       float loadPerNode = load/(nodes.size()-1)     // divide network load across nodes evenly
       def macAgent = new SlottedFama()
-      node_list << node("${myAddr}", address: myAddr, location: nodeLocation[myAddr] , stack : { container -> 
-      container.add 'mac', macAgent        
-      }) 
+      node_list << node("${myAddr}", address: myAddr, location: nodeLocation[myAddr] , stack : { container ->
+      container.add 'mac', macAgent
+      })
 
       for(int i = 0; i<nodes.size(); i++)
       {
@@ -116,8 +117,8 @@ for (def load = loadRange[0]; load <= loadRange[1]; load += loadRange[2])
           {
             maxPropagationDelay = propagationDelay[i][j]
           }
-        } 
-      }        
+        }
+      }
 
       macAgent.timerCtsTimeoutOpMode = 2
       macAgent.maxPropagationDelay = maxPropagationDelay
@@ -125,10 +126,10 @@ for (def load = loadRange[0]; load <= loadRange[1]; load += loadRange[2])
       macAgent.controlMsgDuration = (int)(8000*modem.frameLength[0]/modem.dataRate[0] + 0.5)
       if(myAddr != 1)
       {
-        container.add 'load', new LoadGenerator([1], loadPerNode)        
-      }              
+        container.add 'load', new LoadGenerator([1], loadPerNode)
+      }
 
-    } // each       
+    } // each
 
   }  // simulate
 
@@ -140,6 +141,6 @@ for (def load = loadRange[0]; load <= loadRange[1]; load += loadRange[2])
   // save to file
   out << "${trace.offeredLoad},${trace.throughput}\n"
 
-} 
- 
+}
+
 

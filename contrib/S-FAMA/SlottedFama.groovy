@@ -11,7 +11,7 @@ import org.arl.unet.nodeinfo.*
 /**
  * The class implements the Slotted FAMA protocol.
  * Reference:
- * Molins, Marcal, and Milica Stojanovic. "Slotted FAMA: a MAC protocol for underwater acoustic networks." 
+ * Molins, Marcal, and Milica Stojanovic. "Slotted FAMA: a MAC protocol for underwater acoustic networks."
  * OCEANS 2006-Asia Pacific. IEEE, 2007.
  */
 class SlottedFama extends UnetAgent {
@@ -19,15 +19,15 @@ class SlottedFama extends UnetAgent {
     ////// protocol constants
 
     private final static int PROTOCOL           = Protocol.MAC
-    
+
     private final static int MAX_RETRY          = 3
     private final static int MAX_QUEUE_LEN      = 16
     private final static int MAX_BACKOFF_SLOTS  = 12
     private final static int MIN_BACKOFF_SLOTS  = 3
 
     private final static int AFFIRMATIVE        = 1
-    private final static int NEGATIVE           = 0 
-    
+    private final static int NEGATIVE           = 0
+
     private final static int DATA_CHANNEL       = 1
     private final static int CONTROL_CHANNEL    = 0
 
@@ -39,20 +39,20 @@ class SlottedFama extends UnetAgent {
     ////// PDU encoder/decoder
     private final static int RTS_PDU            = 0x01
     private final static int CTS_PDU            = 0x02
-    private final static int DATA_PDU           = 0x03  
+    private final static int DATA_PDU           = 0x03
     private final static int ACK_PDU            = 0x04
     private final static int NACK_PDU           = 0x05
 
     int startTime                               = 0
-    int slotLength                              = 0    
-    int modemBusy                               = 0 
+    int slotLength                              = 0
+    int modemBusy                               = 0
     long backoffStartTime                       = 0
     long backoffEndTime                         = 0
     int senderOfXCTS                            = 0
     int senderOfXACK                            = 0
-    int flagForCtsTimeout                       = OFF 
+    int flagForCtsTimeout                       = OFF
 
-    ArrayList<Integer> senderRTS = new ArrayList<Integer>()                        
+    ArrayList<Integer> senderRTS = new ArrayList<Integer>()
 
     ////// reservation request queue
     private Queue<ReservationReq> queue = new ArrayDeque<ReservationReq>()
@@ -66,13 +66,13 @@ class SlottedFama extends UnetAgent {
     ////// protocol FSM
 
     private enum State {
-        IDLE, TX_RTS, TX_DATA, TX_CTS, TX_ACK, WAIT_FOR_CTS, WAIT_FOR_DATA, WAIT_FOR_ACK, 
-        BACKOFF_X_RTS, BACKOFF_X_CTS, BACKOFF_X_DATA, BACKOFF_CTS_TIMEOUT, BACKOFF_INTERFERENCE, 
+        IDLE, TX_RTS, TX_DATA, TX_CTS, TX_ACK, WAIT_FOR_CTS, WAIT_FOR_DATA, WAIT_FOR_ACK,
+        BACKOFF_X_RTS, BACKOFF_X_CTS, BACKOFF_X_DATA, BACKOFF_CTS_TIMEOUT, BACKOFF_INTERFERENCE,
         RECEIVING,RECEIVING_FROM_BACKOFF_CTS_TIMEOUT
     }
 
     private enum Event {
-        RX_RTS, RX_CTS, RX_ACK, RX_NACK, RX_DATA, SNOOP_RTS, SNOOP_CTS, SNOOP_DATA,SNOOP_ACK, SNOOP_NACK, 
+        RX_RTS, RX_CTS, RX_ACK, RX_NACK, RX_DATA, SNOOP_RTS, SNOOP_CTS, SNOOP_DATA,SNOOP_ACK, SNOOP_NACK,
         RESERVATION_REQ, BADFRAME_NTF, CARRIER_SENSED, DATA_FRAME_CORRUPTED
     }
 
@@ -87,8 +87,8 @@ class SlottedFama extends UnetAgent {
         int correspondent = 0
         int endTimeBackoffCtsTimeout = 0
 
-        state(State.IDLE) 
-        {   
+        state(State.IDLE)
+        {
             onEnter
             {
                 long currentTime  = GetCurrentTime()
@@ -97,17 +97,17 @@ class SlottedFama extends UnetAgent {
                 after(timeForNextSlot.milliseconds)
                 {
                     modemBusy = ModemCheck()
-                    if (!modemBusy) 
+                    if (!modemBusy)
                     {
                         if(!queue.isEmpty())
-                        { 
+                        {
                             setNextState(State.TX_RTS)
                         }
                     }
                     else
                     {
                         setNextState(State.RECEIVING)
-                    }    
+                    }
                 }
             }
 
@@ -129,12 +129,12 @@ class SlottedFama extends UnetAgent {
             onEvent(Event.BADFRAME_NTF){ waitTime ->
                 backoff = waitTime
                 setNextState(State.BACKOFF_INTERFERENCE)
-            }                  
+            }
         }
 
         state(State.TX_RTS) {
             //Transmit an RTS packet
-            onEnter 
+            onEnter
             {
                 Message msg = queue.peek()
                 def bytes = controlMsg.encode(type: RTS_PDU, duration: Math.ceil(msg.duration*1000))
@@ -145,7 +145,7 @@ class SlottedFama extends UnetAgent {
                 {
                     setNextState(State.WAIT_FOR_CTS)
                 }
-            }  
+            }
         }
 
         state(State.WAIT_FOR_CTS)
@@ -155,41 +155,41 @@ class SlottedFama extends UnetAgent {
             {
                 long currentTime  = GetCurrentTime()
                 waitTimeForCTS = slotLength - ( (currentTime - startTime) % slotLength ) + slotLength
-                after(waitTimeForCTS.milliseconds) 
+                after(waitTimeForCTS.milliseconds)
                 {
                     flagForCtsTimeout = ON
                     backoff = (AgentLocalRandom.current().nextInt(MAX_BACKOFF_SLOTS)+MIN_BACKOFF_SLOTS)*slotLength
                     backoffStartTime = GetCurrentTime()
-                    backoffEndTime = backoffStartTime + backoff  
+                    backoffEndTime = backoffStartTime + backoff
                     endTimeBackoffCtsTimeout = backoffEndTime
                     setNextState(State.BACKOFF_CTS_TIMEOUT)
                 }
             }
 
-            onEvent(Event.RX_CTS) 
+            onEvent(Event.RX_CTS)
             {
                 setNextState(State.TX_DATA)
             }
-        } 
+        }
 
-        state(State.TX_DATA) 
+        state(State.TX_DATA)
         {
             //Transmit DATA packet.
-            onEnter 
+            onEnter
             {
                 long currentTime  = GetCurrentTime()
-                int timeForNextSlot = slotLength - ( (currentTime - startTime ) % slotLength ) 
+                int timeForNextSlot = slotLength - ( (currentTime - startTime ) % slotLength )
                 after(timeForNextSlot.milliseconds)
                 {
                     ReservationReq msg = queue.peek()
                     sendReservationStatusNtf(msg, ReservationStatus.START)
-                    after(msg.duration) 
+                    after(msg.duration)
                     {
                         sendReservationStatusNtf(msg, ReservationStatus.END)
-                        setNextState(State.WAIT_FOR_ACK) 
+                        setNextState(State.WAIT_FOR_ACK)
                     }
-                } 
-            }        
+                }
+            }
         }
 
         state(State.WAIT_FOR_ACK)
@@ -199,13 +199,13 @@ class SlottedFama extends UnetAgent {
             {
                 long currentTime = GetCurrentTime()
                 ackTimeout = 3*slotLength - ((currentTime-startTime)%slotLength)
-                after(ackTimeout.milliseconds) 
+                after(ackTimeout.milliseconds)
                 {
-                    if (++retryCount >= MAX_RETRY) 
+                    if (++retryCount >= MAX_RETRY)
                     {
                         sendReservationStatusNtf(queue.poll(), ReservationStatus.FAILURE)
-                        retryCount = 0   
-                        setNextState(State.IDLE)   
+                        retryCount = 0
+                        setNextState(State.IDLE)
                     }
                     else
                     {
@@ -214,31 +214,31 @@ class SlottedFama extends UnetAgent {
                 }
             }
 
-            onEvent(Event.RX_ACK) 
+            onEvent(Event.RX_ACK)
             {
                 queue.poll()
-                setNextState(State.IDLE)                        
+                setNextState(State.IDLE)
             }
 
             onEvent(Event.RX_NACK)
             {
-                if (++retryCount >= MAX_RETRY) 
+                if (++retryCount >= MAX_RETRY)
                 {
                     sendReservationStatusNtf(queue.poll(), ReservationStatus.FAILURE)
-                    retryCount = 0    
-                    setNextState(State.IDLE)     
+                    retryCount = 0
+                    setNextState(State.IDLE)
                 }
                 else
                 {
-                    setNextState(State.TX_DATA)  
-                }        
-            }        
+                    setNextState(State.TX_DATA)
+                }
+            }
         }
 
-        state(State.TX_CTS) 
+        state(State.TX_CTS)
         {
             //Transmit a CTS packet.
-            onEnter 
+            onEnter
             {
                 int destination = senderRTS.get(new Random().nextInt(senderRTS.size()))
                 senderRTS.clear()
@@ -248,7 +248,7 @@ class SlottedFama extends UnetAgent {
                 rxInfo = null
                 after(controlMsgDuration.milliseconds)
                 {
-                    setNextState(State.WAIT_FOR_DATA)          
+                    setNextState(State.WAIT_FOR_DATA)
                 }
             }
         }
@@ -267,7 +267,7 @@ class SlottedFama extends UnetAgent {
                         backoff = (AgentLocalRandom.current().nextInt(MAX_BACKOFF_SLOTS)+MIN_BACKOFF_SLOTS)*slotLength
                         backoffStartTime = GetCurrentTime()
                         backoffEndTime = backoffStartTime + backoff
-                        setNextState(State.IDLE)             
+                        setNextState(State.IDLE)
                     }
                     dataDetected = NEGATIVE
                 }
@@ -279,8 +279,8 @@ class SlottedFama extends UnetAgent {
                 rxInfo = info
                 after(timeForNextSlot.milliseconds)
                 {
-                    setNextState(State.TX_ACK)        
-                }       
+                    setNextState(State.TX_ACK)
+                }
             }
 
             onEvent(Event.CARRIER_SENSED){channelType->
@@ -300,9 +300,9 @@ class SlottedFama extends UnetAgent {
                     def bytes = controlMsg.encode(type: NACK_PDU, duration: dataMsgDuration)//Math.round(info.duration))
                     phy << new ClearReq()
                     phy << new TxFrameReq(to: correspondent, type: Physical.CONTROL, protocol: PROTOCOL, data: bytes)
-                    reenterState()          
+                    reenterState()
                 }
-            }      
+            }
         }
 
         state(State.TX_ACK)
@@ -313,7 +313,7 @@ class SlottedFama extends UnetAgent {
                 def bytes = controlMsg.encode(type: ACK_PDU, duration: Math.round(rxInfo.duration))
                 phy << new ClearReq()
                 phy << new TxFrameReq(to: rxInfo.from, type: Physical.CONTROL, protocol: PROTOCOL, data: bytes)
-                rxInfo = null 
+                rxInfo = null
                 after(controlMsgDuration.milliseconds)
                 {
                     if(timerCtsTimeoutOpMode == CONTINUE)
@@ -327,8 +327,8 @@ class SlottedFama extends UnetAgent {
                         }
                         else
                         {
-                            setNextState(State.IDLE)                        
-                        }                          
+                            setNextState(State.IDLE)
+                        }
                     }
                     if(timerCtsTimeoutOpMode == RESTART)
                     {
@@ -342,19 +342,19 @@ class SlottedFama extends UnetAgent {
                         }
                         else
                         {
-                            setNextState(State.IDLE)                        
-                        }                          
+                            setNextState(State.IDLE)
+                        }
                     }
-                }           
+                }
             }
         }
 
-        state(State.BACKOFF_X_RTS) 
+        state(State.BACKOFF_X_RTS)
         {
             //Backoff due to having received an X_RTS packet.
             onEnter
             {
-                after(backoff.milliseconds) 
+                after(backoff.milliseconds)
                 {
                     modemBusy = ModemCheck()
                     if(modemBusy)
@@ -374,8 +374,8 @@ class SlottedFama extends UnetAgent {
                             }
                             else
                             {
-                                setNextState(State.IDLE)                        
-                            }                          
+                                setNextState(State.IDLE)
+                            }
                         }
                         if(timerCtsTimeoutOpMode == RESTART)
                         {
@@ -389,20 +389,20 @@ class SlottedFama extends UnetAgent {
                             }
                             else
                             {
-                                setNextState(State.IDLE)                        
-                            }                          
-                        } 
-                    }            
+                                setNextState(State.IDLE)
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        state(State.BACKOFF_X_CTS) 
+        state(State.BACKOFF_X_CTS)
         {
             //Backoff due to having received an X_CTS packet.
             onEnter
             {
-                after(backoff.milliseconds) 
+                after(backoff.milliseconds)
                 {
                     if(timerCtsTimeoutOpMode == CONTINUE)
                     {
@@ -415,8 +415,8 @@ class SlottedFama extends UnetAgent {
                         }
                         else
                         {
-                            setNextState(State.IDLE)                        
-                        }                          
+                            setNextState(State.IDLE)
+                        }
                     }
                     if(timerCtsTimeoutOpMode == RESTART)
                     {
@@ -430,9 +430,9 @@ class SlottedFama extends UnetAgent {
                         }
                         else
                         {
-                            setNextState(State.IDLE)                        
-                        }                          
-                    } 
+                            setNextState(State.IDLE)
+                        }
+                    }
                 }
             }
 
@@ -453,8 +453,8 @@ class SlottedFama extends UnetAgent {
                         }
                         else
                         {
-                            setNextState(State.IDLE)                        
-                        }                          
+                            setNextState(State.IDLE)
+                        }
                     }
                     if(timerCtsTimeoutOpMode == RESTART)
                     {
@@ -468,30 +468,30 @@ class SlottedFama extends UnetAgent {
                         }
                         else
                         {
-                            setNextState(State.IDLE)                        
-                        }                          
-                    } 
+                            setNextState(State.IDLE)
+                        }
+                    }
                 }
                 else
                 {
                     backoffStartTime = GetCurrentTime()
                     backoff = backoffEndTime - backoffStartTime
-                    setNextState(State.BACKOFF_X_CTS) 
-                }                                
+                    setNextState(State.BACKOFF_X_CTS)
+                }
             }
 
             onEvent(Event.SNOOP_NACK) { info ->
-                backoff = info.duration 
+                backoff = info.duration
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
                 setNextState(State.BACKOFF_X_CTS)
-            }    
+            }
         }
 
-        state(State.BACKOFF_X_DATA) 
+        state(State.BACKOFF_X_DATA)
         {
             //Backoff due to having received an X_DATA packet.
-            onEnter 
+            onEnter
             {
                 after(backoff.milliseconds)
                 {
@@ -509,8 +509,8 @@ class SlottedFama extends UnetAgent {
                             }
                             else
                             {
-                                setNextState(State.IDLE)                        
-                            }                          
+                                setNextState(State.IDLE)
+                            }
                         }
                         if(timerCtsTimeoutOpMode == RESTART)
                         {
@@ -524,9 +524,9 @@ class SlottedFama extends UnetAgent {
                             }
                             else
                             {
-                                setNextState(State.IDLE)                        
-                            }                          
-                        } 
+                                setNextState(State.IDLE)
+                            }
+                        }
                     }
                 }
             }
@@ -540,7 +540,7 @@ class SlottedFama extends UnetAgent {
                     backoffEndTime = backoffStartTime + backoff
                     reenterState()
                 }
-            }  
+            }
 
             onEvent(Event.SNOOP_ACK) { info ->
                 senderOfXACK = info.from
@@ -559,8 +559,8 @@ class SlottedFama extends UnetAgent {
                         }
                         else
                         {
-                            setNextState(State.IDLE)                        
-                        }                          
+                            setNextState(State.IDLE)
+                        }
                     }
                     if(timerCtsTimeoutOpMode == RESTART)
                     {
@@ -574,32 +574,32 @@ class SlottedFama extends UnetAgent {
                             }
                             else
                             {
-                                setNextState(State.IDLE)                        
-                            }                          
-                    } 
+                                setNextState(State.IDLE)
+                            }
+                    }
                 }
                 else
                 {
                     backoffStartTime = GetCurrentTime()
                     backoff = backoffEndTime - backoffStartTime
-                    setNextState(State.BACKOFF_X_DATA) 
-                }                                
+                    setNextState(State.BACKOFF_X_DATA)
+                }
             }
-      
+
             onEvent(Event.SNOOP_NACK) { info ->
-                backoff = info.duration 
+                backoff = info.duration
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
                 setNextState(State.BACKOFF_X_CTS)
             }
-      
+
         }
 
         state(State.BACKOFF_CTS_TIMEOUT) {
             //Backoff due to a CTS Timeout.
-            onEnter 
+            onEnter
             {
-                after(backoff.milliseconds) 
+                after(backoff.milliseconds)
                 {
                     flagForCtsTimeout = OFF
                     setNextState(State.IDLE)
@@ -609,15 +609,15 @@ class SlottedFama extends UnetAgent {
             onEvent(Event.CARRIER_SENSED)
             {
                 setNextState(State.RECEIVING_FROM_BACKOFF_CTS_TIMEOUT)
-            }           
-        } 
+            }
+        }
 
-        state(State.BACKOFF_INTERFERENCE) 
+        state(State.BACKOFF_INTERFERENCE)
         {
             //Backoff due to having received sensed interference(having received a BadFrameNtf).
-            onEnter 
+            onEnter
             {
-                after(backoff.milliseconds) 
+                after(backoff.milliseconds)
                 {
                     if(timerCtsTimeoutOpMode == CONTINUE)
                     {
@@ -630,8 +630,8 @@ class SlottedFama extends UnetAgent {
                         }
                         else
                         {
-                            setNextState(State.IDLE)                        
-                        }                          
+                            setNextState(State.IDLE)
+                        }
                     }
                     if(timerCtsTimeoutOpMode == RESTART)
                     {
@@ -644,12 +644,12 @@ class SlottedFama extends UnetAgent {
                         }
                         else
                         {
-                            setNextState(State.IDLE)                        
-                        }                          
-                    } 
+                            setNextState(State.IDLE)
+                        }
+                    }
                 }
-            }        
-        }                   
+            }
+        }
 
         state(State.RECEIVING)
         {
@@ -661,11 +661,11 @@ class SlottedFama extends UnetAgent {
                 long delayForTX_CTS = slotLength - ( (currentTime - startTime) % slotLength )
                 correspondent = info.from
                 after(delayForTX_CTS.milliseconds)
-                { 
-                    setNextState(State.TX_CTS)                     
-                }  
+                {
+                    setNextState(State.TX_CTS)
+                }
             }
-            onEvent(Event.RX_CTS) 
+            onEvent(Event.RX_CTS)
             {
                 setNextState(State.TX_DATA)
             }
@@ -674,14 +674,14 @@ class SlottedFama extends UnetAgent {
                 backoff = info.duration
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
-                setNextState(State.BACKOFF_X_RTS)          
+                setNextState(State.BACKOFF_X_RTS)
             }
 
             onEvent(Event.SNOOP_CTS) { info ->
                 senderOfXCTS = info.from
-                backoff = info.duration 
+                backoff = info.duration
                 backoffStartTime = GetCurrentTime()
-                backoffEndTime = backoffStartTime + backoff        
+                backoffEndTime = backoffStartTime + backoff
                 setNextState(State.BACKOFF_X_CTS)
             }
 
@@ -689,15 +689,15 @@ class SlottedFama extends UnetAgent {
                 backoff = info.duration
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
-                setNextState(State.BACKOFF_X_DATA)  
+                setNextState(State.BACKOFF_X_DATA)
             }
 
             onEvent(Event.SNOOP_ACK) { info ->
-                setNextState(State.IDLE)                                                
+                setNextState(State.IDLE)
             }
 
             onEvent(Event.SNOOP_NACK) { info ->
-                backoff = info.duration 
+                backoff = info.duration
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
                 setNextState(State.BACKOFF_X_CTS)
@@ -708,7 +708,7 @@ class SlottedFama extends UnetAgent {
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
                 setNextState(State.BACKOFF_INTERFERENCE)
-            }             
+            }
         }
 
         state(State.RECEIVING_FROM_BACKOFF_CTS_TIMEOUT)
@@ -716,17 +716,17 @@ class SlottedFama extends UnetAgent {
             //Enter this state when you sense carrier in the BACKOFF_CTS_TIMEOUT state.
             onEvent(Event.RX_RTS){info ->
                 rxInfo = info
-                senderRTS.add(rxInfo.from)                    
+                senderRTS.add(rxInfo.from)
                 long currentTime = GetCurrentTime()
                 long delayForTX_CTS = slotLength - ( (currentTime - startTime) % slotLength )
                 correspondent = info.from
                 after(delayForTX_CTS.milliseconds)
-                { 
-                    setNextState(State.TX_CTS)                     
-                }  
+                {
+                    setNextState(State.TX_CTS)
+                }
             }
 
-            onEvent(Event.RX_CTS) 
+            onEvent(Event.RX_CTS)
             {
                 setNextState(State.TX_DATA)
             }
@@ -735,14 +735,14 @@ class SlottedFama extends UnetAgent {
                 backoff = info.duration
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
-                setNextState(State.BACKOFF_X_RTS)          
+                setNextState(State.BACKOFF_X_RTS)
             }
 
             onEvent(Event.SNOOP_CTS) { info ->
                 senderOfXCTS = info.from
-                backoff = info.duration 
+                backoff = info.duration
                 backoffStartTime = GetCurrentTime()
-                backoffEndTime = backoffStartTime + backoff        
+                backoffEndTime = backoffStartTime + backoff
                 setNextState(State.BACKOFF_X_CTS)
             }
 
@@ -750,8 +750,8 @@ class SlottedFama extends UnetAgent {
                 backoff = info.duration
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
-                setNextState(State.BACKOFF_X_DATA)  
-            } 
+                setNextState(State.BACKOFF_X_DATA)
+            }
 
             onEvent(Event.SNOOP_ACK) { info ->
                 if(timerCtsTimeoutOpMode == CONTINUE)
@@ -765,8 +765,8 @@ class SlottedFama extends UnetAgent {
                     }
                     else
                     {
-                        setNextState(State.IDLE)                        
-                    }                          
+                        setNextState(State.IDLE)
+                    }
                 }
                 if(timerCtsTimeoutOpMode == RESTART)
                 {
@@ -779,13 +779,13 @@ class SlottedFama extends UnetAgent {
                     }
                     else
                     {
-                        setNextState(State.IDLE)                        
-                    }                          
-                }                         
+                        setNextState(State.IDLE)
+                    }
+                }
             }
 
             onEvent(Event.SNOOP_NACK) { info ->
-                backoff = info.duration 
+                backoff = info.duration
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
                 setNextState(State.BACKOFF_X_CTS)
@@ -796,7 +796,7 @@ class SlottedFama extends UnetAgent {
                 backoffStartTime = GetCurrentTime()
                 backoffEndTime = backoffStartTime + backoff
                 setNextState(State.BACKOFF_INTERFERENCE)
-            }             
+            }
         }
 
     } // of FSMBuilder
@@ -808,16 +808,16 @@ class SlottedFama extends UnetAgent {
     private int addr
 
     @Override
-    void setup() 
+    void setup()
     {
         register Services.MAC
     }
 
     @Override
-    void startup() 
+    void startup()
     {
         phy = agentForService(Services.PHYSICAL)
-        node = agentForService(Services.NODE_INFO)        
+        node = agentForService(Services.NODE_INFO)
 
         subscribe phy
         subscribe(topic(phy, Physical.SNOOP))
@@ -844,14 +844,14 @@ class SlottedFama extends UnetAgent {
     }
 
     private long GetCurrentTime()
-    {   
+    {
         ParameterReq req = new ParameterReq(agentForService(Services.PHYSICAL))
         req.get(PhysicalParam.time)
-        ParameterRsp rsp = (ParameterRsp)request(req, 1000)     
-        long time = rsp.get(PhysicalParam.time) 
+        ParameterRsp rsp = (ParameterRsp)request(req, 1000)
+        long time = rsp.get(PhysicalParam.time)
         time = time / 1000
-        return time 
-    }  
+        return time
+    }
 
     private int ModemCheck()
     {
@@ -866,9 +866,9 @@ class SlottedFama extends UnetAgent {
     }
 
     @Override
-    Message processRequest(Message msg) 
+    Message processRequest(Message msg)
     {
-        switch (msg) 
+        switch (msg)
         {
             case ReservationReq:
             if (msg.to == Address.BROADCAST || msg.to == addr) return new Message(msg, Performative.REFUSE)
@@ -886,46 +886,46 @@ class SlottedFama extends UnetAgent {
     }
 
     @Override
-    void processMessage(Message msg) 
+    void processMessage(Message msg)
     {
-        if (msg instanceof RxFrameNtf) 
+        if (msg instanceof RxFrameNtf)
         {
             def rx = controlMsg.decode(msg.data)
-            def info = [from: msg.from, to: msg.to] 
+            def info = [from: msg.from, to: msg.to]
             long currentTime = GetCurrentTime()
             int timeForNextSlot = slotLength - ( (currentTime - startTime ) % slotLength )
 
             if(msg.type == Physical.CONTROL)
             {
-                /*Check for type of Control packet received and it's intended receiver. If current node is not the  
+                /*Check for type of Control packet received and it's intended receiver. If current node is not the
                 intended receiver, set appropriate backoff-times and trigger events corresponding to the packet received. */
 
-                if (rx.type == RTS_PDU) 
+                if (rx.type == RTS_PDU)
                 {
                     if(info.to == addr)
                     {
                         info.duration = rx.duration
-                        fsm.trigger(Event.RX_RTS, info)        
+                        fsm.trigger(Event.RX_RTS, info)
                     }
                     else
                     {
                         info.duration = 2*slotLength
-                        fsm.trigger(Event.SNOOP_RTS, info)           
-                    }   
+                        fsm.trigger(Event.SNOOP_RTS, info)
+                    }
                 }
                 else if (rx.type == CTS_PDU)
                 {
                     if(info.to == addr)
                     {
-                        fsm.trigger(Event.RX_CTS)     
+                        fsm.trigger(Event.RX_CTS)
                     }
                     else
                     {
                         info.duration = timeForNextSlot+dataMsgDuration+maxPropagationDelay+2*slotLength - ((currentTime-startTime+timeForNextSlot+dataMsgDuration+maxPropagationDelay)%slotLength)
-                        fsm.trigger(Event.SNOOP_CTS, info)           
-                    }     
-                } 
-                else if (rx.type == ACK_PDU) 
+                        fsm.trigger(Event.SNOOP_CTS, info)
+                    }
+                }
+                else if (rx.type == ACK_PDU)
                 {
                     if(info.to == addr)
                     {
@@ -933,21 +933,21 @@ class SlottedFama extends UnetAgent {
                     }
                     else
                     {
-                        fsm.trigger(Event.SNOOP_ACK, info)           
-                    }     
+                        fsm.trigger(Event.SNOOP_ACK, info)
+                    }
                 }
                 else if (rx.type == NACK_PDU)
                 {
                     if(info.to == addr)
-                    { 
-                        fsm.trigger(Event.RX_NACK, info)         
+                    {
+                        fsm.trigger(Event.RX_NACK, info)
                     }
                     else
                     {
                         info.duration = timeForNextSlot+dataMsgDuration+maxPropagationDelay+2*slotLength - ((currentTime-startTime+timeForNextSlot+dataMsgDuration+maxPropagationDelay-startTime)%slotLength)
-                        fsm.trigger(Event.SNOOP_NACK, info)           
-                    }     
-                }         
+                        fsm.trigger(Event.SNOOP_NACK, info)
+                    }
+                }
                 else
                 {
                   //pass
@@ -963,17 +963,17 @@ class SlottedFama extends UnetAgent {
                 {
                     info.duration = phy[0].frameDuration
                     info.from     = msg.getFrom()
-                    fsm.trigger(Event.RX_DATA, info)        
+                    fsm.trigger(Event.RX_DATA, info)
                 }
                 else
                 {
                     info.duration = timeForNextSlot + slotLength
                     if(backoffEndTime - info.duration - GetCurrentTime() == slotLength)
                     {
-                        info.duration += slotLength 
+                        info.duration += slotLength
                     }
-                    fsm.trigger(Event.SNOOP_DATA, info)           
-                } 
+                    fsm.trigger(Event.SNOOP_DATA, info)
+                }
             }
         }
 
@@ -984,22 +984,22 @@ class SlottedFama extends UnetAgent {
             def currentTime = GetCurrentTime()
             def timeForNextSlot = slotLength - ((GetCurrentTime()-startTime)%slotLength)
             def backoff = timeForNextSlot+dataMsgDuration+maxPropagationDelay+2*slotLength - ((currentTime-startTime+timeForNextSlot+dataMsgDuration+maxPropagationDelay)%slotLength)
-            
+
             if(fsm.getCurrentState().toString() == "WAIT_FOR_DATA")
             {
                 fsm.trigger(Event.DATA_FRAME_CORRUPTED)
             }
             else
             {
-                fsm.trigger(Event.BADFRAME_NTF, backoff)      
+                fsm.trigger(Event.BADFRAME_NTF, backoff)
             }
         }
 
-        if(msg instanceof RxClockNtf)
+        if(msg instanceof RxFrameStartNtf)
         {
             //This notification denotes carrier sense and hence the corresponding event is triggered.
             fsm.trigger(Event.CARRIER_SENSED,msg.type)
-        }     
+        }
     }
 
     ////// expose parameters that are expected of a MAC service
@@ -1009,7 +1009,7 @@ class SlottedFama extends UnetAgent {
     final float maxReservationDuration = 65.535
 
 
-    //Parameters to be passed to Agent File 
+    //Parameters to be passed to Agent File
     int controlMsgDuration, dataMsgDuration, maxPropagationDelay, timerCtsTimeoutOpMode
 
     @Override
@@ -1031,4 +1031,4 @@ class SlottedFama extends UnetAgent {
         send new ReservationStatusNtf(recipient: msg.sender, requestID: msg.msgID, to: msg.to, from: addr, status: status)
     }
 
-}  
+}
