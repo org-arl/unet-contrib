@@ -48,6 +48,12 @@ class TxFrameNtf(_Message):
     def getType(self):
         return self.type
 
+    def __str__(self):
+        return self.__class__.__name__ + ":" + self.perf + "[type:" + str(self.type) + "]"
+
+    def _repr_pretty_(self, p, cycle):
+        p.text(str(self) if not cycle else '...')
+
 
 class RangeReq(_Message):
 

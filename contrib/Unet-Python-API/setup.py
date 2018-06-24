@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name='unetpy',
-    version='1.3b3',
+    version='1.3b4',
     description='Unet Python Gateway',
     long_description=readme,
     author='Mandar Chitre, Prasad Anjangi',
@@ -19,5 +19,5 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     packages=find_packages(exclude=('tests', 'docs')),
-    install_requires=['fjagepy>=1.4.2b2']
+    install_requires=['fjagepy>=1.4.2b3']
 )
