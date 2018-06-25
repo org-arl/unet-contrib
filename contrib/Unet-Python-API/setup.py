@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name='unetpy',
-    version='1.3b4',
+    version='1.3b5',
     description='Unet Python Gateway',
     long_description=readme,
     author='Mandar Chitre, Prasad Anjangi',
