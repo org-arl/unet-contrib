@@ -4,8 +4,8 @@ from unetpy.org_arl_unet import DatagramNtf as _DatagramNtf
 
 
 class Physical:
-    CONTROL = 0
-    DATA = 1
+    CONTROL = 1
+    DATA = 2
 
 
 class TxFrameReq(_Message):
