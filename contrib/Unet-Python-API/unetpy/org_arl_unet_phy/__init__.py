@@ -21,7 +21,7 @@ class TxFrameReq(_Message):
         self.__dict__.update(kwargs)
 
     def __str__(self):
-        return self.__class__.__name__ + ":" + self.perf + "[type:" + str(self.type) + " to:" + str(self.to) + " protocol:" + " (" + (str(len(self.data)) if self.data else "0") + " bytes)]"
+        return self.__class__.__name__ + ":" + self.perf + "[type:" + str(self.type) + " to:" + str(self.to) + " protocol:" + " (" + (str(len(self.data)) if list(self.data) else "0") + " bytes)]"
 
     def _repr_pretty_(self, p, cycle):
         p.text(str(self) if not cycle else '...')
@@ -128,7 +128,7 @@ class RxFrameNtf(_DatagramNtf):
             typestr = "CONTROL"
         elif self.type == Physical.DATA:
             typestr = "DATA"
-        return self.__class__.__name__ + ":" + self.perf + "[type:" + typestr + " from:" + str(self.from_) + " to:" + str(self.to) + " protocol:" + str(self.protocol) + " rxTime:" + str(self.rxTime) + ((" txTime:" + str(self.timestamp)) if self.timestamp else "") + " (" + (str(len(self.data)) if self.data else "0") + " bytes)]"
+        return self.__class__.__name__ + ":" + self.perf + "[type:" + typestr + " from:" + str(self.from_) + " to:" + str(self.to) + " protocol:" + str(self.protocol) + " rxTime:" + str(self.rxTime) + ((" txTime:" + str(self.timestamp)) if self.timestamp else "") + " (" + (str(len(self.data)) if list(self.data) else "0") + " bytes)]"
 
     def _repr_pretty_(self, p, cycle):
         p.text(str(self) if not cycle else '...')
