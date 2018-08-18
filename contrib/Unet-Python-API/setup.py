@@ -19,5 +19,8 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     packages=find_packages(exclude=('tests', 'docs')),
-    install_requires=['fjagepy>=1.4.2b3']
+    install_requires=[
+        'numpy>=1.11',
+        'fjagepy>=1.4.2b3'
+    ]
 )
