@@ -90,6 +90,12 @@ class RangeNtf(_Message):
             del kwargs["from"]
         self.__dict__.update(kwargs)
 
+    def getRange(self):
+        return self.range
+
+    def getOffset(self):
+        return self.timeOffset
+
     def __str__(self):
         try:
             val = int(self.range)
