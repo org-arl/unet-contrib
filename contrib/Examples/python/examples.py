@@ -62,7 +62,12 @@ else:
 bb = modem.agentForService(Services.BASEBAND)
 
 # Generate a random signal modulated with BPSK
-signal = ap.comms.modulate(ap.comms.random_data(10000), ap.comms.psk())
+c = ap.comms.modulate(ap.comms.random_data(10000), ap.comms.psk())
+a = c.real
+b = c.imag
+signal = np.empty((a.size + b.size,), dtype=a.dtype)
+signal[0::2] = a
+signal[1::2] = b
 # Transmit the baseband signal
 bb << TxBasebandSignalReq(preamble=3, signal=signal)
 # Receive the transmit notification
