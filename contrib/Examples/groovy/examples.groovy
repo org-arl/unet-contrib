@@ -1,12 +1,7 @@
-///////////////////////////////////////////////////////////////////////////////
-// In terminal window (an example):
-//
-// > ./groovy.sh examples.groovy
-//
-// Set the actual IP address address of the modem in the code below.
-//
-// Find relevant documentation on UnetStack and APIs at the following link:
-// https://www.unetstack.net/docs.html
+/////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2018, Prasad Anjangi
+// This file is released under Simplified BSD License.
+// Go to http://www.opensource.org/licenses/BSD-3-Clause for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 import org.arl.fjage.remote.*
@@ -15,9 +10,8 @@ import org.arl.unet.phy.*
 import org.arl.unet.bb.*
 
 /******************** Open connection to modem *********************************/
-
-// Set the IP address of the modem
-ip_address = 'unet-modem'
+// Get the IP address of the modem from argument passed
+ip_address = args[0]
 // Open a connection to modem
 Gateway modem = new Gateway(ip_address, 1100);
 

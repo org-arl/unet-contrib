@@ -1,12 +1,7 @@
-///////////////////////////////////////////////////////////////////////////////
-// In terminal window (an example):
-//
-// > make examples
-// > ./examples 'unet-modem'
-// Set the actual IP address address of the modem when using modem.
-//
-// Find relevant documentation on UnetStack and APIs at the following link:
-// https://www.unetstack.net/docs.html
+/////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2018, Prasad Anjangi
+// This file is released under Simplified BSD License.
+// Go to http://www.opensource.org/licenses/BSD-3-Clause for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <stdio.h>

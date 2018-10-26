@@ -13,14 +13,14 @@
 # https://www.unetstack.net/docs.html
 ##############################################################################
 
+import sys
 import numpy as np
 import arlpy as ap
 from unetpy import *
 
 ################### Open connection to modem #################################
-
 # Set the IP address of the modem
-ip_address = 'unet-modem'
+ip_address = sys.argv[1]
 # Open a connection to modem
 modem = UnetGateway(ip_address, 1100)
 
