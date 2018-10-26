@@ -1,16 +1,7 @@
 ##############################################################################
-# In order to run this example script, you need `unetpy` module installed. If
-# not already installed, install it by running the following command in termi-
-# nal window `pip3 install unetpy`
-#
-# In terminal window (an example):
-#
-# > python3 examples.py
-#
-# Set the actual IP address address of the modem in the code below.
-#
-# Find relevant documentation on UnetStack and APIs at the following link:
-# https://www.unetstack.net/docs.html
+# Copyright (c) 2018, Prasad Anjangi
+# This file is released under Simplified BSD License.
+# Go to http://www.opensource.org/licenses/BSD-3-Clause for full license details.
 ##############################################################################
 
 import sys
@@ -19,7 +10,7 @@ import arlpy as ap
 from unetpy import *
 
 ################### Open connection to modem #################################
-# Set the IP address of the modem
+# Get the IP address of the modem from argument passed
 ip_address = sys.argv[1]
 # Open a connection to modem
 modem = UnetGateway(ip_address, 1100)
