@@ -12,6 +12,7 @@ The following steps are implemented:
 In terminal window (an example):
 
 > make examples
+
 > ./examples 'unet-modem'
 
 Find the relevant documentation on UnetStack and APIs at the following link: https://www.unetstack.net/docs.html
