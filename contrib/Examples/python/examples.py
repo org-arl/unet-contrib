@@ -13,11 +13,6 @@
 # https://www.unetstack.net/docs.html
 ##############################################################################
 
-# TODO:
-# change ip_address to hostname
-# Add readme
-
-
 import numpy as np
 import arlpy as ap
 from unetpy import *
@@ -25,7 +20,7 @@ from unetpy import *
 ################### Open connection to modem #################################
 
 # Set the IP address of the modem
-ip_address = 'localhost'
+ip_address = 'unet-modem'
 # Open a connection to modem
 modem = UnetGateway(ip_address, 1100)
 
@@ -62,12 +57,14 @@ else:
 bb = modem.agentForService(Services.BASEBAND)
 
 # Generate a random signal modulated with BPSK
-c = ap.comms.modulate(ap.comms.random_data(10000), ap.comms.psk())
-a = c.real
-b = c.imag
-signal = np.empty((a.size + b.size,), dtype=a.dtype)
-signal[0::2] = a
-signal[1::2] = b
+csig = ap.comms.modulate(ap.comms.random_data(10000), ap.comms.psk())
+# Convert complex signal (csig) with real and imag to an array
+# with alternate real and imag values
+real_csig = csig.real
+imag_csig = csig.imag
+signal = np.empty((real_csig.size + imag_csig.size,), dtype=real_csig.dtype)
+signal[0::2] = real_csig
+signal[1::2] = imag_csig
 # Transmit the baseband signal
 bb << TxBasebandSignalReq(preamble=3, signal=signal)
 # Receive the transmit notification
@@ -79,7 +76,7 @@ if txntf3 is not None:
 else:
     print('Transmission not successfull, try again!')
 
-################### Record a baseband signal #################################
+################### Recording a baseband signal #################################
 
 # Record a baseband signal
 bb << RecordBasebandSignalReq(recLen=24000)

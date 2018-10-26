@@ -9,9 +9,6 @@
 // https://www.unetstack.net/docs.html
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO:
-// change ip_address to hostname
-
 import org.arl.fjage.remote.*
 import org.arl.unet.*
 import org.arl.unet.phy.*
@@ -20,7 +17,7 @@ import org.arl.unet.bb.*
 /******************** Open connection to modem *********************************/
 
 // Set the IP address of the modem
-ip_address = 'localhost'
+ip_address = 'unet-modem'
 // Open a connection to modem
 Gateway modem = new Gateway(ip_address, 1100);
 
@@ -89,7 +86,7 @@ if (txntf3 != null) {
     println 'Transmission not successfull, try again!'
 }
 
-/******************** Record a baseband signal ****************************/
+/******************** Recording a baseband signal ****************************/
 
 // Record a baseband signal
 def msg4 = new RecordBasebandSignalReq(recLen: 24000)

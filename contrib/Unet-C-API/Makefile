@@ -2,12 +2,14 @@ CFLAGS=-std=c99 -Wall -O2
 
 all: libfjage.a libunet.a
 
-libfjage.a:
-	curl -LO https://github.com/org-arl/fjage/archive/v1.4.2.zip
-	unzip -a v1.4.2.zip
-	make -C fjage-1.4.2/src/main/c/
-	cp fjage-1.4.2/src/main/c/fjage.h .
-	cp fjage-1.4.2/src/main/c/libfjage.a .
+libfjage.a: fjage-dev
+	make -C fjage-dev/src/main/c/
+	cp fjage-dev/src/main/c/fjage.h .
+	cp fjage-dev/src/main/c/libfjage.a .
+
+fjage-dev:
+	curl -LO https://github.com/org-arl/fjage/archive/dev.zip
+	unzip -a dev.zip
 
 libunet.a: unet.o
 	$(AR) rc $@ $^
@@ -19,9 +21,9 @@ test_unet: test_unet.o libunet.a libfjage.a
 	$(CC) -o test_unet test_unet.o libunet.a libfjage.a -lpthread
 
 test: libfjage.a test_unet
-	./test_unet ${IP} ${ADDR}
+	./test_unet ${IP} ${ADDR} ${DEVICE}
 
 clean:
-	rm -rf libunet.a *.o test_unet fjage-1.4.2 v1.4.2.zip fjage.h libfjage.a
+	rm -rf libunet.a *.o test_unet fjage-dev dev.zip fjage.h libfjage.a
 
 .PHONY: all clean

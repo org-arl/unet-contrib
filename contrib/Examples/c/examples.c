@@ -1,18 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 // In terminal window (an example):
 //
-// > make test IP=localhost
-//
+// > make examples
+// > ./examples 'unet-modem'
 // Set the actual IP address address of the modem when using modem.
 //
 // Find relevant documentation on UnetStack and APIs at the following link:
 // https://www.unetstack.net/docs.html
 ////////////////////////////////////////////////////////////////////////////////
-
-// TODO:
-// change ip_address to hostname
-// Add readme
-// check recording again
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,6 +16,9 @@
 #include <math.h>
 #include "include/unet.h"
 
+#define SIGLEN        10000
+#define RECLEN        12000
+#define FREQ          12000
 
 static void txcb(const char* id, modem_packet_t type, long time) {
   printf("TxFrameNtf type:%d time:%ld id:%s\n", type, time, id);
@@ -46,9 +44,9 @@ static int tx_signal(modem_t modem, float* signal, int nsamples, float fc, char*
 int main(int argc, char* argv[]) {
   char id[FRAME_ID_LEN];
   int data[7] = {1,2,3,4,5,6,7};
-  int addressofDestination = (int)argv[2];
-  float signal[20000] = {[0 ... 19999] = 1};
-  float rec_signal[24000];
+  int dest_address = 9; // an example, set this to destination node address
+  float signal[SIGLEN*2] = {[0 ... SIGLEN-1] = 1};
+  float rec_signal[RECLEN*2];
 
   /******************** Open connection to modem *********************************/
 
@@ -60,26 +58,26 @@ int main(int argc, char* argv[]) {
   /******************** Transmission of CONTROL and DATA packet ******************/
 
   // Transmit a CONTROL frame
-  tx(modem, addressofDestination, data, 7, 1, id);
+  tx(modem, dest_address, data, 7, CONTROL_FRAME, id);
   sleep(3);
 
   // Transmit a DATA frame
-  tx(modem, addressofDestination, data, 7, 2, id);
+  tx(modem, dest_address, data, 7, DATA_FRAME, id);
   sleep(3);
 
   /******************** Transmission of baseband signal ****************************/
 
   // Transmit a baseband signal
-  tx_signal(modem, signal, 10000, 12000, id);
+  tx_signal(modem, signal, SIGLEN, FREQ, id);
   sleep(3);
 
   /******************** Record of baseband signal **********************************/
 
-  // Record a baseband signal
-  if (modem_record(modem, rec_signal, 12000) < 0) {
-    printf("Recording not successfull, try again!");
+  // Recording a baseband signal
+  if (modem_record(modem, rec_signal, RECLEN) < 0) {
+    printf("Recording not successfull, try again!\n");
   } else {
-    printf("Recorded signal successfully!");
+    printf("Recorded signal successfully!\n");
     // The recorded signal saved in `rec_signal` variable
     // and can be processed as required by the user.
   }
