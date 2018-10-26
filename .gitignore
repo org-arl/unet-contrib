@@ -3,5 +3,4 @@ build
 logs
 .DS_Store
 *.class
-*.jar
 *.pyc
