@@ -18,11 +18,12 @@ Go to http://www.opensource.org/licenses/BSD-3-Clause for full license details.
 #define PHYSICAL             "org.arl.unet.Services.PHYSICAL"
 #define BASEBAND             "org.arl.unet.Services.BASEBAND"
 #define RANGING              "org.arl.unet.Services.RANGING"
+#define SCHEDULER            "org.arl.unet.Services.SCHEDULER"
 #define SHELL                "org.arl.fjage.shell.Services.SHELL"
 
 typedef struct {
   fjage_gw_t gw;
-  fjage_aid_t phy, baseband, ranging, shell;
+  fjage_aid_t phy, baseband, ranging, shell, scheduler;
   pthread_t tid;
   pthread_mutex_t rxlock, txlock;
   modem_rxcb_t rxcb;
@@ -107,6 +108,37 @@ modem_t modem_open_eth(char* ip_address, int port) {
   mm->baseband = fjage_agent_for_service(mm->gw, BASEBAND);
   mm->ranging = fjage_agent_for_service(mm->gw, RANGING);
   mm->shell = fjage_agent_for_service(mm->gw, SHELL);
+  mm->scheduler = fjage_agent_for_service(mm->gw, SCHEDULER);
+  if (mm->phy != NULL) fjage_subscribe_agent(mm->gw, mm->phy);
+  if (mm->ranging != NULL) fjage_subscribe_agent(mm->gw, mm->ranging);
+  pthread_mutex_init(&mm->rxlock, NULL);
+  pthread_mutex_init(&mm->txlock, NULL);
+  if (pthread_create(&mm->tid, NULL, monitor, mm) < 0) {
+    pthread_mutex_destroy(&mm->rxlock);
+    pthread_mutex_destroy(&mm->txlock);
+    fjage_close(mm->gw);
+    free(mm);
+    return NULL;
+  }
+  mm->quit = false;
+  mm->rxcb = NULL;
+  mm->txcb = NULL;
+  return mm;
+}
+
+modem_t modem_open_rs232(char* devname, int baud, const char* settings) {
+  _modem_t* mm = malloc(sizeof(_modem_t));
+  if (mm == NULL) return NULL;
+  mm->gw = fjage_rs232_open(devname, baud, settings);
+  if (mm->gw == NULL) {
+    free(mm);
+    return NULL;
+  }
+  mm->phy = fjage_agent_for_service(mm->gw, PHYSICAL);
+  mm->baseband = fjage_agent_for_service(mm->gw, BASEBAND);
+  mm->ranging = fjage_agent_for_service(mm->gw, RANGING);
+  mm->shell = fjage_agent_for_service(mm->gw, SHELL);
+  mm->scheduler = fjage_agent_for_service(mm->gw, SCHEDULER);
   if (mm->phy != NULL) fjage_subscribe_agent(mm->gw, mm->phy);
   if (mm->ranging != NULL) fjage_subscribe_agent(mm->gw, mm->ranging);
   pthread_mutex_init(&mm->rxlock, NULL);
@@ -136,6 +168,7 @@ int modem_close(modem_t modem) {
   fjage_aid_destroy(mm->baseband);
   fjage_aid_destroy(mm->ranging);
   fjage_aid_destroy(mm->shell);
+  fjage_aid_destroy(mm->scheduler);
   fjage_close(mm->gw);
   free(mm);
   return 0;
@@ -162,6 +195,7 @@ int modem_tx_data(modem_t modem, int to, void* data, int nbytes, modem_packet_t 
     fjage_msg_destroy(msg);
     return 0;
   }
+  fjage_msg_destroy(msg);
   return -1;
 }
 
@@ -196,9 +230,16 @@ int modem_get_range(modem_t modem, int to, float* range) {
       return 0;
     }
   }
+  fjage_msg_destroy(msg);
   return -1;
 }
 
+int modem_get_range_and_bearing(modem_t modem, int to, float* range, float* bearing) {
+  // NOTE: Currently does not return any bearing. Will be updated to support bearing
+  // when USBL functionality is added.
+  bearing = NULL;
+  return modem_get_range(modem, to, range);
+}
 
 int modem_tx_signal(modem_t modem, float* signal, int nsamples, float fc, char* id) {
   if (modem == NULL) return -1;
@@ -216,6 +257,7 @@ int modem_tx_signal(modem_t modem, float* signal, int nsamples, float fc, char* 
     fjage_msg_destroy(msg);
     return 0;
   }
+  fjage_msg_destroy(msg);
   return -1;
 }
 
@@ -236,6 +278,39 @@ int modem_record(modem_t modem, float* buf, int nsamples) {
       return 0;
     }
   }
+  fjage_msg_destroy(msg);
+  return -1;
+}
+
+int modem_sleep(modem_t modem) {
+  if (modem == NULL) return -1;
+  _modem_t* mm = modem;
+  fjage_msg_t msg;
+  msg = fjage_msg_create("org.arl.unet.scheduler.AddScheduledSleepReq", FJAGE_REQUEST);
+  fjage_msg_set_recipient(msg, mm->scheduler);
+  msg = request(mm, msg, 5000);
+  if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE) {
+    fjage_msg_destroy(msg);
+    return 0;
+  }
+  fjage_msg_destroy(msg);
+  return -1;
+}
+
+int modem_tx_wakeup(modem_t modem, char* id) {
+  if (modem == NULL) return -1;
+  _modem_t* mm = modem;
+  fjage_msg_t msg;
+  msg = fjage_msg_create("org.arl.unet.bb.TxBasebandSignalReq", FJAGE_REQUEST);
+  fjage_msg_set_recipient(msg, mm->baseband);
+  fjage_msg_add_bool(msg, "wakeup", true);
+  if (id != NULL) strcpy(id, fjage_msg_get_id(msg));
+  msg = request(mm, msg, 1000);
+  if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE) {
+    fjage_msg_destroy(msg);
+    return 0;
+  }
+  fjage_msg_destroy(msg);
   return -1;
 }
 
@@ -260,6 +335,7 @@ int modem_iset(modem_t modem, int index, char* target_name ,char* param_name, in
     fjage_aid_destroy(aid);
     return 0;
   }
+  fjage_msg_destroy(msg);
   fjage_aid_destroy(aid);
   return -1;
 }
@@ -282,6 +358,7 @@ int modem_fset(modem_t modem, int index, char* target_name ,char* param_name, fl
     fjage_aid_destroy(aid);
     return 0;
   }
+  fjage_msg_destroy(msg);
   fjage_aid_destroy(aid);
   return -1;
 }
@@ -307,6 +384,7 @@ int modem_bset(modem_t modem, int index, char* target_name ,char* param_name, bo
     fjage_aid_destroy(aid);
     return 0;
   }
+  fjage_msg_destroy(msg);
   fjage_aid_destroy(aid);
   return -1;
 }
@@ -329,6 +407,7 @@ int modem_sset(modem_t modem, int index, char* target_name, char* param_name, ch
     fjage_aid_destroy(aid);
     return 0;
   }
+  fjage_msg_destroy(msg);
   fjage_aid_destroy(aid);
   return -1;
 }
@@ -354,6 +433,7 @@ int modem_iget(modem_t modem, int index, char* target_name, char* param_name, in
     fjage_aid_destroy(aid);
     return 0;
   }
+  fjage_msg_destroy(msg);
   fjage_aid_destroy(aid);
   return -1;
 }
@@ -379,6 +459,7 @@ int modem_fget(modem_t modem, int index, char* target_name, char* param_name, fl
     fjage_aid_destroy(aid);
     return 0;
   }
+  fjage_msg_destroy(msg);
   fjage_aid_destroy(aid);
   return -1;
 }
@@ -404,6 +485,7 @@ int modem_bget(modem_t modem, int index, char* target_name, char* param_name, bo
     fjage_aid_destroy(aid);
     return 0;
   }
+  fjage_msg_destroy(msg);
   fjage_aid_destroy(aid);
   return -1;
 }
@@ -429,6 +511,7 @@ int modem_sget(modem_t modem, int index, char* target_name, char* param_name, ch
     fjage_aid_destroy(aid);
     return 0;
   }
+  fjage_msg_destroy(msg);
   fjage_aid_destroy(aid);
   return -1;
 }

@@ -55,6 +55,15 @@ typedef void (*modem_rxcb_t)(int from, int to, modem_packet_t type, void* data, 
 
 modem_t modem_open_eth(char* ip_address, int port);
 
+/// Open a connection to the Subnero modem.
+///
+/// @param devname        Device name
+/// @param baud           Baud rate
+/// @param settings       RS232 settings (NULL or "N81")
+/// @return               Gateway
+
+modem_t modem_open_rs232(char* devname, int baud, const char* settings);
+
 /// Close connection to the Subnero modem.
 ///
 /// @param modem            Gateway
@@ -98,6 +107,14 @@ int modem_set_tx_callback(modem_t modem, modem_txcb_t callback);
 
 int modem_get_range(modem_t modem, int to, float* range);
 
+/// Get the range and bearing information
+///
+/// @param modem            Gateway
+/// @param to               Address of the node to which range
+///                         and bearing is requested
+/// @param range            Measured range
+
+int modem_get_range_and_bearing(modem_t modem, int to, float* range, float* bearing);
 
 /// Transmit a signal.
 ///
@@ -125,6 +142,35 @@ int modem_tx_signal(modem_t modem, float* signal, int nsamples, float fc, char* 
 /// @return                 0 on success, error code otherwise
 
 int modem_record(modem_t modem, float* buf, int nsamples);
+
+/// Transmit and immediately record
+///
+/// @param modem            Gateway
+/// @param buf              Buffer to store the signal to be transmitted
+/// @param bufsize          Size of the buffer containing signal
+/// @param npulses          Number of times signal is transmitted
+/// @param pri              Pulse repetition interval in ms
+/// @param recbuf           Buffer to store the recorded signal
+/// @param recbufsize       Size of the buffer containing recorded signal
+/// @param txtimes          Buffer to store the start transmission times of pulses
+/// @return                 0 on success, -1 otherwise
+
+int modem_tx_and_record(modem_t modem, float* buf, int bufsize, int npulses, int pri, float* recbuf, int recbufsize, int* txtimes);
+
+/// Put modem to sleep immediately.
+///
+/// @param modem            Gateway
+/// @return                 0 on success, -1 otherwise
+
+int modem_sleep(modem_t modem);
+
+/// Acoustic wakeup
+///
+/// @param modem            Gateway
+/// @param id               Buffer to return frame ID, or NULL
+/// @return                 0 on success, -1 otherwise
+
+int modem_tx_wakeup(modem_t modem, char* id);  // remote acoustic wakeup
 
 /// Setter for integer parameters.
 ///
@@ -230,6 +276,13 @@ int modem_bget(modem_t modem, int index, char* target_name, char* param_name, bo
 /// @return                 0 on success, error code otherwise
 
 int modem_sget(modem_t modem, int index, char* target_name, char* param_name, char* buf, int buflen);
+
+/// Self test for Subnero modem
+///
+/// @param modem            Gateway
+/// @param out              File to store the test results
+
+int modem_selftest(modem_t modem, FILE* out);
 
 
 #endif
