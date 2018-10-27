@@ -1,6 +1,23 @@
-.gradle
 build
 logs
+.gradle
+
+# OSX Files
 .DS_Store
+
+# Compiled class file
 *.class
-*.pyc
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C Object files
+*.o
+*.a
+*.ko
+*.obj
+
+# Libraries
+*.lib
