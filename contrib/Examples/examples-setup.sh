@@ -33,7 +33,3 @@ tar -cvzf ../user-examples.tgz /home/ubuntu/user-examples
 
 # clean up 
 rm -rf ../user-examples
-
-
-
-
