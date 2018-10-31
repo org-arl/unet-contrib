@@ -29,7 +29,7 @@ cp /home/ubuntu/unet-contrib/contrib/Unet-C-API/libunet.a ../user-examples/c/lib
 cp /home/ubuntu/unet-contrib/contrib/Unet-C-API/unet.h ../user-examples/c/include/
 
 # compress to distribute
-tar -cvzf ../user-examples.tgz /home/ubuntu/user-examples
+tar -C /home/ubuntu -cvzf ../user-examples.tgz user-examples
 
 # clean up 
 rm -rf ../user-examples

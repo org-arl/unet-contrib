@@ -11,7 +11,7 @@ The following steps are implemented:
 
 In terminal window (an example):
 
-> make examples
+> make
 
 > ./examples 'unet-modem'
 
