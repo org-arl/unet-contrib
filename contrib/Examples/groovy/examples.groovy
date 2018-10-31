@@ -1,9 +1,3 @@
-/////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2018, Prasad Anjangi
-// This file is released under Simplified BSD License.
-// Go to http://www.opensource.org/licenses/BSD-3-Clause for full license details.
-////////////////////////////////////////////////////////////////////////////////
-
 import org.arl.fjage.remote.*
 import org.arl.unet.*
 import org.arl.unet.phy.*
