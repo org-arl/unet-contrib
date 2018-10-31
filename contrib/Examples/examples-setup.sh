@@ -16,7 +16,7 @@ gradle clean
 gradle modems:yoda:tegrapkg -Dnomanual -Dnogpg
 rm -rf ../user-examples/groovy/lib
 mkdir ../user-examples/groovy/lib
-cp lib/fjage-1.4.2.jar lib/groovy-all-2.4.15.jar lib/gson-2.8.2.jar lib/unet-framework-1.4.jar ../user-examples/groovy/lib/
+cp lib/fjage*.jar lib/groovy*.jar lib/gson*.jar lib/unet-framework*.jar ../user-examples/groovy/lib/
 
 # build and copy relevant libraries and header file for c examples
 rm -rf ../user-examples/c/lib/
