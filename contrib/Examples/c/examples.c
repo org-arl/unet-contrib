@@ -44,7 +44,11 @@ int main(int argc, char* argv[]) {
   float rec_signal[RECLEN*2];
 
   /******************** Open connection to modem *********************************/
-
+  // Get the IP address of the modem from argument passed
+  if (argc < 2) {
+    printf("Please provide the IP address of the modem as argument!\n");
+    return -1;
+  }
   // Open a connection to modem
   modem_t modem = modem_open_eth(argv[1], 1100);
   if (modem == NULL) return error("Couldn't open modem");

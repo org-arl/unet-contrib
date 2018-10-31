@@ -11,6 +11,10 @@ from unetpy import *
 
 ################### Open connection to modem #################################
 # Get the IP address of the modem from argument passed
+if len(sys.argv) < 2:
+    print("Please provide the IP address of the modem as argument!")
+    sys.exit(0)
+
 ip_address = sys.argv[1]
 # Open a connection to modem
 modem = UnetGateway(ip_address, 1100)

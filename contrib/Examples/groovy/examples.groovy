@@ -11,6 +11,10 @@ import org.arl.unet.bb.*
 
 /******************** Open connection to modem *********************************/
 // Get the IP address of the modem from argument passed
+if (args.size() < 1) {
+  println "Please provide the IP address of the modem as argument!"
+  return
+}
 ip_address = args[0]
 // Open a connection to modem
 Gateway modem = new Gateway(ip_address, 1100);
