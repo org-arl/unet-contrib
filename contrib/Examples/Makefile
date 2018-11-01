@@ -3,7 +3,7 @@ UNET_DIR?=/home/ubuntu/unet
 all: bundle
 
 bundle: groovy c
-	tar --exclude='./.gradle' -cvzf ../Examples.tgz .
+	tar --exclude='./.gradle' -cvzf ../Examples.tgz ../Examples
 
 groovy: groovy/lib/unet-framework*.jar
 
