@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
   } else {
     printf("Recorded signal successfully!\n");
     // The recorded signal saved in `rec_signal` variable
-    // and can be processed as required by the user.
+    // can be processed as required by the user.
   }
 
   /******************** Close connection to modem ****************************/

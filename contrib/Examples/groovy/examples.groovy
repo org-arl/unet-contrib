@@ -15,7 +15,7 @@ Gateway modem = new Gateway(ip_address, 1100);
 
 /******************** Transmission of CONTROL and DATA packet ******************/
 
-// Subscribe to receive physical agent notification
+// Look for agents providing physical service
 def phy = modem.agentForService Services.PHYSICAL
 
 // Transmit a CONTROL packet
@@ -48,7 +48,7 @@ if (txntf2 != null) {
 
 /******************** Transmission of baseband signal ****************************/
 
-// Subscribe to receive baseband agent notification
+// Look for agents providing baseband service
 def bb = modem.agentForService Services.BASEBAND
 
 // Generate a baseband signal

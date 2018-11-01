@@ -15,7 +15,7 @@ modem = UnetGateway(ip_address, 1100)
 
 ################### Transmission of CONTROL and DATA packet ###################
 
-# Subscribe to receive physical agent notification
+# Look for agents providing physical service
 phy = modem.agentForService(Services.PHYSICAL)
 
 # Transmit a CONTROL packet
@@ -42,7 +42,7 @@ else:
 
 ################### Transmission of baseband signal ##########################
 
-# Subscribe to receive baseband agent notification
+# Look for agents poviding baseband service
 bb = modem.agentForService(Services.BASEBAND)
 
 # Generate a random signal modulated with BPSK
