@@ -28,6 +28,7 @@ __pycache__/
 
 ## Examples build
 contrib/Examples/c/examples
+contrib/Examples/c/include/
 
 ## Unet-API Build
 contrib/Unet-C-API/fjage-dev/

@@ -1,3 +1,6 @@
+Unet Examples - C
+=============
+
 The file `examples.c` is an example code which uses the C APIs to interact with the modem running UnetStack.
 
 The following steps are implemented:
@@ -11,10 +14,11 @@ The following steps are implemented:
 
 In terminal window (an example):
 
-> make
+```bash
+make
+./examples 'unet-modem'
+```
 
-> ./examples 'unet-modem'
-
-Find the relevant documentation on UnetStack and APIs at the following link: https://www.unetstack.net/docs.html
+Find the relevant [documentation on UnetStack and APIs is avaliable here](https://www.unetstack.net/docs.html)
 
 
