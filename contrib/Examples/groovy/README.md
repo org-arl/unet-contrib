@@ -1,3 +1,6 @@
+Unet Examples - Groovy
+=============
+
 The file `examples.groovy` is an example script which uses the groovy APIs to interact with the modem running UnetStack.
 
 The following steps are implemented:
@@ -11,8 +14,10 @@ The following steps are implemented:
 
 In terminal window (an example):
 
-> ./groovy.sh examples.groovy 'unet-modem'
+```bash
+./groovy.sh examples.groovy 'unet-modem'
+```
 
-Find the relevant documentation on UnetStack and APIs at the following link: https://www.unetstack.net/docs.html
+Find the relevant [documentation on UnetStack and APIs is avaliable here](https://www.unetstack.net/docs.html)
 
 
