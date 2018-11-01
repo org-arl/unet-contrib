@@ -13,6 +13,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Java
+*.jar
+
 # C Object files
 *.o
 *.a
@@ -29,6 +32,7 @@ __pycache__/
 ## Examples build
 contrib/Examples/c/examples
 contrib/Examples/c/include/
+contrib/Examples/groovy/lib/
 
 ## Unet-API Build
 contrib/Unet-C-API/fjage-dev/
