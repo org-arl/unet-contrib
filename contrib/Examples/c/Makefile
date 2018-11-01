@@ -1,6 +1,6 @@
 CFLAGS=-std=c99 -Wall -O2
 
-all: examples lib/libfjage.a lib/libunet.a
+all: examples
 
 examples: examples.o lib/libunet.a lib/libfjage.a
 	$(CC) -o examples examples.o lib/libunet.a lib/libfjage.a -lpthread

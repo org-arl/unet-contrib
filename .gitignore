@@ -21,3 +21,14 @@ __pycache__/
 
 # Libraries
 *.lib
+
+# Bundles
+*.tgz
+*.zip
+
+## Examples build
+contrib/Examples/c/examples
+
+## Unet-API Build
+contrib/Unet-C-API/fjage-dev/
+contrib/Unet-C-API/fjage.h

@@ -1,0 +1,30 @@
+UNET_DIR?=/home/ubuntu/unet
+
+all: bundle
+
+bundle: groovy c
+	tar --exclude='./.gradle' -cvzf ../Examples.tgz .
+
+groovy: groovy/lib/unet-framework*.jar
+
+groovy/lib/unet-framework*.jar:
+	rm -f groovy/lib/*
+	cd $(UNET_DIR); gradle clean; gradle -Dnodrivers -Dnomanual -Dnogpg
+	cp $(UNET_DIR)/lib/fjage*.jar $(UNET_DIR)/lib/groovy*.jar $(UNET_DIR)/lib/gson*.jar $(UNET_DIR)/lib/unet-framework*.jar groovy/lib/
+
+c: c/lib/libunet.a
+	make -C ./c/
+
+c/lib/libunet.a:
+	make -C ../Unet-C-API/
+	cp ../Unet-C-API/libfjage.a c/lib/
+	cp ../Unet-C-API/libunet.a c/lib/
+	cp ../Unet-C-API/unet.h c/include/
+
+clean:
+	rm -f c/lib/*.a
+	rm -f c/include/unet.h
+	rm -f groovy/lib/*
+	rm -f Examples.tgz
+
+.PHONY : groovy clean
