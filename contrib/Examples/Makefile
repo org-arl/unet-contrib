@@ -11,7 +11,7 @@ groovy/lib/unet-framework*.jar:
 	rm -f groovy/lib/*
 	cd $(UNET_DIR); gradle
 	mkdir -p groovy/lib/
-	cp $(UNET_DIR)/lib/fjage*.jar $(UNET_DIR)/lib/groovy*.jar $(UNET_DIR)/lib/gson*.jar $(UNET_DIR)/lib/unet-framework*.jar lib/commons-lang*.jar groovy/lib/
+	cp $(UNET_DIR)/lib/fjage*.jar $(UNET_DIR)/lib/groovy*.jar $(UNET_DIR)/lib/gson*.jar $(UNET_DIR)/lib/unet-framework*.jar $(UNET_DIR)/lib/commons-lang*.jar groovy/lib/
 
 c: c/lib/libunet.a
 	make -C ./c/
