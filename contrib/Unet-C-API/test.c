@@ -11,9 +11,10 @@ Go to http://www.opensource.org/licenses/BSD-3-Clause for full license details.
 //
 // In terminal window (an example):
 //
-// $ make IP=192.168.1.74 ADDR=9 test
+// > make
+// > ./test <IP> <PORT> <NODE_ID>
 //
-// Pass the actual IP address & destination address of the modems above.
+// Pass the actual IP address, port number & destination address of the modems above.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
@@ -22,6 +23,12 @@ Go to http://www.opensource.org/licenses/BSD-3-Clause for full license details.
 #include <string.h>
 #include <math.h>
 #include "unet.h"
+
+#define FREQ          25000
+#define SAMPFREQ      8*FREQ
+#define SIGLEN        2000
+#define RECLEN        2000
+
 
 static int passed = 0;
 static int failed = 0;
@@ -59,12 +66,12 @@ int main(int argc, char* argv[]) {
   char * host = "localhost";
   int port = 1100;
   char id[FRAME_ID_LEN];
-  float buf[2000];
-  int data[7] = {1,2,3,4,5,6,7};
-  float basebandsignal[200000] = {[0 ... 199999] = 1};
-  float passbandsignal[200000];
-  float fs = 192000;
-  float f = 24000;
+  float buf[RECLEN*2];
+  uint8_t data[7] = {1,2,3,4,5,6,7};
+  float basebandsignal[SIGLEN] = {[0 ... SIGLEN-1] = 1};
+  float passbandsignal[SIGLEN];
+  float fs = SAMPFREQ;
+  float f = FREQ;
 
   if (argc >= 2){
     host = argv[1];
@@ -82,14 +89,14 @@ int main(int argc, char* argv[]) {
   printf("Connecting to UnetStack on %s:%d\n", host, port);
   printf("Testing ranging with Node : %d\n\n", addressofDestination);
 
-  for(int i = 0; i < 200000; i++) {
+  for(int i = 0; i < SIGLEN; i++) {
     passbandsignal[i] = sin(f * (2 * M_PI) * (i / fs));
   }
   float* range = calloc(1,sizeof(float));
   int* intval = calloc(1,sizeof(int));
   bool* boolval = calloc(1,sizeof(bool));
   float* floatval = calloc(1,sizeof(float));
-  char stringval[5];
+  char stringval[3];
 
   // Open a connection to modem
   modem_t modem = modem_open_eth(host, port);
@@ -108,14 +115,14 @@ int main(int argc, char* argv[]) {
 
   // Test transmission of signals
   for (int i = 1; i <= 3; i++) {
-    x = modem_tx_signal(modem, basebandsignal, 100000, 24000, id);
+    x = modem_tx_signal(modem, basebandsignal, SIGLEN/2, f, id);
     if (x == 0) printf("TX: %s\n", id);
     test_assert("Baseband signal transmission", x == 0);
     sleep(3);
   }
 
   for (int i = 1; i <= 3; i++) {
-    x = modem_tx_signal(modem, passbandsignal, 200000, 0, id);
+    x = modem_tx_signal(modem, passbandsignal, SIGLEN, 0, id);
     if (x == 0) printf("TX: %s\n", id);
     test_assert("Passband signal transmission", x == 0);
     sleep(3);
@@ -128,10 +135,12 @@ int main(int argc, char* argv[]) {
   if (x == 0) printf("Range measured is : %f \n", *range);
   test_assert("Ranging", x == 0);
 
+  sleep(3);
+
   // Test recording
-  x = modem_record(modem, buf, 1000);
+  x = modem_record(modem, buf, RECLEN);
   if (x == 0) {
-    for(int i = 0; i < 2000; i++) {
+    for(int i = 0; i < RECLEN*2; i++) {
       printf("%f\n", buf[i]);
     }
   }
@@ -156,10 +165,10 @@ int main(int argc, char* argv[]) {
   test_assert("Float valued parameter setting", *floatval == 384.0);
 
   // Test setter and getter for string valued modem parameter
-  test_assert("String valued parameter setting", modem_sset(modem, 3, "org.arl.unet.Services.PHYSICAL", "modulation", "none")==0);
+  test_assert("String valued parameter setting", modem_sset(modem, 0, "org.arl.unet.Services.LINK", "mac", "mac")==0);
   sleep(1);
-  if (modem_sget(modem, 3, "org.arl.unet.Services.PHYSICAL", "modulation",stringval, 6)==0) printf("The value of stringval is %s\n", stringval);
-  test_assert("String valued parameter getting", strcmp(stringval, "none") == 0);
+  if (modem_sget(modem, 0, "org.arl.unet.Services.LINK", "mac",stringval, 3)==0) printf("The value of stringval is %s\n", stringval);
+  test_assert("String valued parameter getting", strcmp(stringval, "mac") == 0);
 
   test_summary();
 
