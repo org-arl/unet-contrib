@@ -28,12 +28,3 @@ __pycache__/
 # Bundles
 *.tgz
 *.zip
-
-## Examples build
-contrib/Examples/c/examples
-contrib/Examples/c/include/
-contrib/Examples/groovy/lib/
-
-## Unet-API Build
-contrib/Unet-C-API/fjage-dev/
-contrib/Unet-C-API/fjage.h
