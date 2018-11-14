@@ -17,10 +17,10 @@ make test
 - Run `test.c` as follows :
 
 ```bash
-./test <IP> <NODE_ID>
+./test <IP> <PORT> <NODE_ID>
 ```
 
-where `<IP>` argument must be the IP address of the modem you are aiming to run the test on and `<NODE_ID>` is the node address of the other modem in the water for ranging tests.
+where `<IP>` argument must be the IP address of the modem to connect to, `<PORT>` is the port number of the Unet service on that modem and `<NODE_ID>` is the node address of the other modem in the water for ranging tests.
 
 Upon completion of the tests, the test results will be summarized.
 

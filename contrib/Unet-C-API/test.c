@@ -55,7 +55,9 @@ static void txcb(const char* id, modem_packet_t type, long time) {
 
 int main(int argc, char* argv[]) {
   int x;
-  int addressofDestination = (int)argv[2];
+  int addressofDestination = 0;
+  char * host = "localhost";
+  int port = 1100;
   char id[FRAME_ID_LEN];
   float buf[2000];
   int data[7] = {1,2,3,4,5,6,7};
@@ -63,6 +65,23 @@ int main(int argc, char* argv[]) {
   float passbandsignal[200000];
   float fs = 192000;
   float f = 24000;
+
+  if (argc >= 2){
+    host = argv[1];
+  }
+
+  if (argc >= 3){
+    port = strtol(argv[2], NULL, 10);
+    if (port > 65535) port = 1100;
+  }
+
+  if (argc == 4){
+    addressofDestination = strtol(argv[3], NULL, 10);
+  }
+
+  printf("Connecting to UnetStack on %s:%d\n", host, port);
+  printf("Testing ranging with Node : %d\n", addressofDestination);
+
   for(int i = 0; i < 200000; i++) {
     passbandsignal[i] = sin(f * (2 * M_PI) * (i / fs));
   }
@@ -73,7 +92,7 @@ int main(int argc, char* argv[]) {
   char stringval[5];
 
   // Open a connection to modem
-  modem_t modem = modem_open_eth(argv[1], 1100);
+  modem_t modem = modem_open_eth(host, port);
   if (modem == NULL) return error("Couldn't open modem");
   modem_set_rx_callback(modem, rxcb);
   modem_set_tx_callback(modem, txcb);
