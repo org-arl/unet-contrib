@@ -54,7 +54,6 @@ static void txcb(const char* id, modem_packet_t type, long time) {
 }
 
 int main(int argc, char* argv[]) {
-  printf("\n");
   int x;
   int addressofDestination = (int)argv[2];
   char id[FRAME_ID_LEN];
