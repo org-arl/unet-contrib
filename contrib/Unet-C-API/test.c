@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
   }
 
   printf("Connecting to UnetStack on %s:%d\n", host, port);
-  printf("Testing ranging with Node : %d\n", addressofDestination);
+  printf("Testing ranging with Node : %d\n\n", addressofDestination);
 
   for(int i = 0; i < 200000; i++) {
     passbandsignal[i] = sin(f * (2 * M_PI) * (i / fs));
