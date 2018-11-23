@@ -28,7 +28,7 @@ Go to http://www.opensource.org/licenses/BSD-3-Clause for full license details.
 #define SAMPFREQ      8*FREQ
 #define SIGLEN        2000
 #define RECLEN        2000
-
+#define M_PI          3.14159265358979323846264338327
 
 static int passed = 0;
 static int failed = 0;

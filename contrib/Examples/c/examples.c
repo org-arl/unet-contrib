@@ -7,7 +7,7 @@
 
 #define SIGLEN        10000
 #define RECLEN        12000
-#define FREQ          12000
+#define FREQ          24000
 
 static void txcb(const char* id, modem_packet_t type, long time) {
   printf("TxFrameNtf type:%d time:%ld id:%s\n", type, time, id);
