@@ -91,7 +91,7 @@ bb << TxBasebandSignalReq(preamble=3, signal=tx_signal)
 
 txntf4 = modem.receive(TxFrameNtf, 5000)
 if txntf4 is not None:
-    # Request a recording from txTime onwards
+    # Request a recording from txTime onwards for a duration of 2x the original transmitted signal.
     bb << RecordBasebandSignalReq(recTime=txntf4.txTime, recLen=(len(tx_signal)*2))
 else:
     print('Transmission not successfull, try again!')
