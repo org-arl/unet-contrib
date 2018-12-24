@@ -83,7 +83,8 @@ else:
 ################### Transmit and record a signal ##########################
 
 # Load the baseband signal to be transmitted.
-# signal.txt contains a 20 kHz tonal, 5ms long with fs = 192 kHz
+# signal.txt contains the same signal as csig in previous section
+# Format: array with alternate real and imag values
 tx_signal = np.genfromtxt('signal.txt', delimiter=',')
 
 # Transmit the baseband signal
