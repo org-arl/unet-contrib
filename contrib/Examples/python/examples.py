@@ -80,6 +80,34 @@ if rxntf is not None:
 else:
     print('Recording not successfull, try again!')
 
+################### Transmit and record a signal ##########################
+
+# Load the baseband signal to be transmitted.
+# signal.txt contains a 20 kHz tonal, 5ms long with fs = 192 kHz
+tx_signal = np.genfromtxt('signal.txt', delimiter=',')
+
+# Transmit the baseband signal
+bb << TxBasebandSignalReq(preamble=3, signal=tx_signal)
+
+txntf4 = modem.receive(TxFrameNtf, 5000)
+if txntf4 is not None:
+    # Request a recording from txTime onwards
+    bb << RecordBasebandSignalReq(recTime=txntf4.txTime, recLen=(len(tx_signal)*2))
+else:
+    print('Transmission not successfull, try again!')
+
+# Read the receive notification
+rxntf4 = modem.receive(RxBasebandSignalNtf, 5000)
+
+if rxntf is not None:
+    # Extract the recorded signal
+    rec_signal = rxntf4.signal
+    print('Successfully recorded signal after transmission!')
+    # The recorded signal is saved in `rec_signal` variable
+    # It can be processed as required by the user.
+else:
+    print('Recording not successfull, try again!')
+
 ################### Close connection to modem ################################
 
 modem.close()
