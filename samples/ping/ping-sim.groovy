@@ -17,7 +17,6 @@ println '''
 
 You can interact with node 1 in the console shell. For example, try:
 > ping 2
-> help ping
 
 When you are done, exit the shell by pressing ^D or entering:
 > shutdown

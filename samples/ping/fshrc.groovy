@@ -1,14 +1,6 @@
 import org.arl.unet.*
 import org.arl.unet.phy.*
 
-// documentation for the 'ping' command
-doc['ping'] = '''ping - ping a remote node
-
-Examples:
-  ping 2                // ping node address 2 thrice
-  ping 3,1              // ping node address 3 once
-'''
-
 subscribe phy
 
 // add a closure to define the 'ping' command
