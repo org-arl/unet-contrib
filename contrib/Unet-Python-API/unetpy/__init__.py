@@ -11,6 +11,16 @@ _ParameterReq = _MessageClass('org.arl.unet.ParameterReq')
 _ParameterRsp = _MessageClass('org.arl.unet.ParameterRsp')
 
 
+def _repr_pretty_(self, p, cycle):
+    if cycle:
+        p.text('...')
+    elif self.perf is not None:
+        p.text(self.perf)
+
+
+setattr(_Message, '_repr_pretty_', _repr_pretty_)
+
+
 def _short(p):
     return p.split('.')[-1]
 
@@ -23,10 +33,21 @@ def _value(v):
                 return v['data']
             if v['clazz'] == 'java.util.ArrayList':
                 return v['data']
-            return v['clazz'] + '(...)'
+            p = _Prettify()
+            p.__dict__.update(v)
+            return p
         if 'data' in v:
             return v['data']
     return v
+
+
+class _Prettify:
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+    def __repr__(self):
+        return self.__dict__['clazz'] + '(...)'
 
 
 class Services:
@@ -62,6 +83,13 @@ class ParameterReq(_ParameterReq):
         self.requests.append({'param': param, 'value': value});
         return self
 
+    def __str__(self):
+        p = ' '.join([_short(str(request['param'])) + ':' + (str(request['value']) if 'value' in request else '?') for request in self.requests])
+        return self.__class__.__name__ + ':' + self.perf + '[' + (('index:' + str(self.index)) if self.index > 0 else '') + p.strip() + ']'
+
+    def _repr_pretty_(self, p, cycle):
+        p.text(str(self) if not cycle else '...')
+
 
 class ParameterRsp(_ParameterRsp):
 
@@ -72,43 +100,42 @@ class ParameterRsp(_ParameterRsp):
         self.perf = _Performative.REQUEST
         self.__dict__.update(kwargs)
 
-
-def get(msg, param):
-    if 'param' in msg.__dict__ and msg.param == param:
-        return _value(self.value)
-    if 'values' in msg.__dict__ and param in msg.values:
-        return _value(msg.values[param])
-    if 'param' in msg.__dict__ and _short(msg.param) == param:
-        return _value(msg.value)
-    if 'values' not in msg.__dict__:
+    def get(self, param):
+        if 'param' in self.__dict__ and self.param == param:
+            return _value(self.value)
+        if 'values' in self.__dict__ and param in self.values:
+            return _value(self.values[param])
+        if 'param' in self.__dict__ and _short(self.param) == param:
+            return _value(self.value)
+        if 'values' not in self.__dict__:
+            return None
+        for v in self.values:
+            if _short(v) == param:
+                return _value(self.values[v])
         return None
-    for v in self.values:
-        if _short(v) == param:
-            return _value(msg.values[v])
-    return None
 
+    def parameters(self):
+        if 'values' in self.__dict__:
+            p = self.values.copy()
+        else:
+            p = {}
+        if 'param' in self.__dict__:
+            p[self.param] = self.value
+        for k in p:
+            if isinstance(p[k], dict):
+                p[k] = _value(p[k])
+        return p
 
-def parameters(msg):
-    if 'values' in msg.__dict__:
-        p = msg.values.copy()
-    else:
-        p = {}
-    if 'param' in msg.__dict__:
-        p[msg.param] = msg.value
-    for k in p:
-        if isinstance(p[k], dict):
-            p[k] = _value(p[k])
-    return p
+    def __str__(self):
+        p = ''
+        if 'param' in self.__dict__:
+            p += _short(str(self.param)) + ':' + str(_value(self.value)) + ' '
+        if 'values' in self.__dict__ and len(self.values) > 0:
+            p += ' '.join([_short(str(v)) + ':' + str(_value(self.values[v])) for v in self.values])
+        return self.__class__.__name__ + ':' + self.perf + '[' + (('index:' + str(self.index)) if self.index > 0 else '') + p.strip() + ']'
 
-
-def _repr_pretty_(self, p, cycle):
-    if cycle:
-        p.text('...')
-    elif self.perf is not None:
-        p.text(self.perf)
-
-
-setattr(_Message, '_repr_pretty_', _repr_pretty_)
+    def _repr_pretty_(self, p, cycle):
+        p.text(str(self) if not cycle else '...')
 
 
 class AgentID(_AgentID):
@@ -134,7 +161,12 @@ class AgentID(_AgentID):
         rsp = self.request(ParameterReq(index=self.index).get(param))
         if rsp is None:
             return None
-        return get(rsp, param)
+        ursp = ParameterRsp()
+        ursp.__dict__.update(rsp.__dict__)
+        if 'value' in list(ursp.__dict__.keys()):
+            return ursp.get(param)
+        else:
+            return None
 
     def __setattr__(self, param, value):
         if param in ['name', 'gw', 'is_topic', 'index']:
@@ -144,7 +176,9 @@ class AgentID(_AgentID):
         if rsp is None:
             _warn('Could not set parameter ' + param)
             return None
-        v = get(rsp, param)
+        ursp = ParameterRsp()
+        ursp.__dict__.update(rsp.__dict__)
+        v = ursp.get(param)
         if v != value:
             _warn('Parameter ' + param + ' set to ' + str(v))
         return v
@@ -166,7 +200,9 @@ class AgentID(_AgentID):
         if rsp is None:
             p.text(self.__str__())
             return
-        params = parameters(rsp)
+        ursp = ParameterRsp()
+        ursp.__dict__.update(rsp.__dict__)
+        params = ursp.parameters()
         oprefix = ''
         for param in sorted(params):
             pp = param.split('.')
