@@ -33,7 +33,7 @@ def _value(v):
                 return v['data']
             if v['clazz'] == 'java.util.ArrayList':
                 return v['data']
-            p = _Prettify()
+            p = _GenericObject()
             p.__dict__.update(v)
             return p
         if 'data' in v:
@@ -41,7 +41,7 @@ def _value(v):
     return v
 
 
-class _Prettify:
+class _GenericObject:
 
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
