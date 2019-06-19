@@ -16,12 +16,10 @@ class MySimplestMac extends UnetAgent {
         if (msg.duration <= 0) return new Message(msg, Performative.REFUSE)   // check requested duration
         ReservationStatusNtf ntf1 = new ReservationStatusNtf(     // prepare START reservation notification
           recipient: msg.sender,
-          requestID: msg.msgID,
           to: msg.to,
           status: ReservationStatus.START)
         ReservationStatusNtf ntf2 = new ReservationStatusNtf(     // prepare END reservation notification
           recipient: msg.sender,
-          requestID: msg.msgID,
           to: msg.to,
           status: ReservationStatus.END)
         send ntf1                                                 // send START reservation notification
