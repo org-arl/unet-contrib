@@ -3,6 +3,8 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/rt/3-node-network
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -17,16 +19,20 @@ println '''
 
 Nodes: 1, 2, 3
 
-To connect to node 2 or node 3 via telnet:
-  telnet localhost 5102
-  telnet localhost 5103
+You can interact with node 1 through :
+
+- web shell at http://localhost:8101
+- console shell on the command line
+
+To connect to node 2 or node 3 via web shell:
+  http://localhost:8102
+  http://localhost:8103
 
 To connect to nodes 1, 2 or 3 via unet sh:
-  bin/unet sh localhost 1101
-  bin/unet sh localhost 1102
-  bin/unet sh localhost 1103
+  bin/unet csh localhost 1101
+  bin/unet csh localhost 1102
+  bin/unet csh localhost 1103
 
-Connected to node 1...
 Press ^D to exit
 '''
 
@@ -37,7 +43,7 @@ platform = RealTimePlatform   // use real-time mode
 
 // run the simulation forever
 simulate {
-  node '1', remote: 1101, address: 1, location: [ 0.km, 0.km, -15.m], shell: true, stack: "$home/etc/setup"
-  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: 5102, stack: "$home/etc/setup"
-  node '3', remote: 1103, address: 3, location: [-1.km, 0.km, -15.m], shell: 5103, stack: "$home/etc/setup"
+  node '1', remote: 1101, address: 1, location: [ 0.km, 0.km, -15.m], shell: true, web:'/:8101', stack: "$home/etc/setup"
+  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: 5102, web:'/:8102', stack: "$home/etc/setup"
+  node '3', remote: 1103, address: 3, location: [-1.km, 0.km, -15.m], shell: 5103, web:'/:8103', stack: "$home/etc/setup"
 }

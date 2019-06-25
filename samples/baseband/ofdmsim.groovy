@@ -3,6 +3,8 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/baseband/ofdmsim
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -17,8 +19,13 @@ OFDM Simulation as SDR
 
 Nodes: 1, 2
 
-To connect to node 2 via telnet:
-  telnet localhost 5102
+You can interact with node 1 through :
+
+- web shell at http://localhost:8101
+- console shell on the command line
+
+To connect to node 2 via web shell:
+  http://localhost:8102
 
 Or to connect to nodes via unetsh:
   1: bin/unet sh localhost 1101
@@ -41,6 +48,6 @@ ofdmStack = { container ->
 
 // run the simulation forever
 simulate {
-  node '1', remote: 1101, address: 1, location: [ 0.km, 0.km, -15.m], shell: true, stack: ofdmStack
-  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: 5102, stack: ofdmStack
+  node '1', remote: 1101, address: 1, location: [ 0.km, 0.km, -15.m], shell: CONSOLE, web:'/:8101', stack: ofdmStack
+  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: 5102, web:'/:8102', stack: ofdmStack
 }

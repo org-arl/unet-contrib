@@ -3,6 +3,8 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/aloha-cs/aloha-cs
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 /// Output trace file: logs/trace.nam
 ///
@@ -85,7 +87,7 @@ for (def load = loadRange[0]; load <= loadRange[1]; load += loadRange[2]) {
 
       myNode.startup = {
         def phy = agentForService PHYSICAL
-        def duration = Math.round(1000*phy[0].frameDuration)   // duration in ms
+        def duration = Math.round(1000*phy[2].frameDuration)   // duration in ms
         add new PoissonBehavior(duration*nodes.size()/load, {
           // generate frame for a random node, except myself
           def txReq = new TxFrameReq(to: rnditem(nodes-myAddr), type: Physical.DATA)

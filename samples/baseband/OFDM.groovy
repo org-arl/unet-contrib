@@ -36,7 +36,7 @@ class OFDM extends UnetAgent {
 
   Message processRequest(Message req) {
     if (req instanceof DatagramReq) {
-      if (req.to < 0 || req.to > Address.MAX ||
+      if (req.to < 0 || req.to > 255 ||
           req.protocol < 0 || req.protocol > Protocol.MAX ||
           (req.data && req.data.length > 255))
         return new Message(req, Performative.REFUSE)
@@ -111,7 +111,7 @@ class OFDM extends UnetAgent {
     System.arraycopy(hdrdata, 4, data, 0, hdrdata[3])
     return [hdrdata[0], hdrdata[1], hdrdata[2], data]
   }
-  
+
   // parameters required by PHYSICAL
 
   List<Parameter> getParameterList() {

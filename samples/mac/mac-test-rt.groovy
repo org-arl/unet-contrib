@@ -3,6 +3,8 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/mac/mac-test-rt.groovy
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -21,7 +23,7 @@ simulate {
   }
 
   // define simulation nodes
-  node "1", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack, shell: true
+  node "1", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack, shell: CONSOLE, web:"/:8081"
   node "2", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack
   node "3", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack
   node "4", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack

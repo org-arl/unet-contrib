@@ -3,6 +3,8 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/aloha/aloha
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 /// Output trace file: logs/trace.nam
 /// Plot results: bin/unet samples/aloha/plot-results

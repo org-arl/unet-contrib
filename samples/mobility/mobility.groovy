@@ -3,6 +3,8 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/mobility/mobility
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 /// Output trace file: logs/trace.nam
 /// Plot results: bin/unet samples/mobility/plot-tracks

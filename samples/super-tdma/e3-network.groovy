@@ -3,6 +3,8 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/super-tdma/e3-network
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 /// Output trace file: logs/trace.nam
 ///
