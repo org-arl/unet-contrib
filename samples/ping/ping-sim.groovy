@@ -19,14 +19,13 @@ println '''
 
 You can interact with node 1 through :
 
-- web shell at http://localhost:8101
-- console shell on the command line
+- http://localhost:8101 (web interface)
+- console shell (command line)
 
 For example, try:
 > sendping 2
 
-When you are done, exit the shell by pressing ^D or entering:
-> shutdown
+Press stop button (web interface), ^D (command line) to exit.
 '''
 
 ///////////////////////////////////////////////////////////////////////////////

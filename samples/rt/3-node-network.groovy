@@ -21,19 +21,19 @@ Nodes: 1, 2, 3
 
 You can interact with node 1 through :
 
-- web shell at http://localhost:8101
-- console shell on the command line
+- http://localhost:8101 (web interface)
+- console shell (command line)
 
 To connect to node 2 or node 3 via web shell:
   http://localhost:8102
   http://localhost:8103
 
-To connect to nodes 1, 2 or 3 via unet sh:
+To connect to nodes 1, 2 or 3 via unetsh:
   bin/unet csh localhost 1101
   bin/unet csh localhost 1102
   bin/unet csh localhost 1103
 
-Press ^D to exit
+Press stop button (web interface), ^D (command line) to exit.
 '''
 
 ///////////////////////////////////////////////////////////////////////////////

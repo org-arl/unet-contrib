@@ -37,6 +37,7 @@ Or to connect to nodes via unetsh:
 31: bin/unet csh localhost 1131
 34: bin/unet csh localhost 1134
 
+Press stop button (web interface), ^D (command line) to exit.
 '''
 
 ///////////////////////////////////////////////////////////////////////////////

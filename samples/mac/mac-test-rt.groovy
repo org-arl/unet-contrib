@@ -7,6 +7,17 @@
 ///   click on the Run button (▶) in UnetSim
 ///
 ///////////////////////////////////////////////////////////////////////////////
+println '''
+5-node random network with MySimplestMac
+--------------------
+
+You can interact with node 1 through :
+
+- http://localhost:8101 (web interface)
+- console shell (command line)
+
+Press stop button (web interface), ^D (command line) to exit.
+'''
 
 import org.arl.fjage.RealTimePlatform
 import org.arl.unet.sim.channels.BasicAcousticChannel

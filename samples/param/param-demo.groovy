@@ -25,10 +25,10 @@ Agent parameter demo
 
 Agent "myAgent" loaded. You can interact with it in through :
 
-- web shell at http://localhost:8101
-- console shell on the command line
+- http://localhost:8101 (web interface)
+- console shell (command line)
 
-When you are done, exit the shell by pressing ^D or entering "shutdown".
+Press stop button (web interface), ^D (command line) to exit.
 '''
 
 // run the simulation forever

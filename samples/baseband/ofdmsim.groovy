@@ -21,8 +21,8 @@ Nodes: 1, 2
 
 You can interact with node 1 through :
 
-- web shell at http://localhost:8101
-- console shell on the command line
+- http://localhost:8101 (web interface)
+- console shell (command line)
 
 To connect to node 2 via web shell:
   http://localhost:8102
@@ -31,8 +31,8 @@ Or to connect to nodes via unetsh:
   1: bin/unet sh localhost 1101
   2: bin/unet sh localhost 1102
 
-Connected to node 1...
-Press ^D to exit
+
+Press stop button (web interface), ^D (command line) to exit.
 '''
 
 ///////////////////////////////////////////////////////////////////////////////
