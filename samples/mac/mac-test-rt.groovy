@@ -3,8 +3,21 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/mac/mac-test-rt.groovy
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 ///////////////////////////////////////////////////////////////////////////////
+println '''
+5-node random network with MySimplestMac
+--------------------
+
+You can interact with node 1 through :
+
+- http://localhost:8101 (web interface)
+- console shell (command line)
+
+Press stop button (web interface), ^D (command line) to exit.
+'''
 
 import org.arl.fjage.RealTimePlatform
 import org.arl.unet.sim.channels.BasicAcousticChannel
@@ -21,7 +34,7 @@ simulate {
   }
 
   // define simulation nodes
-  node "1", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack, shell: true
+  node "1", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack, shell: CONSOLE, web:"/:8081"
   node "2", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack
   node "3", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack
   node "4", location: [rnd(-500.m, 500.m), rnd(-500.m, 500.m), rnd(-20.m, 0)], stack: myStack

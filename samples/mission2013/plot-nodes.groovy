@@ -1,3 +1,10 @@
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This script can be run using the command line Unet Simulator:
+///   bin/unet sim samples/mission2013/plot-nodes.groovy
+///
+///////////////////////////////////////////////////////////////////////////////
+
 import java.awt.Color
 import org.arl.unet.utils.GPlot
 import org.arl.unet.sim.channels.Mission2013a

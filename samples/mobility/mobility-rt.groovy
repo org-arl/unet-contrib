@@ -16,10 +16,15 @@ import org.arl.unet.sim.MotionModel
 import static org.arl.unet.Services.*
 
 println '''
-Motion model simulation
+Motion model simulation (real-time)
 =======================
-'''
 
+Use the Map button in the simulator web interface to visualize the nodes moving.
+
+Press stop button (web interface), ^D (command line) to exit.
+
+'''
+platform = RealTimePlatform
 //////////////////////////////////////////////////////////////////////////
 ////// Utility closure to log AUV locations every 10 seconds
 
@@ -35,7 +40,7 @@ trackAuvLocation = {
 ////// Linear motion
 
 println 'Simulation AUV-1: Linear motion'
-simulate 10.minutes, {
+simulate 30.seconds, {
   def n = node('AUV-1', location: [0, 0, 0], mobility: true)
   n.startup = trackAuvLocation
   n.motionModel = [speed: 1.mps, heading: 30.deg]
@@ -45,7 +50,7 @@ simulate 10.minutes, {
 ////// Circular motion
 
 println 'Simulation AUV-2: Circular motion'
-simulate 10.minutes, {
+simulate 30.seconds, {
   def n = node('AUV-2', location: [0, 0, 0], mobility: true)
   n.startup = trackAuvLocation
   n.motionModel = [speed: 1.mps, turnRate: 1.dps]
@@ -55,7 +60,7 @@ simulate 10.minutes, {
 ////// Triangular motion (with diving)
 
 println 'Simulation AUV-3: Triangular motion (with dive)'
-simulate 15.minutes, {
+simulate 30.seconds, {
   def n = node('AUV-3', location: [-50.m, -50.m, 0], mobility: true)
   n.startup = trackAuvLocation
   n.motionModel = [[time:  0.minutes, heading:  60.deg, speed:       1.mps],
@@ -71,7 +76,7 @@ simulate 15.minutes, {
 ////// Lawnmower survey (with diving)
 
 println 'Simulation AUV-4: Lawnmower survey (with dive)'
-simulate 1.hour, {
+simulate 30.seconds, {
   def n = node('AUV-4', location: [-20.m, -150.m, 0], heading: 0.deg, mobility: true)
   n.startup = trackAuvLocation
   // dive to 30m before starting survey

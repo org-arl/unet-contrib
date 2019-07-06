@@ -3,6 +3,8 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/mission2013/mission2013-sim
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -18,25 +20,24 @@ MISSION 2013 network
 
 Nodes: 21, 22, 27, 28, 29, 31, 34
 
-To connect to nodes via telnet shell:
-22: telnet localhost 5122
-27: telnet localhost 5127
-28: telnet localhost 5128
-29: telnet localhost 5129
-31: telnet localhost 5131
-34: telnet localhost 5134
+To connect to nodes via web shell:
+22: http://localhost:8122
+27: http://localhost:8127
+28: http://localhost:8128
+29: http://localhost:8129
+31: http://localhost:8131
+34: http://localhost:8134
 
 Or to connect to nodes via unetsh:
-21: bin/unet sh localhost 1121
-22: bin/unet sh localhost 1122
-27: bin/unet sh localhost 1127
-28: bin/unet sh localhost 1128
-29: bin/unet sh localhost 1129
-31: bin/unet sh localhost 1131
-34: bin/unet sh localhost 1134
+21: bin/unet csh localhost 1121
+22: bin/unet csh localhost 1122
+27: bin/unet csh localhost 1127
+28: bin/unet csh localhost 1128
+29: bin/unet csh localhost 1129
+31: bin/unet csh localhost 1131
+34: bin/unet csh localhost 1134
 
-Connected to 21...
-Press ^D to exit
+Press stop button (web interface), ^D (command line) to exit.
 '''
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,6 +52,6 @@ channel = [ model: Mission2013a ]
 simulate {
   Mission2013a.nodes.each { addr ->
     node "$addr", location: Mission2013a.nodeLocation[addr], remote: (1100+addr),
-         shell: (addr==21)?[true,5121]:(5100+addr), stack: "$home/etc/setup.groovy"
+    	shell: (5100+addr), web:"/:${8100+addr}", stack: "$home/etc/setup.groovy"
   }
 }

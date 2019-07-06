@@ -3,6 +3,8 @@
 ///
 /// To run simulation:
 ///   bin/unet samples/mac/mac-test-perf.groovy
+/// OR
+///   click on the Run button (▶) in UnetSim
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
