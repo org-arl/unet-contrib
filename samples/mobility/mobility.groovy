@@ -84,5 +84,3 @@ simulate 1.hour, {
 
 //////////////////////////////////////////////////////////////////////////
 ////// Done!
-
-println "\nYou can visualize results by running samples/mobility/plot-tracks.groovy"

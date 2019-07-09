@@ -89,5 +89,3 @@ simulate 30.seconds, {
 
 //////////////////////////////////////////////////////////////////////////
 ////// Done!
-
-println "\nYou can visualize results by running samples/mobility/plot-tracks.groovy"
