@@ -68,7 +68,7 @@ else:
 ################### Recording a baseband signal #################################
 
 # Record a baseband signal
-bb << RecordBasebandSignalReq(recLen=24000)
+bb << RecordBasebandSignalReq(recLength=24000)
 # Receive the notification when the signal is recorded
 rxntf = modem.receive(RxBasebandSignalNtf, 5000)
 if rxntf is not None:
@@ -93,7 +93,7 @@ bb << TxBasebandSignalReq(preamble=3, signal=tx_signal)
 txntf4 = modem.receive(TxFrameNtf, 5000)
 if txntf4 is not None:
     # Request a recording from txTime onwards for a duration of 2x the original transmitted signal.
-    bb << RecordBasebandSignalReq(recTime=txntf4.txTime, recLen=(len(tx_signal)*2))
+    bb << RecordBasebandSignalReq(recTime=txntf4.txTime, recLength=(len(tx_signal)*2))
 else:
     print('Transmission not successfull, try again!')
 
