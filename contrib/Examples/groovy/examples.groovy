@@ -81,7 +81,7 @@ if (txntf3 != null) {
 /******************** Recording a baseband signal ****************************/
 
 // Record a baseband signal
-def msg4 = new RecordBasebandSignalReq(recLen: 24000)
+def msg4 = new RecordBasebandSignalReq(recLength: 24000)
 msg4.recipient = bb
 modem.send(msg4)
 // Receive the notification when the signal is recorded

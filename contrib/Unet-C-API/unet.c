@@ -267,7 +267,7 @@ int modem_record(modem_t modem, float* buf, int nsamples) {
   fjage_msg_t msg;
   msg = fjage_msg_create("org.arl.unet.bb.RecordBasebandSignalReq", FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, mm->baseband);
-  fjage_msg_add_int(msg, "recLen", nsamples);
+  fjage_msg_add_int(msg, "recLength", nsamples);
   msg = request(mm, msg, 5000);
   if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE) {
     fjage_msg_destroy(msg);
