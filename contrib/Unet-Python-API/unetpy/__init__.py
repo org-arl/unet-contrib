@@ -6,11 +6,11 @@ from fjagepy import Gateway as _Gateway
 from fjagepy import AgentID as _AgentID
 from types import MethodType as _mt
 from warnings import warn as _warn
+import threading as _td
+import time as _time
 
 _ParameterReq = _MessageClass('org.arl.unet.ParameterReq')
 _ParameterRsp = _MessageClass('org.arl.unet.ParameterRsp')
-_DatagramReq = _MessageClass('org.arl.unet.DatagramReq')
-
 
 def _repr_pretty_(self, p, cycle):
     if cycle:
@@ -43,6 +43,7 @@ def _value(v):
 
 
 class _GenericObject:
+
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
@@ -65,7 +66,6 @@ class Services:
     REMOTE = 'org.arl.unet.Services.REMOTE'
     STATE_MANAGER = 'org.arl.unet.Services.STATE_MANAGER'
 
-
 class Protocol:
     """Well-known protocol number assignments.
     """
@@ -77,8 +77,10 @@ class Protocol:
     ROUTING = 5           # Protocol number for use by routing agents.
     TRANSPORT = 6         # Protocol number for use by transport agents.
     ROUTE_MAINTENANCE = 7  # Protocol number for use by route maintenance agents.
+    LINK2 = 8             # Protocol number for use by secondary link agents.
     USER = 32             # Lowest protocol number allowable for user protocols.
     MAX = 63              # Largest protocol number allowable.
+
 
 
 class ParameterReq(_ParameterReq):
@@ -155,22 +157,11 @@ class ParameterRsp(_ParameterRsp):
 
 class AgentID(_AgentID):
 
-    def __init__(self, gw, name, is_topic=False):
+    def __init__(self, name, is_topic=False, owner=None):
         self.is_topic = is_topic
         self.name = name
         self.index = -1
-        self.gw = gw
-
-    def send(self, msg):
-        msg.recipient = self.name
-        return self.gw.send(msg)
-
-    def request(self, msg, timeout=1000):
-        msg.recipient = self.name
-        return self.gw.request(msg, timeout)
-
-    def __lshift__(self, msg):
-        return self.request(msg)
+        self.owner = owner
 
     def __getattr__(self, param):
         rsp = self.request(ParameterReq(index=self.index).get(param))
@@ -184,7 +175,7 @@ class AgentID(_AgentID):
             return None
 
     def __setattr__(self, param, value):
-        if param in ['name', 'gw', 'is_topic', 'index']:
+        if param in ['name', 'owner', 'is_topic', 'index']:
             self.__dict__[param] = value
             return value
         rsp = self.request(ParameterReq(index=self.index).set(param, value))
@@ -199,12 +190,12 @@ class AgentID(_AgentID):
         return v
 
     def __getitem__(self, index):
-        c = AgentID(self.gw, self.name)
+        c = AgentID(self.name, owner=self.owner)
         c.index = index
         return c
 
     def __str__(self):
-        peer = self.gw.socket.getpeername()
+        peer = self.owner.socket.getpeername()
         return self.name + ' on ' + peer[0] + ':' + str(peer[1])
 
     def _repr_pretty_(self, p, cycle):
@@ -228,25 +219,18 @@ class AgentID(_AgentID):
             p.text('  ' + pp[-1] + ' = ' + str(params[param]) + '\n')
 
 
-class UnetGateway(_Gateway):
+class Gateway(_Gateway):
 
-    def __init__(self, hostname, port=1100, name=None):
-        super().__init__(hostname, port, name)
-
-    def topic(self, name):
-        a = super().topic(name)
-        return AgentID(self, a.name, a.is_topic)
-
-    def agent(self, name):
-        return AgentID(self, name)
+    def __init__(self, hostname, port=1100):
+        super().__init__(hostname, port)
 
     def agentForService(self, service):
         a = super().agentForService(service)
         if a is not None:
             if isinstance(a, str):
-                a = AgentID(self, a)
+                a = AgentID(a, owner=self)
             else:
-                a = AgentID(self, a.name, a.is_topic)
+                a = AgentID(a.name, a.is_topic, owner=self)
         return a
 
     def agentsForService(self, service):
@@ -254,195 +238,275 @@ class UnetGateway(_Gateway):
         if a is not None:
             for j in range(len(a)):
                 if isinstance(a[j], str):
-                    a[j] = AgentID(self, a[j])
+                    a[j] = AgentID(a[j], owner=self)
                 else:
-                    a[j] = AgentID(self, a[j].name)
+                    a[j] = AgentID(a[j].name, owner=self)
         return a
 
-    def agent(self, name):
-        return AgentID(self, name)
+class UnetSocket():
 
-    def socket(self):
-        gw = self
+    """Unet socket for transmission/reception of datagrams.
+    """
+    gw = None
+    REQUEST_TIMEOUT = 1000
+    NON_BLOCKING = 0
+    BLOCKING = -1
+    localProtocol = -1
+    remoteAddress = -1
+    remoteProtocol = 0
+    timeout = -1
+    provider = None
+    waiting = None
 
-        class Socket:
-            """Unet socket for transmission/reception of datagrams.
-            """
-            REQUEST_TIMEOUT = 1000
-            localProtocol = -1
-            remoteAddress = -1
-            remoteProtocol = 0
-            timeout = -1
-            provider = None
-            waiting = None
+    def __init__(self, hostname, port=1100):
+        self.gw = Gateway(hostname, port)
+        self.init()
 
-            def __init__(self):
-                """Creates a socket.
-                """
-                alist = gw.agentsForService(Services.DATAGRAM)
-                for a in alist:
-                    gw.subscribe(gw.topic(a))
+    def init(self):
+        """Creates a socket.
+        """
+        alist = self.gw.agentsForService(Services.DATAGRAM)
+        for a in alist:
+            self.gw.subscribe(self.gw.topic(a))
 
-            def close(self):
-                """Closes the socket. The socket functionality may not longer be accessed after
-                   this method is called.
-                """
-                gw.shutdown()
-                gw = None
+    def close(self):
+        """Closes the socket. The socket functionality may not longer be accessed after
+        this method is called.
+        """
+        self.gw.close()
+        self.gw = None
 
-            def isClosed(self):
-                """Checks if a socket is closed.
+    def isClosed(self):
+        """Checks if a socket is closed.
+        :returns: true if closed, false if open
+        """
+        return self.gw == None
 
-                :returns: true if closed, false if open
-                """
-                return gw == None
+    def bind(self, protocol):
+        """Binds a socket to listen to a specific protocol datagrams.
+        Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are reserved
+        protocols and cannot be bound. Unbound sockets listen to all unreserved
+        protocols.
+        :param protocol: protocol number to listen for
+        :returns: true on success, false on failure
+        """
+        if protocol == Protocol.DATA or (protocol >= Protocol.USER and protocol <= Protocol.MAX):
+            self.localProtocol = protocol
+            return True
+        return False
 
-            def bind(self, protocol):
-                """Binds a socket to listen to a specific protocol datagrams.
+    def unbind(self):
+        """Unbinds a socket so that it listens to all unreserved protocols.
+        Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered
+        reserved.
+        """
+        self.localProtocol = -1
 
-                Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are reserved
-                protocols and cannot be bound. Unbound sockets listen to all unreserved
-                protocols.
+    def isBound(self):
+        """Checks if a socket is bound.
+        :returns: true if bound to a protocol, false if unbound
+        """
+        return self.localProtocol >= 0
 
-                :param protocol: protocol number to listen for
-                :returns: true on success, false on failure
-                """
-                if protocol == Protocol.DATA or (protocol >= Protocol.USER and protocol <= Protocol.MAX):
-                    self.localProtocol = protocol
-                    return True
-                return False
+    def connect(self, to, protocol):
+        """Sets the default destination address and destination protocol number for
+        datagrams sent using this socket. The defaults can be overridden for specific
+        send() calls.
+        The default protcol number when a socket is opened is Protcol.DATA. The default
+        node address is undefined. Protocol numbers between Protocol.DATA+1 to
+        Protocol.USER-1 are considered reserved, and cannot be used for sending datagrams
+        using the socket.
+        :param to: default destination node address
+        :param protocol: default protocol number
+        :returns: true on success, false on failure
+        """
+        if to >= 0 and (protocol == Protocol.DATA or (protocol >= Protocol.USER and protocol <= Protocol.MAX)):
+            self.remoteAddress = to
+            self.remoteProtocol = protocol
+            return True
+        return False
 
-            def unbind(self):
-                """Unbinds a socket so that it listens to all unreserved protocols.
+    def disconnnect(self):
+        """Resets the default destination address to undefined, and the default protocol
+        number to Protocol.DATA.
+        """
+        self.remoteAddress = -1
+        self.remoteProtocol = 0
 
-                Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered
-                reserved.
-                """
-                self.localProtocol = -1
+    def isConnected(self):
+        """Checks if a socket is connected, i.e., has a default destination address and
+        protocol number.
+        :returns: True if connected, False otherwise
+        """
+        return self.remoteAddress >= 0
 
-            def isBound(self):
-                """Checks if a socket is bound.
+    def getLocalAddress(self):
+        """Gets the local node address.
+        :returns: local node address, or -1 on error
+        """
+        if self.gw == None:
+            return -1
+        nodeinfo = self.gw.agentForService(Services.NODE_INFO)
+        if nodeinfo == None:
+            return -1
+        if nodeinfo.address != None:
+            return nodeinfo.address
+        else:
+            return -1
 
-                :returns: true if bound to a protocol, false if unbound
-                """
-                return self.localProtocol >= 0
+    def getLocalProtocol(self):
+        """Gets the protocol number that the socket is bound to.
+        :returns: protocol number if socket is bound, -1 otherwise
+        """
+        return self.localProtocol
 
-            def connect(self, to, protocol):
-                """Sets the default destination address and destination protocol number for
-                datagrams sent using this socket. The defaults can be overridden for specific
-                send() calls.
+    def getRemoteAddress(self):
+        """Gets the default destination node address for a connected socket.
+        :returns: default destination node address if connected, -1 otherwise
+        """
+        return self.remoteAddress
 
-                The default protcol number when a socket is opened is Protcol.DATA. The default
-                node address is undefined. Protocol numbers between Protocol.DATA+1 to
-                Protocol.USER-1 are considered reserved, and cannot be used for sending datagrams
-                using the socket.
+    def getRemoteProtocol(self):
+        """Gets the default transmission protocol number.
+        :returns: default protocol number used to transmit a datagram
+        """
+        return self.remoteProtocol
 
-                :param to: default destination node address
-                :param protocol: default protocol number
-                :returns: true on success, false on failure
-                """
-                if to >= 0 and (protocol == Protocol.DATA or (protocol >= Protocol.USER and protocol <= Protocol.MAX)):
-                    self.remoteAddress = to
-                    self.remoteProtocol = protocol
-                    return True
-                return False
+    def setTimeout(self, ms):
+        """Sets the timeout for datagram reception. The default timeout is infinite,
+        i.e., the :func:`~receive()` call blocks forever. A timeout of 0 means the
+        :func:`~receive()` call is non-blocking.
+        :param ms: timeout in milliseconds, or -1 for infinite timeout
+        """
+        if ms < 0:
+            ms = -1
+        self.timeout = ms
 
-            def disconnnect(self):
-                """Resets the default destination address to undefined, and the default protocol
-                number to Protocol.DATA.
-                """
-                self.remoteAddress = -1
-                self.remoteProtocol = 0
+    def getTimeout(self):
+        """Gets the timeout for datagram reception.
+        :retruns: timeout in milliseconds, 0 for non-blocking, or -1 for infinite
+        """
+        return self.timeout
 
-            def isConnected(self):
-                """Checks if a socket is connected, i.e., has a default destination address and
-                protocol number.
-
-                :returns: True if connected, False otherwise
-                """
-                return self.remoteAddress >= 0
-
-            def getLocalAddress(self):
-                """Gets the local node address.
-
-                :returns: local node address, or -1 on error
-                """
-                if gw == None:
-                    return -1
-                nodeinfo = gw.agentForService(Services.NODE_INFO)
-                if nodeinfo == None:
-                    return -1
-                if nodeinfo.address != None:
-                    return nodeinfo.address
-                else:
-                    return -1
-
-            def getLocalProtocol(self):
-                """Gets the protocol number that the socket is bound to.
-
-                :returns: protocol number if socket is bound, -1 otherwise
-                """
-                return self.localProtocol
-
-            def getRemoteAddress(self):
-                """Gets the default destination node address for a connected socket.
-
-                :returns: default destination node address if connected, -1 otherwise
-                """
-                return self.remoteAddress
-
-            def getRemoteProtocol(self):
-                """Gets the default transmission protocol number.
-
-                :returns: default protocol number used to transmit a datagram
-                """
-                return self.remoteProtocol
-
-            def setTimeout(self, ms):
-                """Sets the timeout for datagram reception. The default timeout is infinite,
-                i.e., the :func:`~receive()` call blocks forever. A timeout of 0 means the
-                :func:`~receive()` call is non-blocking.
-
-                :param ms: timeout in milliseconds, or -1 for infinite timeout
-                """
-                if ms < 0:
-                    ms = -1
-                self.timeout = ms
-
-            def getTimeout(self):
-                """Gets the timeout for datagram reception.
-
-                :retruns: timeout in milliseconds, 0 for non-blocking, or -1 for infinite
-                """
-                return self.timeout
-
-            def send(self, req=None):
-                """Transmits a datagram to the specified node address using the specified protocol.
-
-                   | Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,
-                   | and cannot be used for sending datagrams using the socket.
-
-                :param req: datagram transmission request
-                :returns: True on success, False on failure
-                """
-                if gw == None:
-                    return False
-                protocol = req.protocol
+    def send(self, data, to=None, protocol=None):
+        """Transmits a datagram to the specified node address using the specified protocol.
+           | Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,
+           | and cannot be used for sending datagrams using the socket.
+        :param req: datagram transmission request
+        :returns: True on success, False on failure
+        """
+        if self.gw == None:
+            return None
+        if not isinstance(data, Message):
+            DatagramReq = _MessageClass('org.arl.unet.DatagramReq')
+            req = DatagramReq()
+            if isinstance(data, str):
+                data = list(bytearray(data, encoding='utf-8'))
+            req.data = data
+            if to is None and protocol is None:
+                req.to = self.remoteAddress
+                req.protocol = self.remoteProtocol
+            elif to is not None and protocol is None:
+                req.to = to
+                req.protocol = self.remoteProtocol
+            elif to is not None and protocol is not None:
+                req.to = to
+                req.protocol = protocol
                 if protocol != Protocol.DATA and (protocol < Protocol.USER or protocol > Protocol.MAX):
                     return False
-                if req.recipient == None:
-                    if provider == None:
-                        provider = gw.agentForService(Services.TRANSPORT)
-                    if provider == None:
-                        provider = gw.agentForService(Services.ROUTING)
-                    if provider == None:
-                        provider = gw.agentForService(Services.LINK)
-                    if provider == None:
-                        provider = gw.agentForService(Services.PHYSICAL)
-                    if provider == None:
-                        provider = gw.agentForService(Services.DATAGRAM)
-                    if provider == None:
-                        return False
-                    req.recipient = provider
-                rsp = gw.request(req, self.REQUEST_TIMEOUT)
-                return (rsp != None and rsp.perf == _Performative.AGREE)
+        if req.recipient == None:
+            if self.provider == None:
+                self.provider = self.gw.agentForService(Services.TRANSPORT)
+            if self.provider == None:
+                self.provider = self.gw.agentForService(Services.ROUTING)
+            if self.provider == None:
+                self.provider = self.gw.agentForService(Services.LINK)
+            if self.provider == None:
+                self.provider = self.gw.agentForService(Services.PHYSICAL)
+            if self.provider == None:
+                self.provider = self.gw.agentForService(Services.DATAGRAM)
+            if self.provider == None:
+                return False
+            req.recipient = self.provider
+        rsp = self.gw.request(req, self.REQUEST_TIMEOUT)
+        return (rsp != None and rsp.perf == _Performative.AGREE)
+
+    def receive(self):
+        """Receives a datagram sent to the local node and the bound protocol number. If the
+        socket is unbound, then datagrams with all unreserved protocols are received. Any
+        broadcast datagrams are also received.
+           | This call blocks until a datagram is availbale, the socket timeout is reached,
+           | or until :func:`~unetpy.UnetSocket.cancel()` is called.
+        """
+        DatagramNtf = _MessageClass('org.arl.unet.DatagramNtf')
+        try:
+            if self.gw == None:
+                return None
+            self.waiting = _td.Event()
+            deadline = -1
+            if self.timeout == 0:
+                deadline = 0
+            elif self.timeout > 0:
+                deadline = int(round(_time.time() * 1000)) + self.timeout
+            ntf = None
+            while self.waiting.wait():
+                timeRemaining = -1
+                if self.timeout == 0:
+                    timeRemaining = 0
+                elif self.timeout > 0:
+                    timeRemaining = deadline - int(round(_time.time() * 1000))
+                    if timeRemaining <= 0:
+                        return None
+                ntf = self.gw.receive(DatagramNtf, timeRemaining)
+                if ntf == None:
+                    return None
+                if isinstance(ntf, DatagramNtf):
+                    dg = ntf
+                    p = dg.protocol
+                    if (p == Protocol.DATA or p >= Protocol.USER):
+                        if (self.localProtocol < 0):
+                            return dg
+                        if (self.localProtocol == p):
+                            return dg
+        except:
+            self.waiting.clear()
+            self.waiting = None
+        return None
+
+    def cancel(self):
+        if self.waiting == None:
+            return
+        self.waiting.set()
+
+    def getGateway(self):
+        """Gets a Gateway to provide low-level access to UnetStack."""
+        return self.gw
+
+    def agentForService(self, svc):
+        """Gets an AgentID providing a specified service for low-level access to UnetStack."""
+        if self.gw == None:
+            return None
+        return self.gw.agentForService(svc)
+
+    def agent(self, name):
+        """Gets a named AgentID for low-level access to UnetStack."""
+        if self.gw == None:
+            return None
+        return self.gw.agent(name)
+
+    def host(self, nodeName):
+        """Resolve node name to node address.
+        :param nodeName: name of the node to resolve
+        :returns: address of the node, or null if unable to resolve
+        """
+        arp = self.agentForService(Services.ADDRESS_RESOLUTION)
+        if arp == None:
+            return None
+        AddressResolutionReq = _MessageClass('org.arl.unet.addr.AddressResolutionReq')
+        req = AddressResolutionReq()
+        req.name = nodeName
+        req.recipient = arp
+        rsp = self.gw.request(req, self.REQUEST_TIMEOUT)
+        if rsp == None:
+            return None
+        return  rsp.address
