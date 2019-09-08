@@ -449,7 +449,7 @@ class UnetSocket():
             elif self.timeout > 0:
                 deadline = int(round(_time.time() * 1000)) + self.timeout
             ntf = None
-            while self.waiting.wait():
+            while not self.waiting.is_set():
                 timeRemaining = -1
                 if self.timeout == 0:
                     timeRemaining = 0
@@ -469,7 +469,6 @@ class UnetSocket():
                         if (self.localProtocol == p):
                             return dg
         except:
-            self.waiting.clear()
             self.waiting = None
         return None
 
