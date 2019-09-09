@@ -301,6 +301,10 @@ class AgentID(_AgentID):
         params = ursp.parameters()
         if 'title' in params:
             p.text('<<< ' + str(params['title']) + ' >>>\n')
+        else:
+            p.text('<<< ' + str(self.name).upper() + ' >>>\n')
+        if 'description' in params:
+            p.text('\n' + str(params['description']) + '\n')
         oprefix = ''
         for param in sorted(params):
             pp = param.split('.')
