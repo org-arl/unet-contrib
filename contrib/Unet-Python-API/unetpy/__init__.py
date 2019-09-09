@@ -9,18 +9,90 @@ from warnings import warn as _warn
 import threading as _td
 import time as _time
 
-_ParameterReq = _MessageClass('org.arl.unet.ParameterReq')
-_ParameterRsp = _MessageClass('org.arl.unet.ParameterRsp')
+#unet
+ParameterReq           = _MessageClass('org.arl.unet.ParameterReq')
+ParameterRsp           = _MessageClass('org.arl.unet.ParameterRsp')
+TestReportNtf          = _MessageClass('org.arl.unet.TestReportNtf')
+AbnormalTerminationNtf = _MessageClass('org.arl.unet.AbnormalTerminationNtf')
+CapabilityListRsp      = _MessageClass('org.arl.unet.CapabilityListRsp')
+CapabilityReq          = _MessageClass('org.arl.unet.CapabilityReq')
+ClearReq               = _MessageClass('org.arl.unet.ClearReq')
+DatagramCancelReq      = _MessageClass('org.arl.unet.DatagramCancelReq')
+DatagramDeliveryNtf    = _MessageClass('org.arl.unet.DatagramDeliveryNtf')
+DatagramFailureNtf     = _MessageClass('org.arl.unet.DatagramFailureNtf')
+DatagramNtf            = _MessageClass('org.arl.unet.DatagramNtf')
+DatagramProgressNtf    = _MessageClass('org.arl.unet.DatagramProgressNtf')
+DatagramReq            = _MessageClass('org.arl.unet.DatagramReq')
+ParamChangeNtf         = _MessageClass('org.arl.unet.ParamChangeNtf')
 
-def _repr_pretty_(self, p, cycle):
-    if cycle:
-        p.text('...')
-    elif self.perf is not None:
-        p.text(self.perf)
+# net
+DatagramTraceReq       = _MessageClass('org.arl.unet.net.DatagramTraceReq')
+RouteDiscoveryReq      = _MessageClass('org.arl.unet.net.RouteDiscoveryReq')
+RouteTraceReq          = _MessageClass('org.arl.unet.net.RouteTraceReq')
+RouteDiscoveryNtf      = _MessageClass('org.arl.unet.net.RouteDiscoveryNtf')
+RouteTraceNtf          = _MessageClass('org.arl.unet.net.RouteTraceNtf')
 
+#phy
+FecDecodeReq           = _MessageClass('org.arl.unet.phy.FecDecodeReq')
+RxJanusFrameNtf        = _MessageClass('org.arl.unet.phy.RxJanusFrameNtf')
+TxJanusFrameReq        = _MessageClass('org.arl.unet.phy.TxJanusFrameReq')
+BadFrameNtf            = _MessageClass('org.arl.unet.phy.BadFrameNtf')
+BadRangeNtf            = _MessageClass('org.arl.unet.phy.BadRangeNtf')
+BeaconReq              = _MessageClass('org.arl.unet.phy.BeaconReq')
+ClearSyncReq           = _MessageClass('org.arl.unet.phy.ClearSyncReq')
+CollisionNtf           = _MessageClass('org.arl.unet.phy.CollisionNtf')
+RangeNtf               = _MessageClass('org.arl.unet.phy.RangeNtf')
+RangeReq               = _MessageClass('org.arl.unet.phy.RangeReq')
+RxFrameNtf             = _MessageClass('org.arl.unet.phy.RxFrameNtf', DatagramNtf)
+RxFrameStartNtf        = _MessageClass('org.arl.unet.phy.RxFrameStartNtf')
+SyncInfoReq            = _MessageClass('org.arl.unet.phy.SyncInfoReq')
+SyncInfoRsp            = _MessageClass('org.arl.unet.phy.SyncInfoRsp')
+TxFrameNtf             = _MessageClass('org.arl.unet.phy.TxFrameNtf')
+TxFrameReq             = _MessageClass('org.arl.unet.phy.TxFrameReq', DatagramReq)
+TxFrameStartNtf        = _MessageClass('org.arl.unet.phy.TxFrameStartNtf')
+TxRawFrameReq          = _MessageClass('org.arl.unet.phy.TxRawFrameReq')
 
-setattr(_Message, '_repr_pretty_', _repr_pretty_)
+#addr
+AddressAllocReq        = _MessageClass('org.arl.unet.addr.AddressAllocReq')
+AddressAllocRsp        = _MessageClass('org.arl.unet.addr.AddressAllocRsp')
+AddressResolutionReq   = _MessageClass('org.arl.unet.addr.AddressResolutionReq')
+AddressResolutionRsp   = _MessageClass('org.arl.unet.addr.AddressResolutionRsp')
 
+#bb
+BasebandSignal         = _MessageClass('org.arl.unet.bb.BasebandSignal')
+RecordBasebandSignalReq = _MessageClass('org.arl.unet.bb.RecordBasebandSignalReq')
+RxBasebandSignalNtf    = _MessageClass('org.arl.unet.bb.RxBasebandSignalNtf', BasebandSignal)
+TxBasebandSignalReq    = _MessageClass('org.arl.unet.bb.TxBasebandSignalReq', BasebandSignal)
+
+#mac
+ReservationAcceptReq   = _MessageClass('org.arl.unet.mac.ReservationAcceptReq')
+ReservationCancelReq   = _MessageClass('org.arl.unet.mac.ReservationCancelReq')
+ReservationReq         = _MessageClass('org.arl.unet.mac.ReservationReq')
+ReservationRsp         = _MessageClass('org.arl.unet.mac.ReservationRsp')
+ReservationStatusNtf   = _MessageClass('org.arl.unet.mac.ReservationStatusNtf')
+RxAckNtf               = _MessageClass('org.arl.unet.mac.RxAckNtf')
+TxAckReq               = _MessageClass('org.arl.unet.mac.TxAckReq')
+
+#remote
+RemoteExecReq          = _MessageClass('org.arl.unet.remote.RemoteExecReq')
+RemoteFailureNtf       = _MessageClass('org.arl.unet.remote.RemoteFailureNtf')
+RemoteFileGetReq       = _MessageClass('org.arl.unet.remote.RemoteFileGetReq')
+RemoteFileNtf          = _MessageClass('org.arl.unet.remote.RemoteFileNtf')
+RemoteFilePutReq       = _MessageClass('org.arl.unet.remote.RemoteFilePutReq')
+RemoteSuccessNtf       = _MessageClass('org.arl.unet.remote.RemoteSuccessNtf')
+RemoteTextNtf          = _MessageClass('org.arl.unet.remote.RemoteTextNtf')
+RemoteTextReq          = _MessageClass('org.arl.unet.remote.RemoteTextReq')
+
+#scheduler
+AddScheduledSleepReq   = _MessageClass('org.arl.unet.scheduler.AddScheduledSleepReq')
+GetSleepScheduleReq    = _MessageClass('org.arl.unet.scheduler.GetSleepScheduleReq')
+RemoveScheduledSleepReq = _MessageClass('org.arl.unet.scheduler.RemoveScheduledSleepReq')
+SleepScheduleRsp       = _MessageClass('org.arl.unet.scheduler.SleepScheduleRsp')
+WakeFromSleepNtf       = _MessageClass('org.arl.unet.scheduler.WakeFromSleepNtf')
+
+#state
+ClearStateReq          = _MessageClass('org.arl.unet.state.ClearStateReq')
+SaveStateReq           = _MessageClass('org.arl.unet.state.SaveStateReq')
 
 def _short(p):
     return p.split('.')[-1]
@@ -66,6 +138,12 @@ class Services:
     REMOTE = 'org.arl.unet.Services.REMOTE'
     STATE_MANAGER = 'org.arl.unet.Services.STATE_MANAGER'
 
+class Topics:
+    """Topics that can be subscribed to.
+    """
+    PARAMCHANGE = 0           # Topic for parameter change notification.
+    ABNORMAL_TERMINATION = 1  # Topic for abnormal agent termination.
+
 class Protocol:
     """Well-known protocol number assignments.
     """
@@ -81,9 +159,22 @@ class Protocol:
     USER = 32             # Lowest protocol number allowable for user protocols.
     MAX = 63              # Largest protocol number allowable.
 
+class ReservationStatus:
+    """Status indicator for a particular request during the reservation process.
+    """
+    START = 0             # Start of channel reservation for a reservation request.
+    END = 1               # End of channel reservation for a reservation request.
+    FAILURE = 2           # Failure to reserve channel for a reservation request.
+    CANCEL = 3            # Cancel channel reservation for a reservation request.
+    REQUEST = 4           # Request information from a client agent for a reservation request.
 
+class Address:
+    """
+    Defined constants for addressing.
+    """
+    BROADCAST = 0         # Broadcast address.
 
-class ParameterReq(_ParameterReq):
+class _ParameterReq(ParameterReq):
 
     def __init__(self, index=-1, **kwargs):
         super().__init__()
@@ -108,7 +199,7 @@ class ParameterReq(_ParameterReq):
         p.text(str(self) if not cycle else '...')
 
 
-class ParameterRsp(_ParameterRsp):
+class _ParameterRsp(ParameterRsp):
 
     def __init__(self, **kwargs):
         super().__init__()
@@ -154,7 +245,6 @@ class ParameterRsp(_ParameterRsp):
     def _repr_pretty_(self, p, cycle):
         p.text(str(self) if not cycle else '...')
 
-
 class AgentID(_AgentID):
 
     def __init__(self, name, is_topic=False, owner=None):
@@ -164,10 +254,10 @@ class AgentID(_AgentID):
         self.owner = owner
 
     def __getattr__(self, param):
-        rsp = self.request(ParameterReq(index=self.index).get(param))
+        rsp = self.request(_ParameterReq(index=self.index).get(param))
         if rsp is None:
             return None
-        ursp = ParameterRsp()
+        ursp = _ParameterRsp()
         ursp.__dict__.update(rsp.__dict__)
         if 'value' in list(ursp.__dict__.keys()):
             return ursp.get(param)
@@ -178,11 +268,11 @@ class AgentID(_AgentID):
         if param in ['name', 'owner', 'is_topic', 'index']:
             self.__dict__[param] = value
             return value
-        rsp = self.request(ParameterReq(index=self.index).set(param, value))
+        rsp = self.request(_ParameterReq(index=self.index).set(param, value))
         if rsp is None:
             _warn('Could not set parameter ' + param)
             return None
-        ursp = ParameterRsp()
+        ursp = _ParameterRsp()
         ursp.__dict__.update(rsp.__dict__)
         v = ursp.get(param)
         if v != value:
@@ -202,17 +292,20 @@ class AgentID(_AgentID):
         if cycle:
             p.text('...')
             return
-        rsp = self.request(ParameterReq(index=self.index))
+        rsp = self.request(_ParameterReq(index=self.index))
         if rsp is None:
             p.text(self.__str__())
             return
-        ursp = ParameterRsp()
+        ursp = _ParameterRsp()
         ursp.__dict__.update(rsp.__dict__)
         params = ursp.parameters()
+        p.text('<<< ' + str(params['title']) + ' >>>\n')
         oprefix = ''
         for param in sorted(params):
             pp = param.split('.')
             prefix = '.'.join(pp[:-1]) if len(pp) > 1 else ''
+            if prefix == '':
+                continue
             if prefix != oprefix:
                 oprefix = prefix
                 p.text('\n[' + prefix + ']\n')
@@ -398,10 +491,11 @@ class UnetSocket():
         if self.gw == None:
             return None
         if not isinstance(data, Message):
-            DatagramReq = _MessageClass('org.arl.unet.DatagramReq')
             req = DatagramReq()
             if isinstance(data, str):
                 data = list(bytearray(data, encoding='utf-8'))
+            elif isinstance(data, bytes):
+                data = list(data)
             req.data = data
             if to is None and protocol is None:
                 req.to = self.remoteAddress
@@ -438,7 +532,6 @@ class UnetSocket():
            | This call blocks until a datagram is availbale, the socket timeout is reached,
            | or until :func:`~unetpy.UnetSocket.cancel()` is called.
         """
-        DatagramNtf = _MessageClass('org.arl.unet.DatagramNtf')
         try:
             if self.gw == None:
                 return None
@@ -501,7 +594,6 @@ class UnetSocket():
         arp = self.agentForService(Services.ADDRESS_RESOLUTION)
         if arp == None:
             return None
-        AddressResolutionReq = _MessageClass('org.arl.unet.addr.AddressResolutionReq')
         req = AddressResolutionReq()
         req.name = nodeName
         req.recipient = arp
