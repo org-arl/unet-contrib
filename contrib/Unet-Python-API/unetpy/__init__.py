@@ -299,7 +299,8 @@ class AgentID(_AgentID):
         ursp = _ParameterRsp()
         ursp.__dict__.update(rsp.__dict__)
         params = ursp.parameters()
-        p.text('<<< ' + str(params['title']) + ' >>>\n')
+        if 'title' in params:
+            p.text('<<< ' + str(params['title']) + ' >>>\n')
         oprefix = ''
         for param in sorted(params):
             pp = param.split('.')
