@@ -513,6 +513,12 @@ class UnetSocket():
                 req.protocol = protocol
                 if protocol != Protocol.DATA and (protocol < Protocol.USER or protocol > Protocol.MAX):
                     return False
+        else:
+            req = data
+            if isinstance(req.data, str):
+                req.data = list(bytearray(req.data, encoding='utf-8'))
+            elif isinstance(req.data, bytes):
+                req.data = list(req.data)
         if req.recipient == None:
             if self.provider == None:
                 self.provider = self.gw.agentForService(Services.TRANSPORT)
