@@ -21,6 +21,6 @@ setup(
     packages=find_packages(exclude=('tests', 'docs')),
     install_requires=[
         'numpy>=1.11',
-        'fjagepy==1.6'
+        'fjagepy>=1.6'
     ]
 )
