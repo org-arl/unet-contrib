@@ -490,7 +490,9 @@ class UnetSocket():
         """Transmits a datagram to the specified node address using the specified protocol.
            | Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,
            | and cannot be used for sending datagrams using the socket.
-        :param req: datagram transmission request
+        :param data: bytes to transmit (or) datagram transmission request
+        :param to: destination node address
+        :param protocol: protocol number
         :returns: True on success, False on failure
         """
         if self.gw == None:
