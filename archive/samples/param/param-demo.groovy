@@ -33,7 +33,7 @@ Press stop button (web interface), ^D (command line) to exit.
 
 // run the simulation forever
 simulate {
-  node '1', address: 1, shell: CONSOLE, web:'/:8101', stack: { container ->
+  node '1', address: 1, shell: CONSOLE, web:8101, stack: { container ->
     container.add 'myAgent', new MyAgent()
   }
 }

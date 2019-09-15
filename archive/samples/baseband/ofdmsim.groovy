@@ -48,6 +48,6 @@ ofdmStack = { container ->
 
 // run the simulation forever
 simulate {
-  node '1', remote: 1101, address: 1, location: [ 0.km, 0.km, -15.m], shell: CONSOLE, web:'/:8101', stack: ofdmStack
-  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: 5102, web:'/:8102', stack: ofdmStack
+  node '1', remote: 1101, address: 1, location: [ 0.km, 0.km, -15.m], shell: CONSOLE, web:8101, stack: ofdmStack
+  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: 5102, web:8102, stack: ofdmStack
 }

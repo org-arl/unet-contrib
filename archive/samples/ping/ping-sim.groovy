@@ -35,7 +35,7 @@ platform = RealTimePlatform
 
 // run simulation forever
 simulate {
-  node '1', address: 1, location: [0, 0, 0], shell: CONSOLE, web:'/:8101', stack: { container ->
+  node '1', address: 1, location: [0, 0, 0], shell: CONSOLE, web:8101, stack: { container ->
     container.add 'ping', new PingDaemon()
     container.shell.addInitrc "${script.parent}/fshrc.groovy"
     container.websh.addInitrc "${script.parent}/fshrc.groovy"

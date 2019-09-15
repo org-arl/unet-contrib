@@ -43,7 +43,7 @@ platform = RealTimePlatform   // use real-time mode
 
 // run the simulation forever
 simulate {
-  node '1', remote: 1101, address: 1, location: [ 0.km, 0.km, -15.m], shell: true, web:'/:8101', stack: "$home/etc/setup"
-  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: 5102, web:'/:8102', stack: "$home/etc/setup"
-  node '3', remote: 1103, address: 3, location: [-1.km, 0.km, -15.m], shell: 5103, web:'/:8103', stack: "$home/etc/setup"
+  node '1', remote: 1101, address: 1, location: [ 0.km, 0.km, -15.m], shell: true, web:8101, stack: "$home/etc/setup"
+  node '2', remote: 1102, address: 2, location: [ 1.km, 0.km, -15.m], shell: 5102, web:8102, stack: "$home/etc/setup"
+  node '3', remote: 1103, address: 3, location: [-1.km, 0.km, -15.m], shell: 5103, web:8103, stack: "$home/etc/setup"
 }

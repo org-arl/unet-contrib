@@ -48,7 +48,6 @@ channel = [ model: Mission2012Channel ]
 // run the simulation forever
 simulate {
   Mission2012Channel.nodes.each { addr ->
-    node "$addr", location: Mission2012Channel.nodeLocation[addr],
-    	shell: (5100+addr), web:"/:${8100+addr}", stack: "$home/etc/setup.groovy"
+    node "$addr", location: Mission2012Channel.nodeLocation[addr], shell: (5100+addr), web:(8100+addr), stack: "$home/etc/setup.groovy"
   }
 }
