@@ -2,7 +2,7 @@ from fjagepy import *
 from fjagepy import Message as _Message
 from fjagepy import MessageClass as _MessageClass
 from fjagepy import Performative as _Performative
-from fjagepy import Gateway as _Gateway
+from fjagepy import Gateway
 from fjagepy import AgentID as _AgentID
 from types import MethodType as _mt
 from warnings import warn as _warn
@@ -245,101 +245,78 @@ class _ParameterRsp(ParameterRsp):
     def _repr_pretty_(self, p, cycle):
         p.text(str(self) if not cycle else '...')
 
-class AgentID(_AgentID):
+def getter(self, param):
+    rsp = self.request(_ParameterReq(index=self.index).get(param))
+    if rsp is None:
+        return None
+    ursp = _ParameterRsp()
+    ursp.__dict__.update(rsp.__dict__)
+    if 'value' in list(ursp.__dict__.keys()):
+        return ursp.get(param)
+    else:
+        return None
 
-    def __init__(self, name, is_topic=False, owner=None):
-        self.is_topic = is_topic
-        self.name = name
-        self.index = -1
-        self.owner = owner
+setattr(_AgentID, '__getattr__', getter)
 
-    def __getattr__(self, param):
-        rsp = self.request(_ParameterReq(index=self.index).get(param))
-        if rsp is None:
-            return None
-        ursp = _ParameterRsp()
-        ursp.__dict__.update(rsp.__dict__)
-        if 'value' in list(ursp.__dict__.keys()):
-            return ursp.get(param)
-        else:
-            return None
+def setter(self, param, value):
+    if param in ['name', 'owner', 'is_topic', 'index']:
+        self.__dict__[param] = value
+        return value
+    rsp = self.request(_ParameterReq(index=self.index).set(param, value))
+    if rsp is None:
+        _warn('Could not set parameter ' + param)
+        return None
+    ursp = _ParameterRsp()
+    ursp.__dict__.update(rsp.__dict__)
+    v = ursp.get(param)
+    if v != value:
+        _warn('Parameter ' + param + ' set to ' + str(v))
+    return v
 
-    def __setattr__(self, param, value):
-        if param in ['name', 'owner', 'is_topic', 'index']:
-            self.__dict__[param] = value
-            return value
-        rsp = self.request(_ParameterReq(index=self.index).set(param, value))
-        if rsp is None:
-            _warn('Could not set parameter ' + param)
-            return None
-        ursp = _ParameterRsp()
-        ursp.__dict__.update(rsp.__dict__)
-        v = ursp.get(param)
-        if v != value:
-            _warn('Parameter ' + param + ' set to ' + str(v))
-        return v
+setattr(_AgentID, '__setattr__', setter)
 
-    def __getitem__(self, index):
-        c = AgentID(self.name, owner=self.owner)
-        c.index = index
-        return c
+def __getitem__(self, index):
+    c = AgentID(self.name, owner=self.owner)
+    c.index = index
+    return c
 
-    def __str__(self):
-        peer = self.owner.socket.getpeername()
-        return self.name + ' on ' + peer[0] + ':' + str(peer[1])
+setattr(_AgentID, '__getitem__', __getitem__)
 
-    def _repr_pretty_(self, p, cycle):
-        if cycle:
-            p.text('...')
-            return
-        rsp = self.request(_ParameterReq(index=self.index))
-        if rsp is None:
-            p.text(self.__str__())
-            return
-        ursp = _ParameterRsp()
-        ursp.__dict__.update(rsp.__dict__)
-        params = ursp.parameters()
-        if 'title' in params:
-            p.text('<<< ' + str(params['title']) + ' >>>\n')
-        else:
-            p.text('<<< ' + str(self.name).upper() + ' >>>\n')
-        if 'description' in params:
-            p.text('\n' + str(params['description']) + '\n')
-        oprefix = ''
-        for param in sorted(params):
-            pp = param.split('.')
-            prefix = '.'.join(pp[:-1]) if len(pp) > 1 else ''
-            if prefix == '':
-                continue
-            if prefix != oprefix:
-                oprefix = prefix
-                p.text('\n[' + prefix + ']\n')
-            p.text('  ' + pp[-1] + ' = ' + str(params[param]) + '\n')
+def __str__(self):
+    peer = self.owner.socket.getpeername()
+    return self.name + ' on ' + peer[0] + ':' + str(peer[1])
 
+setattr(_AgentID, '__str__', __str__)
 
-class Gateway(_Gateway):
+def _repr_pretty_(self, p, cycle):
+    if cycle:
+        p.text('...')
+        return
+    rsp = self.request(_ParameterReq(index=self.index))
+    if rsp is None:
+        p.text(self.__str__())
+        return
+    ursp = _ParameterRsp()
+    ursp.__dict__.update(rsp.__dict__)
+    params = ursp.parameters()
+    if 'title' in params:
+        p.text('<<< ' + str(params['title']) + ' >>>\n')
+    else:
+        p.text('<<< ' + str(self.name).upper() + ' >>>\n')
+    if 'description' in params:
+        p.text('\n' + str(params['description']) + '\n')
+    oprefix = ''
+    for param in sorted(params):
+        pp = param.split('.')
+        prefix = '.'.join(pp[:-1]) if len(pp) > 1 else ''
+        if prefix == '':
+            continue
+        if prefix != oprefix:
+            oprefix = prefix
+            p.text('\n[' + prefix + ']\n')
+        p.text('  ' + pp[-1] + ' = ' + str(params[param]) + '\n')
 
-    def __init__(self, hostname, port=1100):
-        super().__init__(hostname, port)
-
-    def agentForService(self, service):
-        a = super().agentForService(service)
-        if a is not None:
-            if isinstance(a, str):
-                a = AgentID(a, owner=self)
-            else:
-                a = AgentID(a.name, a.is_topic, owner=self)
-        return a
-
-    def agentsForService(self, service):
-        a = super().agentsForService(service)
-        if a is not None:
-            for j in range(len(a)):
-                if isinstance(a[j], str):
-                    a[j] = AgentID(a[j], owner=self)
-                else:
-                    a[j] = AgentID(a[j].name, owner=self)
-        return a
+setattr(_AgentID, '_repr_pretty_', _repr_pretty_)
 
 class UnetSocket():
 
