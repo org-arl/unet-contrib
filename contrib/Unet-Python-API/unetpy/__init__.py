@@ -124,6 +124,10 @@ class _GenericObject:
 
 
 class Services:
+    """Services provided by agents.
+
+    Agents can be looked up based on the services they provide.
+    """
     NODE_INFO = 'org.arl.unet.Services.NODE_INFO'
     ADDRESS_RESOLUTION = 'org.arl.unet.Services.ADDRESS_RESOLUTION'
     DATAGRAM = 'org.arl.unet.Services.DATAGRAM'
@@ -319,8 +323,13 @@ def _repr_pretty_(self, p, cycle):
 setattr(_AgentID, '_repr_pretty_', _repr_pretty_)
 
 class UnetSocket():
-
     """Unet socket for transmission/reception of datagrams.
+
+    :param hostname: IP address of the modem
+    :param port: Port number (1100 => automatic selection)
+
+    >>> from unetpy import UnetSocket
+    >>> sock = UnetSocket('192.168.1.10')
     """
     gw = None
     REQUEST_TIMEOUT = 1000
@@ -556,6 +565,7 @@ class UnetSocket():
         return None
 
     def cancel(self):
+        """Cancels an ongoing blocking receive()."""
         if self.waiting == None:
             return
         self.waiting.set()
