@@ -46,9 +46,6 @@ txdata: libs txdata.o
 rxdata: libs rxdata.o
 	$(CC) -o rxdata rxdata.o libunet.a libfjage.a libkissfft.a -lpthread -lm
 
-txandrecord: libs txandrecord.o
-	$(CC) -o txandrecord txandrecord.o libunet.a libfjage.a libkissfft.a -lpthread -lm
-
 test: libs test_unet
 	./test_unet ${IP} ${ADDR} ${DEVICE}
 
