@@ -6,6 +6,27 @@
 
 typedef void *modem_t;        ///< modem connection
 
+// Services
+#define PHYSICAL                 "org.arl.unet.Services.PHYSICAL"
+#define BASEBAND                 "org.arl.unet.Services.BASEBAND"
+#define RANGING                  "org.arl.unet.Services.RANGING"
+#define SCHEDULER                "org.arl.unet.Services.SCHEDULER"
+#define SHELL                    "org.arl.fjage.shell.Services.SHELL"
+
+// Messages
+#define TXFRAMEREQ               "org.arl.unet.phy.TxFrameReq"
+#define TXFRAMENTF               "org.arl.unet.phy.TxFrameNtf"
+#define RXFRAMENTF               "org.arl.unet.phy.RxFrameNtf"
+#define TXFRAMESTARTNTF          "org.arl.unet.phy.TxFrameStartNtf"
+#define DATAGRAMREQ              "org.arl.unet.DatagramReq"
+#define RANGEREQ                 "org.arl.unet.phy.RangeReq"
+#define RANGENTF                 "org.arl.unet.phy.RangeNtf"
+#define TXBASEBANDSIGNALREQ      "org.arl.unet.bb.TxBasebandSignalReq"
+#define RECORDBASEBANDSIGNALREQ  "org.arl.unet.bb.RecordBasebandSignalReq"
+#define RXBASEBANDSIGNALNTF      "org.arl.unet.bb.RxBasebandSignalNtf"
+#define ADDSCHEDULEDSLEEPREQ     "org.arl.unet.scheduler.AddScheduledSleepReq"
+#define PARAMETERREQ             "org.arl.unet.ParameterReq"
+
 /// Port number
 
 #define PORT                1100
@@ -24,9 +45,17 @@ typedef void *modem_t;        ///< modem connection
 #define TRIS_PGA_GAIN_30      30
 #define TRIS_PGA_GAIN_36      36
 
-/// Maximum length of a frame ID string.
+/// Maximum length of a frame ID string
 
 #define FRAME_ID_LEN        64
+
+/// Transmit sampling rate
+
+#define TXSAMPLINGFREQ           192000 //Hz
+
+/// Timeout
+
+#define TIMEOUT                  1000   //ms
 
 /// Types of frames.
 

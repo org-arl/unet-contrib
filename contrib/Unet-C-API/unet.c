@@ -15,39 +15,6 @@
 #include <time.h>
 #include <errno.h>
 
-
-#define TXSAMPLINGFREQ           192000 //Hz
-#define PBSBLK                   65536  //samples
-#define EXTRARECTIME_SEC         0.25   //ms
-#define MINPULSEDELAY            5      //ms
-#define MINSIGDURATION           0.0014  //s
-#define TIMEOUT                  1000   //ms
-#define STANDBY                  -1
-#define N                        256
-#define EDGESAMPLES              140
-#define NOISYSAMPLES             11
-
-// Services
-#define PHYSICAL                 "org.arl.unet.Services.PHYSICAL"
-#define BASEBAND                 "org.arl.unet.Services.BASEBAND"
-#define RANGING                  "org.arl.unet.Services.RANGING"
-#define SCHEDULER                "org.arl.unet.Services.SCHEDULER"
-#define SHELL                    "org.arl.fjage.shell.Services.SHELL"
-
-// Messages
-#define TXFRAMEREQ               "org.arl.unet.phy.TxFrameReq"
-#define TXFRAMENTF               "org.arl.unet.phy.TxFrameNtf"
-#define RXFRAMENTF               "org.arl.unet.phy.RxFrameNtf"
-#define TXFRAMESTARTNTF          "org.arl.unet.phy.TxFrameStartNtf"
-#define DATAGRAMREQ              "org.arl.unet.DatagramReq"
-#define RANGEREQ                 "org.arl.unet.phy.RangeReq"
-#define RANGENTF                 "org.arl.unet.phy.RangeNtf"
-#define TXBASEBANDSIGNALREQ      "org.arl.unet.bb.TxBasebandSignalReq"
-#define RECORDBASEBANDSIGNALREQ  "org.arl.unet.bb.RecordBasebandSignalReq"
-#define RXBASEBANDSIGNALNTF      "org.arl.unet.bb.RxBasebandSignalNtf"
-#define ADDSCHEDULEDSLEEPREQ     "org.arl.unet.scheduler.AddScheduledSleepReq"
-#define PARAMETERREQ             "org.arl.unet.ParameterReq"
-
 typedef struct
 {
     fjage_gw_t gw;
