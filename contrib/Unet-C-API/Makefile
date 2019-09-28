@@ -20,23 +20,35 @@ $(FJAGE_DIR):
 libunet.a: unet.o
 	$(AR) rc $@ $^
 
-%.o: %.c unet.h fjage.h
-	$(CC) $(CFLAGS) -c $< -o $@
+wakeup.o: samples/wakeup.c unet.h fjage.h
+	$(CC) $(CFLAGS) -c samples/wakeup.c -o samples/wakeup.o
+
+rs232_wakeup.o: samples/rs232_wakeup.c unet.h fjage.h
+	$(CC) $(CFLAGS) -c samples/rs232_wakeup.c -o samples/rs232_wakeup.o
+
+txdata.o: samples/txdata.c unet.h fjage.h
+	$(CC) $(CFLAGS) -c samples/txdata.c -o samples/txdata.o
+
+rxdata.o: samples/rxdata.c unet.h fjage.h
+	$(CC) $(CFLAGS) -c samples/rxdata.c -o samples/rxdata.o
+
+test_unet.o: test/test_unet.c unet.h fjage.h
+	$(CC) $(CFLAGS) -c test/test_unet.c -o test/test_unet.o
 
 test_unet: libs test_unet.o
-	$(CC) -o test_unet test_unet.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o test/test_unet test/test_unet.o libunet.a libfjage.a -lpthread -lm
 
 wakeup: libs wakeup.o
-	$(CC) -o wakeup wakeup.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/wakeup samples/wakeup.o libunet.a libfjage.a -lpthread -lm
 
 rs232_wakeup: libs rs232_wakeup.o
-	$(CC) -o rs232_wakeup rs232_wakeup.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/rs232_wakeup samples/rs232_wakeup.o libunet.a libfjage.a -lpthread -lm
 
 txdata: libs txdata.o
-	$(CC) -o txdata txdata.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/txdata samples/txdata.o libunet.a libfjage.a -lpthread -lm
 
 rxdata: libs rxdata.o
-	$(CC) -o rxdata rxdata.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/rxdata samples/rxdata.o libunet.a libfjage.a -lpthread -lm
 
 test: libs test_unet
 	./test_unet ${IP} ${ADDR} ${DEVICE}
@@ -45,8 +57,7 @@ deepclean: clean
 	rm -rf "$(FJAGE_DIR)" "$(FJAGE_VER).zip" fjage.h libfjage.a kissfft kiss_fft.h
 
 clean:
-	rm -rf c-api libunet.a *.o test_unet wakeup rs232_wakeup txdata rxdata txandrecord recfile.txt txtimes.txt
-
+	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/rxdata
 
 api-bundle: libs
 	mkdir -p c-api/kissfft

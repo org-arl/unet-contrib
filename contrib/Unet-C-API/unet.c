@@ -68,7 +68,7 @@ static void *monitor(void *p)
     return NULL;
 }
 
-fjage_msg_t receive(_modem_t *mm, const char *clazz, const char *id, long timeout)
+static fjage_msg_t receive(_modem_t *mm, const char *clazz, const char *id, long timeout)
 {
     pthread_mutex_lock(&mm->txlock);
     fjage_interrupt(mm->gw);
@@ -85,7 +85,7 @@ fjage_msg_t receive(_modem_t *mm, const char *clazz, const char *id, long timeou
     return msg;
 }
 
-fjage_msg_t request(_modem_t *mm, const fjage_msg_t request, long timeout)
+static fjage_msg_t request(_modem_t *mm, const fjage_msg_t request, long timeout)
 {
     pthread_mutex_lock(&mm->txlock);
     fjage_interrupt(mm->gw);
