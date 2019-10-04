@@ -1,0 +1,169 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="">
+<!--
+Web panel for speed test
+========================
+
+On the transmission modem:
+
+    mtu = phy[2].MTU;
+    100.times {
+      phy << new TxFrameReq(type:2, data: new byte[mtu]);
+      receive(TxFrameNtf);
+    }
+
+-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Unet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="/img/unet.ico">
+  <link rel="stylesheet" href="/css/vendor/vendor.css">
+  <link rel="stylesheet" href="/css/vendor/app-orange.css">
+  <link rel="stylesheet" href="/css/vendor/font.css">
+  <link rel="stylesheet" href="/css/vendor/sweetalert.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/vendor/sweetalert/sweetalert.min.js"></script>
+  <script src="/js/vendor/fetch/fetch.umd.js"></script>
+  <script src="/js/vendor/vendor/vendor.js" ></script>
+  <script type='module' src='/js/nodeInfo.js'></script>
+  <script type='module'>
+    import { Gateway, Performative, MessageClass } from '../fjage/fjage.js';
+    import '/js/nodeInfo.js';
+
+    const avgtime = 10000;
+
+    var gw = new Gateway();
+    gw.addMessageListener(listener);
+
+    var TxFrameReq = MessageClass('org.arl.unet.phy.TxFrameReq');
+    var TxFrameNtf = MessageClass('org.arl.unet.phy.TxFrameNtf');
+    var TxFrameStartNtf = MessageClass('org.arl.unet.phy.TxFrameStartNtf');
+    var RxFrameStartNtf = MessageClass('org.arl.unet.phy.RxFrameStartNtf');
+    var RxFrameNtf = MessageClass('org.arl.unet.phy.RxFrameNtf');
+    var BadFrameNtf = MessageClass('org.arl.unet.phy.BadFrameNtf');
+
+    var phy = gw.agent('phy');
+    gw.subscribe(phy);
+
+    function updateBar(name, value, str = null, min = 0, max = 100) {
+      let elem = document.getElementById(name);
+      let x = Math.max(Math.min(Math.round(100*(value-min)/(max-min)), 100), 0);
+      elem.style = 'width:'+String(x)+'%';
+      if (str === null) str = String(x)+' %';
+      elem.innerText = str;
+    }
+
+    var rxdb = [];
+    var detdb = [];
+    var rssidb = [];
+    var qualdb = [];
+
+    function rx(bits = 0) {
+      let t = Date.now();
+      rxdb.push([t, bits]);
+      let i = 0;
+      while (i < rxdb.length && rxdb[i][0] < t-avgtime) i++;
+      while (i < rxdb.length && rxdb[i][1] != 0) i++;
+      if (i > 0) rxdb.splice(0, i);
+      if (rxdb.length == 0) return 0;
+      let total = 0;
+      for (i = 0; i < rxdb.length; i++)
+        total += rxdb[i][1];
+      return 1000*total/(t-rxdb[0][0]);
+    }
+
+    function det(d) {
+      let t = Date.now();
+      detdb.push([t, d]);
+      let i = 0;
+      while (i < detdb.length && detdb[i][0] < t-avgtime) i++;
+      if (i > 0) detdb.splice(0, i);
+      if (detdb.length == 0) return 0;
+      let maxd = 0;
+      for (i = 0; i < detdb.length; i++)
+        maxd = Math.max(maxd, detdb[i][1]);
+      return maxd;
+    }
+
+    function qual(q = null) {
+      let t = Date.now();
+      qualdb.push([t, q]);
+      let i = 0;
+      while (i < qualdb.length && qualdb[i][0] < t-avgtime) i++;
+      if (i > 0) qualdb.splice(0, i);
+      if (qualdb.length == 0) return 0;
+      let total = 0;
+      let n = 0;
+      for (i = 0; i < qualdb.length; i++)
+        if (qualdb[i][1] !== null) {
+          total += qualdb[i][1];
+          n++;
+        }
+      return n > 0 ? total/n : 0;
+    }
+
+    function rssi(v) {
+      let t = Date.now();
+      rssidb.push([t, v]);
+      let i = 0;
+      while (i < rssidb.length && rssidb[i][0] < t-avgtime) i++;
+      if (i > 0) rssidb.splice(0, i);
+      if (rssidb.length == 0) return 0;
+      let total = 0;
+      for (i = 0; i < rssidb.length; i++)
+        total += rssidb[i][1];
+      return total/rssidb.length;
+    }
+
+    function listener(msg) {
+      if (msg instanceof RxFrameStartNtf) {
+        rx();
+        updateBar('detbar', Math.round(100*det(msg.detector)));
+      }
+      if (msg instanceof BadFrameNtf) {
+        let v = rssi(msg.rssi);
+        updateBar('rssibar', v, String(Math.round(v))+' dB', -100, 0);
+        updateBar('qualbar', qual());
+        let datarate = rx();
+        updateBar('speedbar', datarate, String(Math.round(datarate))+' bps', 0, 10000);
+      }
+      if (msg instanceof RxFrameNtf) {
+        let v = rssi(msg.rssi);
+        updateBar('rssibar', v, String(Math.round(v))+' dB', -100, 0);
+        let p = 1.0*msg.errors/msg.bits;
+        let entropy = p == 0 ? 0 : -p*Math.log2(p) + -(1-p)*Math.log2(1-p);
+        let q = qual(Math.round(100*(1-entropy)));
+        updateBar('qualbar', q);
+        let type = msg.type;
+        let datarate = rx(8*msg.data.length);
+        updateBar('speedbar', datarate, String(Math.round(datarate))+' bps', 0, 10000);
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <!--[if lte IE 9]>
+        <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+    <![endif]-->
+  <div class="main-wrapper">
+    <div class="app header-fixed footer-fixed sidebar-fixed full-screen" id="app">
+      <article class="content dashboard-page">
+        <div class="section">
+          <div class="row sameheight-container">
+            <div class="col col-12 col-sm-12 col-md-12 col-xl-12" id="output">
+              <h1>Speed Test</h1><br>
+              Signal strength: <div class="progress" style="width:50%"><div id="rssibar" class="progress-bar progress-bar-info" role="progressbar" style="width:0%"></div></div><br>
+              Signal fidelity: <div class="progress" style="width:50%"><div id="detbar" class="progress-bar progress-bar-danger" role="progressbar" style="width:0%"></div></div><br>
+              Communication quality: <div class="progress" style="width:50%"><div id="qualbar" class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div></div><br>
+              Throughput: <div class="progress" style="width:50%"><div id="speedbar" class="progress-bar progress-bar-success" role="progressbar" style="width:0%"></div></div><br>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</body>
+</html>
