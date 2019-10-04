@@ -1,22 +1,9 @@
 <!DOCTYPE HTML>
 <html class="no-js" lang="">
-<!--
-Web panel for speed test
-========================
-
-On the transmission modem:
-
-    mtu = phy[2].MTU;
-    100.times {
-      phy << new TxFrameReq(type:2, data: new byte[mtu]);
-      receive(TxFrameNtf);
-    }
-
--->
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Unet</title>
+  <title>Unet Speedtest</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="/img/unet.ico">
   <link rel="stylesheet" href="/css/vendor/vendor.css">
@@ -43,6 +30,8 @@ On the transmission modem:
     var gw = new Gateway();
     gw.addMessageListener(listener);
 
+    var ParameterReq = MessageClass('org.arl.unet.ParameterReq');
+    var ParameterRsp = MessageClass('org.arl.unet.ParameterRsp');
     var TxFrameReq = MessageClass('org.arl.unet.phy.TxFrameReq');
     var TxFrameNtf = MessageClass('org.arl.unet.phy.TxFrameNtf');
     var TxFrameStartNtf = MessageClass('org.arl.unet.phy.TxFrameStartNtf');
@@ -119,9 +108,61 @@ On the transmission modem:
       if (rssidb.length == 0) return 0;
       let total = 0;
       for (i = 0; i < rssidb.length; i++)
-        total += rssidb[i][1];
-      return total/rssidb.length;
+        total += Math.pow(10, rssidb[i][1]/10);
+      return 10*Math.log10(total/rssidb.length);
     }
+
+    var txcnt = 0;
+    var mtu = 0;
+
+    function tx(type = 2) {
+      let req = new TxFrameReq();
+      req.perf = Performative.REQUEST;
+      req.recipient = phy;
+      req.type = type;
+      let data = [];
+      data.length = mtu;
+      data.fill(0);
+      req.data = data;
+      gw.request(req, 1000).then((rsp) => {
+        if (rsp === null || rsp.perf != Performative.AGREE) {
+          startTx.innerText = 'Start';
+        } else {
+          txcnt++;
+          document.getElementById('tx-cnt').innerText = String(txcnt);
+        }
+      })
+    }
+
+    var noisedb = [];
+    var last = 0;
+
+    function noise() {
+      if (Date.now()-last < 20000) {
+        noisedb.splice(1, noisedb.length-1);
+        document.getElementById('noisebar').classList.add('bg-info');
+        return;
+      } else {
+        document.getElementById('noisebar').classList.remove('bg-info');
+      }
+      let req = new ParameterReq();
+      req.perf = Performative.REQUEST;
+      req.recipient = phy;
+      req.index = -1;
+      req.param = 'noise';
+      gw.request(req, 1000).then((rsp) => {
+        if (rsp.perf == Performative.INFORM) {
+          noisedb.push(rsp.value);
+          if (noisedb.length > 3) noisedb.splice(0, 1);
+          let v = noisedb[0];
+          updateBar('noisebar', v, String(Math.round(v))+' dB', -100, 0);
+        }
+      })
+    }
+
+    setInterval(() => {
+      noise();
+    }, 2000);
 
     function listener(msg) {
       if (msg instanceof RxFrameStartNtf) {
@@ -129,22 +170,51 @@ On the transmission modem:
         updateBar('detbar', Math.round(100*det(msg.detector)));
       }
       if (msg instanceof BadFrameNtf) {
+        last = Date.now();
         let v = rssi(msg.rssi);
         updateBar('rssibar', v, String(Math.round(v))+' dB', -100, 0);
         updateBar('qualbar', qual());
         let datarate = rx();
-        updateBar('speedbar', datarate, String(Math.round(datarate))+' bps', 0, 10000);
+        updateBar('speedbar', Math.round(Math.log10(datarate)*10), String(Math.round(datarate))+' bps', 0, 50);
       }
       if (msg instanceof RxFrameNtf) {
+        last = Date.now();
         let v = rssi(msg.rssi);
         updateBar('rssibar', v, String(Math.round(v))+' dB', -100, 0);
-        let p = 1.0*msg.errors/msg.bits;
+        let p = msg.bits > 0 ? 1.0*msg.errors/msg.bits : 0;
         let entropy = p == 0 ? 0 : -p*Math.log2(p) + -(1-p)*Math.log2(1-p);
         let q = qual(Math.round(100*(1-entropy)));
         updateBar('qualbar', q);
         let type = msg.type;
         let datarate = rx(8*msg.data.length);
-        updateBar('speedbar', datarate, String(Math.round(datarate))+' bps', 0, 10000);
+        updateBar('speedbar', Math.round(Math.log10(datarate)*10), String(Math.round(datarate))+' bps', 0, 50);
+      }
+      if (msg instanceof TxFrameNtf) {
+        last = Date.now();
+        if (startTx.innerText != 'Start') tx();
+      }
+    }
+
+    var startTx = document.getElementById('start-tx');
+
+    startTx.onclick = function() {
+      if (startTx.innerText == 'Start') {
+        let req = new ParameterReq();
+        req.perf = Performative.REQUEST;
+        req.recipient = phy;
+        req.index = 2;
+        req.param = 'MTU';
+        gw.request(req, 1000).then((rsp) => {
+          if (rsp.perf == Performative.INFORM) {
+            mtu = rsp.value;
+            startTx.innerText = 'Stop';
+            txcnt = 0;
+            document.getElementById('tx-cnt').innerText = String(txcnt);
+            tx();
+          }
+        })
+      } else {
+        startTx.innerText = 'Start';
       }
     }
   </script>
@@ -152,20 +222,30 @@ On the transmission modem:
 
 <body>
   <!--[if lte IE 9]>
-        <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
-    <![endif]-->
+      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+  <![endif]-->
   <div class="main-wrapper">
     <div class="app header-fixed footer-fixed sidebar-fixed full-screen" id="app">
-      <article class="content dashboard-page">
-        <div class="section">
-          <div class="row sameheight-container">
-            <div class="col col-12 col-sm-12 col-md-12 col-xl-12" id="output">
-              <h1>Speed Test</h1><br>
-              Signal strength: <div class="progress" style="width:50%"><div id="rssibar" class="progress-bar progress-bar-info" role="progressbar" style="width:0%"></div></div><br>
-              Signal fidelity: <div class="progress" style="width:50%"><div id="detbar" class="progress-bar progress-bar-danger" role="progressbar" style="width:0%"></div></div><br>
-              Communication quality: <div class="progress" style="width:50%"><div id="qualbar" class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div></div><br>
-              Throughput: <div class="progress" style="width:50%"><div id="speedbar" class="progress-bar progress-bar-success" role="progressbar" style="width:0%"></div></div><br>
-            </div>
+      <article class="content dashboard-page d-flex flex-column">
+        <div class="row sameheight-container flex-grow-1">
+          <div class="col col-6">
+            <h1>Speed Test</h1><hr>
+            <h2>Reception</h2><br>
+            <span data-toggle="tooltip" title="Ambient noise level (dB full scale)">Noise level:</span>
+            <div class="progress" style="width:50%"><div id="noisebar" class="progress-bar" role="progressbar" style="width:0%"></div></div><br>
+            <span data-toggle="tooltip" title="Received signal strength (dB full scale)">Signal strength:</span>
+            <div class="progress" style="width:50%"><div id="rssibar" class="progress-bar" role="progressbar" style="width:0%"></div></div><br>
+            <span data-toggle="tooltip" title="Signal fidelity measures how well the received premable matches a transmitted preamble after passing through the channel">Signal fidelity:</span>
+            <div class="progress" style="width:50%"><div id="detbar" class="progress-bar" role="progressbar" style="width:0%"></div></div><br>
+            <span data-toggle="tooltip" title="Communication quality measures the mutual information between transmitted and received bits, and is estimated from bit error rate (BER) measurements before error correction">Communication quality:</span>
+            <div class="progress" style="width:50%"><div id="qualbar" class="progress-bar" role="progressbar" style="width:0%"></div></div><br>
+            <span data-toggle="tooltip" title="Throughput is the average number of bits of user data transmitted through the channel per unit time">Throughput:</span>
+            <div class="progress" style="width:50%"><div id="speedbar" class="progress-bar" role="progressbar" style="width:0%"></div></div><hr>
+            <h2>Transmission</h2><br>
+            <button type="button" class="btn btn-primary" data-toggle="button" aria-pressed="false" id="start-tx">Start</button><br>
+            TX count: <span id="tx-cnt">0</span>
+          </div><div class="col col-6">
+            <iframe src="/fjage/shell/index.html" class="terminal shell-frame"></iframe>
           </div>
         </div>
       </article>
