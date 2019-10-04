@@ -31,6 +31,10 @@ On the transmission modem:
   <script type='module'>
     import { Gateway, Performative, MessageClass } from '../fjage/fjage.js';
     import '/js/nodeInfo.js';
+      
+    setTimeout(() => {
+        document.querySelector('#logo').src = '/modem/img/subnero.png'
+    },1000)
 
     const avgtime = 10000;
 
