@@ -1,0 +1,280 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Unet Diagscope</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="/img/unet.ico">
+  <link rel="stylesheet" href="/css/vendor/vendor.css">
+  <link rel="stylesheet" href="/css/vendor/app-orange.css">
+  <link rel="stylesheet" href="/css/vendor/font.css">
+  <link rel="stylesheet" href="/css/vendor/sweetalert.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/vendor/sweetalert/sweetalert.min.js"></script>
+  <script src="/js/vendor/fetch/fetch.umd.js"></script>
+  <script src="/js/vendor/vendor/vendor.js" ></script>
+  <script src="plotly-latest.min.js"></script>
+  <script type='module' src='/js/nodeInfo.js'></script>
+  <script type='module'>
+    import { Gateway, Performative, MessageClass } from '../fjage/fjage.js';
+    import '/js/nodeInfo.js';
+
+    setTimeout(() => {
+      if (document.querySelector('#logo').src.endsWith('subnero.png')) {
+        document.querySelector('#logo').src = '/modem/img/subnero.png'
+      }
+    },1000)
+
+    var gw = new Gateway();
+    gw.addMessageListener(listener);
+
+    var ParameterReq = MessageClass('org.arl.unet.ParameterReq');
+    var ParameterRsp = MessageClass('org.arl.unet.ParameterRsp');
+    var DiagnosticsNtf = MessageClass('org.arl.yoda.DiagnosticsNtf');
+
+    var phy = gw.agent('phy');
+    gw.subscribe(gw.topic(phy,'diag'));
+
+    var axis = null;
+    var run = -1;
+    var trig = null;
+    var trigMode = false;
+
+    function stride2(x, p) {
+      var y = [];
+      y.length = x.length/2;
+      for (var i = 0; i < y.length; i++)
+        y[i] = x[2*i+p];
+      return y;
+    }
+
+    function plot(xmin, xmax, ymin, ymax, ydata = [], cplx = false) {
+      if (trig !== null && Math.max(...ydata) < trig) return;
+      if (axis !== null && xmin == axis[0] && xmax == axis[1] && ymin == axis[2] && ymax == axis[3] && cplx == axis[4]) {
+        if (cplx) {
+          Plotly.update('graph', {
+            x: [stride2(ydata, 0)],
+            y: [stride2(ydata, 1)]
+          });
+        } else {
+          Plotly.update('graph', {
+            x0: xmin,
+            dx: (xmax-xmin)/ydata.length,
+            y: [ydata]
+          });
+        }
+      } else {
+        axis = [xmin, xmax, ymin, ymax, cplx];
+        Plotly.newPlot('graph', cplx ? [{
+            type: 'scatter',
+            x: [stride2(ydata, 0)],
+            y: [stride2(ydata, 1)],
+            mode: 'markers',
+            marker: { size: 2 }
+          }] : [{
+            type: 'scatter',
+            x0: xmin,
+            dx: (xmax-xmin)/ydata.length,
+            y: [ydata],
+            mode: 'lines',
+            line: { width: 1, color: '#000080' },
+          }], {
+            xaxis: {
+              range: [xmin, xmax],
+              autorange: false,
+              linecolor: 'black',
+              linewidth: 1,
+              mirror: true
+            },
+            yaxis: {
+              range: [ymin, ymax],
+              autorange: false,
+              linecolor: 'black',
+              linewidth: 1,
+              mirror: true
+            },
+            paper_bgcolor: '#f0f3f6',
+            margin: {
+              l: 40, t: 50, b: 40, r: 20
+            }
+          }, {
+            displayModeBar: true,
+            scrollZoom: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['toImage', 'hoverClosestCartesian', 'hoverCompareCartesian', 'toggleSpikelines']
+          }
+        );
+      }
+    }
+
+    plot(0, 1, 0, 1);
+
+    function cls() {
+      if (run == 0) return;
+      document.getElementById('output').innerHTML = '';
+    }
+
+    function out(s) {
+      if (run == 0) return;
+      s = s.replace('\f','');
+      s = s.replace('&', '&amp;');
+      s = s.replace('<', '&lt;');
+      s = s.replace('>', '&gt;');
+      s = s.replace('\r','<br>');
+      s = s.replace('\n','<br>');
+      if (s.length > 0) document.getElementById('output').innerHTML += s + '<br>';
+    }
+
+    function updateRun() {
+      if (run == 0) {
+        document.getElementById('run').classList.remove('btn-primary');
+        document.getElementById('run').classList.add('btn-secondary');
+        document.getElementById('stop').classList.remove('btn-secondary');
+        document.getElementById('stop').classList.add('btn-primary');
+      } else {
+        document.getElementById('run').classList.remove('btn-secondary');
+        document.getElementById('run').classList.add('btn-primary');
+        document.getElementById('stop').classList.remove('btn-primary');
+        document.getElementById('stop').classList.add('btn-secondary');
+      }
+    }
+
+    function listener(msg) {
+      if (msg instanceof DiagnosticsNtf) {
+        if ('data' in msg) {
+          if (run != 0) plot(msg.xmin, msg.xmax, msg.ymin, msg.ymax, msg.data, msg.cplx);
+          if (run > 0) run--;
+          updateRun();
+        } else if ('text' in msg) {
+          if (msg.text.startsWith('\f')) cls();
+          out(msg.text);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    function setSource(src) {
+      let req = new ParameterReq();
+      req.perf = Performative.REQUEST;
+      req.recipient = phy;
+      req.index = -1;
+      req.param = 'diag';
+      req.value = src;
+      gw.send(req);
+    }
+
+    document.getElementById('dsrc-none').onclick    = () => { setSource('none'); }
+    document.getElementById('dsrc-pb').onclick      = () => { setSource('pb'); }
+    document.getElementById('dsrc-pb-p').onclick    = () => { setSource('pb:p'); }
+    document.getElementById('dsrc-bb-p').onclick    = () => { setSource('bb:p'); }
+    document.getElementById('dsrc-corr-1').onclick  = () => { setSource('corr:1'); }
+    document.getElementById('dsrc-corr-2').onclick  = () => { setSource('corr:2'); }
+    document.getElementById('dsrc-corr-3').onclick  = () => { setSource('corr:3'); }
+    document.getElementById('dsrc-mod').onclick     = () => { setSource('mod'); }
+    document.getElementById('dsrc-adc2-1').onclick  = () => { setSource('adc2:1'); }
+    document.getElementById('dsrc-adc2-2').onclick  = () => { setSource('adc2:2'); }
+    document.getElementById('dsrc-adc2-3').onclick  = () => { setSource('adc2:3'); }
+    document.getElementById('dsrc-adc2-4').onclick  = () => { setSource('adc2:4'); }
+    document.getElementById('dsrc-adc2-p1').onclick = () => { setSource('adc2:p1'); }
+    document.getElementById('dsrc-adc2-p2').onclick = () => { setSource('adc2:p2'); }
+    document.getElementById('dsrc-adc2-p3').onclick = () => { setSource('adc2:p3'); }
+    document.getElementById('dsrc-adc2-p4').onclick = () => { setSource('adc2:p4'); }
+
+    document.getElementById('run').onclick = () => { run = -1; updateRun(); }
+    document.getElementById('stop').onclick = () => { run = 0; updateRun(); }
+    document.getElementById('single').onclick = () => { run = 1; updateRun(); }
+
+    document.getElementById('graph').on('plotly_click', (data) => {
+      if (trigMode) {
+        trigMode = false;
+        let gd = document.getElementById('graph');
+        let xaxis = gd._fullLayout.xaxis;
+        let yaxis = gd._fullLayout.yaxis;
+        let l = gd._fullLayout.margin.l;
+        let t = gd._fullLayout.margin.t;
+        let x = data.event.pointerX - l;
+        let y = data.event.pointerY - t;
+        x = xaxis.p2c(x);
+        y = yaxis.p2c(y);
+        trig = y;
+        document.getElementById('trig').innerText = String(trig);
+        document.getElementById('set-trig').classList.remove('btn-primary');
+        document.getElementById('set-trig').classList.add('btn-secondary');
+      }
+    });
+
+    document.getElementById('set-trig').onclick = () => {
+      trig = null;
+      trigMode = true;
+      document.getElementById('trig').innerText = '';
+      document.getElementById('set-trig').classList.remove('btn-secondary');
+      document.getElementById('set-trig').classList.add('btn-primary');
+    }
+
+    document.getElementById('clear-trig').onclick = () => {
+      trig = null;
+      trigMode = false;
+      document.getElementById('trig').innerText = '';
+      document.getElementById('set-trig').classList.remove('btn-primary');
+      document.getElementById('set-trig').classList.add('btn-secondary');
+    }
+
+  </script>
+</head>
+
+<body>
+  <!--[if lte IE 9]>
+      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+  <![endif]-->
+  <div class="main-wrapper">
+    <div class="app header-fixed footer-fixed sidebar-fixed full-screen" id="app">
+      <article class="content dashboard-page d-flex flex-column">
+        <div class="row sameheight-container flex-grow-1">
+          <div class="col col-6">
+            <h1>Diagnostic Scope</h1><hr>
+            <div id="graph"></div><hr>
+            <table width="100%">
+            <tr><td width="50%">
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="diagsrc" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Source</button>
+              <div class="dropdown-menu" aria-labelledby="diagsrc">
+                <a class="dropdown-item" id="dsrc-none">None</a>
+                <a class="dropdown-item" id="dsrc-pb">Passband</a>
+                <a class="dropdown-item" id="dsrc-pb-p">Passband PSD</a>
+                <a class="dropdown-item" id="dsrc-bb-p">Baseband PSD</a>
+                <a class="dropdown-item" id="dsrc-corr-1">Correlator #1</a>
+                <a class="dropdown-item" id="dsrc-corr-2">Correlator #2</a>
+                <a class="dropdown-item" id="dsrc-corr-3">Correlator #3</a>
+                <a class="dropdown-item" id="dsrc-mod">Modulation</a>
+                <a class="dropdown-item" id="dsrc-adc2-1">ADC2 channel #1</a>
+                <a class="dropdown-item" id="dsrc-adc2-2">ADC2 channel #2</a>
+                <a class="dropdown-item" id="dsrc-adc2-3">ADC2 channel #3</a>
+                <a class="dropdown-item" id="dsrc-adc2-4">ADC2 channel #4</a>
+                <a class="dropdown-item" id="dsrc-adc2-p1">ADC2 channel #1 PSD</a>
+                <a class="dropdown-item" id="dsrc-adc2-p2">ADC2 channel #2 PSD</a>
+                <a class="dropdown-item" id="dsrc-adc2-p3">ADC2 channel #3 PSD</a>
+                <a class="dropdown-item" id="dsrc-adc2-p4">ADC2 channel #4 PSD</a>
+              </div>
+            </div><hr>
+            <button type="button" class="btn btn-secondary" id="run">Run</button>
+            <button type="button" class="btn btn-secondary" id="single">Single</button>
+            <button type="button" class="btn btn-secondary" id="stop">Stop</button>
+            <br>
+            <span style="font-size: 12px;">Trigger: <span id="trig"></span></span><br>
+            <button type="button" class="btn btn-secondary" id="set-trig">Set Level</button>
+            <button type="button" class="btn btn-secondary" id="clear-trig">Clear</button>
+            </td><td width="50%" valign="top">
+              <p id="output" style="font-size:12px;"></p>
+            </td></tr>
+            </table>
+          </div><div class="col col-6">
+            <iframe src="/fjage/shell/index.html" class="terminal shell-frame"></iframe>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</body>
+</html>
