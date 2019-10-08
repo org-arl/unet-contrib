@@ -1,8 +1,11 @@
+CC = gcc
 CGLAGS = $(CGLAGS) -std=c99 -Wall -Wextra -Werror -O2
 FJAGE_VER=edc9ecffd444adaf789d7eb2ecc650d1d7044d84
 FJAGE_DIR=fjage-$(FJAGE_VER)
 
-all: libs wakeup rs232_wakeup txdata rxdata
+all: libs
+
+samples: libs wakeup rs232_wakeup txdata rxdata
 
 libs: libfjage.a libunet.a
 
@@ -51,7 +54,7 @@ rxdata: libs rxdata.o
 	$(CC) -o samples/rxdata samples/rxdata.o libunet.a libfjage.a -lpthread -lm
 
 test: libs test_unet
-	./test_unet ${IP} ${ADDR} ${DEVICE}
+# 	./test_unet ${IP} ${ADDR} ${DEVICE}
 
 deepclean: clean
 	rm -rf "$(FJAGE_DIR)" "$(FJAGE_VER).zip" fjage.h libfjage.a kissfft kiss_fft.h

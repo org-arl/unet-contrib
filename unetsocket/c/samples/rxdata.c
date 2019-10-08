@@ -4,8 +4,7 @@
 //
 // In terminal window (an example):
 //
-// $ make
-// $ make rxdata
+// $ make samples
 // $ ./rxdata 192.168.1.119
 //
 // Pass the actual IP address of the modem in use for receiving data.

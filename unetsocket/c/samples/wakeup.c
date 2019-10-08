@@ -4,8 +4,7 @@
 //
 // In terminal window (an example):
 //
-// $ make
-// $ make wakeup
+// $ make samples
 // $ ./wakeup 00:14:2D:2F:C0:9A
 //
 // Pass the actual MAC address of a sleeping modem to wake it up.

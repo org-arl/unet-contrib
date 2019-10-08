@@ -5,7 +5,6 @@
 //
 // In terminal window (an example):
 //
-// $ make 
 // $ make test_unet
 // $ ./test_unet 192.168.1.74 9
 //
@@ -17,7 +16,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
-#include "unet.h"
+#include "../unet.h"
 
 #define SIGLEN     2000
 #define RECBUFSIZE 17000
@@ -121,10 +120,10 @@ int main(int argc, char* argv[]) {
 
   sleep(3);
 
-  // Test modem sleep
-  x = modem_sleep(modem);
-  test_assert("Modem put to sleep", x == 0);
-  sleep(3);
+  // // Test modem sleep
+  // x = modem_sleep(modem);
+  // test_assert("Modem put to sleep", x == 0);
+  // sleep(3);
 
   // Test acoustic wakeup transmission
   x = modem_tx_wakeup(modem, id);
@@ -139,11 +138,11 @@ int main(int argc, char* argv[]) {
 
   // Test recording
   x = modem_record(modem, buf, 1000);
-  if (x == 0) {
-    for(int i = 0; i < 2000; i++) {
-      printf("%f\n", buf[i]);
-    }
-  }
+  // if (x == 0) {
+  //   for(int i = 0; i < 2000; i++) {
+  //     printf("%f\n", buf[i]);
+  //   }
+  // }
   test_assert("\nRecording", x == 0);
 
   // Test setter and getter for integer valued modem parameter

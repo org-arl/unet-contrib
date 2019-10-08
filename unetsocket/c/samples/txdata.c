@@ -4,8 +4,7 @@
 //
 // In terminal window (an example):
 //
-// $ make
-// $ make txdata
+// $ make samples
 // $ ./txdata 192.168.1.119 2
 //
 // Pass the actual IP address of transmitter and node address of the receiver.
