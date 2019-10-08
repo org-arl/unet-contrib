@@ -24,6 +24,12 @@ unsigned char mac_addr[MAC_ADDR_MAX];
 
 int packMacAddr(char *, unsigned char *);
 
+static int error(const char *msg)
+{
+    printf("\n*** ERROR: %s\n\n", msg);
+    return -1;
+}
+
 int main(int argc, char *argv[])
 {
     int ret = 0;
@@ -31,7 +37,7 @@ int main(int argc, char *argv[])
 
     if (argc <= 1)
     {
-        printf("Usage : ./wakeup 00:14:2D:2F:C0:9A \n");
+        error("Usage : ./wakeup 00:14:2D:2F:C0:9A \n");
         return -1;
     }
 
@@ -40,7 +46,7 @@ int main(int argc, char *argv[])
     if (ret < 0) return ret;
     ret = modem_ethernet_wakeup(mac_addr);
     if (ret < 0) return ret;
-    printf("done\n");
+    printf("Done..\n");
 }
 
 

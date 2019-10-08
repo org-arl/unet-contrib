@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        printf("Usage rs232_wakeup <dev_name> \n");
+        error("Usage : rs232_wakeup <dev_name> \n");
         return -1;
     }
 

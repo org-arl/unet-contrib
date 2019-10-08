@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        printf("Usage txdata <ip-address> [node-address] \n");
+        error("Usage : txdata <ip-address> [node-address] \n");
         return -1;
     }
 

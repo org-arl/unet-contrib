@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        printf("Usage rxdata <ip-address> \n");
+        error("Usage : rxdata <ip-address> \n");
         return -1;
     }
 
