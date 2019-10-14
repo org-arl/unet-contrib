@@ -1,4 +1,4 @@
-# How to connect to modem with MATLAB
+# Accessing UnetStack Java APIs using MATLAB
 
 #### Key steps:
 
@@ -70,42 +70,141 @@ Of course, when doing this, use your actual folders, not `/home/myname/...`.
 And restart MATLAB once you've edited the static classpath. If you type `javaclasspath`
 in MATLAB, you should be able to see these files on the static classpath.
 
-## Open a connection to modem
+## Create a fjåge Gateway and connect to modem, send messages, and shutdown
 
-In MATLAB, connect to the modem (e.g. 192.168.1.42),
-```matlab
-modem = modem_open_eth('192.168.1.42')
-```
-
-## Example of transmit and record
-
-Transmit a pulse train and record immediately,
-```matlab
-signal = ones(100, 1)  % example signal
-npulses = 10           % number of times signal transmission is repeated
-pri = 100              % pulse repitition interval in ms
-recbufsize = 200000    % number of samples to record
-
-[recbuf, txtimes, status] = modem_tx_and_record(modem, signal, npulses, pri, recbufsize)
-```
-`recbuf` contains the recorded signal, `txtimes` contains the transmission start times and `status` indicates whether the operation was successful.
-
-## Close connection to modem
-
-To close the connection to modem:
+In MATLAB, connect to the modem (e.g. 192.168.0.42), send messages (e.g. ask for a baseband recording), and shutdown:
 
 ```matlab
-modem_close(modem)
+>> modem = org.arl.fjage.remote.Gateway('192.168.0.42', 1100)
+>> bb = modem.agentForService(org.arl.unet.Services.BASEBAND)
+>> msg = org.arl.unet.bb.RecordBasebandSignalReq()
+>> msg.setRecipient(bb)
+>> modem.request(msg, 1000)
+ans =
+AGREE
+>> ntf = modem.receive()
+ntf =
+RxBasebandSignalNtf:INFORM rxTime:42836833 rssi:‐79.5 adc:1 fc:12000 fs:12000 (12000 samples)
+>> plot(ntf.getSignal())
+>> modem.shutdown()
+```
+## Example of recording a signal
+
+```matlab
+% subscribe to the agent providing the baseband service
+agent = modem.agentForService(org.arl.unet.Services.BASEBAND); 
+modem.subscribe(agent);
+
+% create the message with relevant attributes to be sent to the modem 
+req = org.arl.unet.bb.RecordBasebandSignalReq(); 
+req.setRecipient(agent);
+
+% send the message to the modem and wait for the response 
+rsp = modem.request(req, 5000);
+
+% check if the message was successfully sent
+if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
+	cls = org.arl.unet.bb.RxBasebandSignalNtf().getClass(); % receive the notification message containing the signal ntf = modem.receive(cls, 5000);
+end
+
+% plot the recorded signal 
+plot(ntf.getSignal())
+```
+
+## Example of transmitting a frame
+
+```matlab
+% subscribe to the agent providing the physical service
+agent = modem.agentForService(org.arl.unet.Services.PHYSICAL); 
+modem.subscribe(agent);
+
+% create the message with relevant attributes to be sent to the modem req = org.arl.unet.phy.TxFrameReq();
+req.setRecipient(agent);
+
+% send the message to the modem and wait for the response 
+rsp = modem.request(req, 5000);
+
+% check if the message was successfully sent
+if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
+	cls = org.arl.unet.phy.TxFrameNtf().getClass();
+	% receive the notification message
+	ntf = modem.receive(cls, 5000);
+end
+```
+
+## Example of transmitting a baseband signal
+
+```matlab
+% load the baseband signal
+% signal.txt contains interleaved real and imaginary values in a single column % with values normalized between +1 and ‐1
+x = load('signal.txt');
+
+% open the modem gateway
+modem = org.arl.fjage.remote.Gateway('192.168.0.42', 1100);
+
+% subscribe to the agent providing baseband service
+bb = modem.agentForService(org.arl.unet.Services.BASEBAND);
+
+% create the message with relevant attributes to be sent to the modem 
+msg = org.arl.unet.bb.TxBasebandSignalReq();
+msg.setSignal(x);
+msg.setRecipient(bb);
+
+% send the message to modem
+rsp = modem.request(msg, 1000);
+
+% check if the message was successfully sent
+if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
+	cls = org.arl.unet.phy.TxFrameNtf().getClass(); 
+	% receive the notification message
+	ntf = modem.receive(cls, 5000);
+end
+```
+
+## Example of transmitting a passband signal
+
+```matlab
+% load the passband signal
+% signal.txt must contain the real values in single column sampled at 192KHz % with values normalized between +1 and ‐1
+x = load('signal.txt');
+
+% open the modem gateway
+modem = org.arl.fjage.remote.Gateway('192.168.0.42', 1100);
+
+% subscribe to the agent providing baseband service
+bb = modem.agentForService(org.arl.unet.Services.BASEBAND);
+
+% create the message with relevant attributes to be sent to the modem
+msg = org.arl.unet.bb.TxBasebandSignalReq(); 
+msg.setSignal(x);
+msg.setRecipient(bb);
+
+% to transmit the passband signal the carrier frequency attribute is set to 0
+msg.setCarrierFrequency(0)
+
+% send the message to modem
+rsp = modem.request(msg, 1000);
+
+% check if the message was successfully sent
+if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
+	cls = org.arl.unet.phy.TxFrameNtf().getClass(); 
+	% receive the notification message
+	ntf = modem.receive(cls, 5000);
+end
 ```
 
 
-## Creating a `tx.txt` file for `tx_and_record_api_example`
 
-```
-Fs = 192000
-T = 3e-3
-fc = 30000
-t = (0:fix(T*Fs) - 1 )./Fs
-tx = sin(2*pi*fc*t)
-save('tx.txt', '-ascii', 'tx')
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
