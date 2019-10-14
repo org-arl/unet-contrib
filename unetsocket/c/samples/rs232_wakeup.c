@@ -5,7 +5,7 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./rs232_wakeup <devname>
+// $ ./rs232_wakeup <dev_name> 
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +28,10 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        error("Usage : rs232_wakeup <dev_name> \n");
+        error("Usage : rs232_wakeup <dev_name> \n"
+              "dev_name: Device name on which serial port exists. \n"
+              "A usage example: \n"
+              "rs232_wakeup /dev/tty.usbserial \n");
         return -1;
     }
 

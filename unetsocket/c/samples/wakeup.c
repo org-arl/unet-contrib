@@ -5,7 +5,7 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./wakeup 00:14:2D:2F:C0:9A
+// $ ./wakeup <device_MAC_address>
 //
 // Pass the actual MAC address of a sleeping modem to wake it up.
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,11 +32,12 @@ static int error(const char *msg)
 int main(int argc, char *argv[])
 {
     int ret = 0;
-    printf("wakeup \n");
-
     if (argc <= 1)
     {
-        error("Usage : ./wakeup 00:14:2D:2F:C0:9A \n");
+        error("Usage : ./wakeup <device_MAC_address> \n"
+              "device_MAC_address: Hardware MAC address of the sleeping modem. \n"
+              "A usage example: \n"
+              "wakeup 00:14:2D:2F:C0:9A \n");
         return -1;
     }
 
@@ -45,7 +46,6 @@ int main(int argc, char *argv[])
     if (ret < 0) return ret;
     ret = modem_ethernet_wakeup(mac_addr);
     if (ret < 0) return ret;
-    printf("Done..\n");
 }
 
 

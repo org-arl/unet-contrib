@@ -28,7 +28,7 @@ To compile and run the tests, the following steps need to be performed:
 
 2. Connect to one of the modem via ethernet or wifi.
 
-3. Open a terminal window and compile `test.c` using :
+3. Open a terminal window and compile `test_unet.c` using :
 
 ```bash
 make test

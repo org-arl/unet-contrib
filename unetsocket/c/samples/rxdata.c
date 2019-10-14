@@ -5,7 +5,7 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./rxdata 192.168.1.119
+// $ ./rxdata <ip_address>
 //
 // Pass the actual IP address of the modem in use for receiving data.
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,10 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        error("Usage : rxdata <ip-address> \n");
+        error("Usage : rxdata <ip_address> \n"
+              "ip_address: IP address of the receiver modem. \n"
+              "A usage example: \n"
+              "rxdata 192.168.1.10 \n");
         return -1;
     }
 

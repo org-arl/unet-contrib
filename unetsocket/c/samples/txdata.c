@@ -5,7 +5,7 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./txdata 192.168.1.119 2
+// $ ./txdata <ip_address> <peer_node_address>
 //
 // Pass the actual IP address of transmitter and node address of the receiver.
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,11 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        error("Usage : txdata <ip-address> [node-address] \n");
+        error("Usage : txdata <ip_address> <peer_node_address> \n"
+              "ip_address: IP address of the transmitter modem. \n"
+              "peer_node_address: Node address of the receiver modem. Set this to 0 for broadcast. \n"
+              "A usage example: \n"
+              "txdata 192.168.1.20 5\n");
         return -1;
     }
 
