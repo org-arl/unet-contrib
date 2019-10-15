@@ -90,11 +90,6 @@ int main(int argc, char* argv[]) {
   modem_set_tx_callback(modem, txcb);
   sleep(1);
 
-  // Self test
-  x = modem_selftest(modem);
-  test_assert("Power on self test", x == 0);
-  sleep(3);
-
   // Test packet transmission of different types
   for (int i = 1; i <= 3 ; i++) {
     x = modem_tx_data(modem, addressofDestination, data, 7, i, id);
@@ -138,11 +133,6 @@ int main(int argc, char* argv[]) {
 
   // Test recording
   x = modem_record(modem, buf, 1000);
-  // if (x == 0) {
-  //   for(int i = 0; i < 2000; i++) {
-  //     printf("%f\n", buf[i]);
-  //   }
-  // }
   test_assert("\nRecording", x == 0);
 
   // Test setter and getter for integer valued modem parameter

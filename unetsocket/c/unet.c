@@ -274,16 +274,6 @@ int modem_get_range(modem_t modem, int to, float *range)
     return -1;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-int modem_get_range_and_bearing(modem_t modem, int to, float *range, float *bearing)
-{
-    // NOTE: Currently does not return any bearing. Will be updated to support bearing
-    // when USBL functionality is added.
-    return -1;
-}
-#pragma GCC diagnostic pop
-
 int modem_tx_signal(modem_t modem, float *signal, int nsamples, int rate, float fc, char *id)
 {
     if (modem == NULL) return -1;
@@ -650,14 +640,4 @@ int modem_sget(modem_t modem, int index, char *target_name, char *param_name, ch
     fjage_msg_destroy(msg);
     fjage_aid_destroy(aid);
     return -1;
-}
-
-int modem_selftest(modem_t modem)
-{
-    if (modem == NULL) return -1;
-    _modem_t *mm = modem;
-    int teststatus;
-    if (modem_iget(mm, 0, "org.arl.unet.Services.PHYSICAL", "post", &teststatus) < 0) return -1;
-    if (teststatus < 0 ) return -1;
-    return 0;
 }

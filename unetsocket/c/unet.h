@@ -152,16 +152,6 @@ int modem_set_tx_callback(modem_t modem, modem_txcb_t callback);
 
 int modem_get_range(modem_t modem, int to, float *range);
 
-/// Get the range and bearing information
-///
-/// @param modem            Gateway
-/// @param to               Address of the node to which range
-///                         and bearing is requested
-/// @param range            Measured range
-/// @return                 0 on success, -1 otherwise
-
-int modem_get_range_and_bearing(modem_t modem, int to, float *range, float *bearing);
-
 /// Transmit a signal.
 ///
 /// For a 18-36 KHz modem, set fc to 24000 for baseband signal transmission
@@ -232,10 +222,10 @@ int modem_tx_wakeup(modem_t modem, char *id);
 /// Setter for integer parameters.
 ///
 /// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
+/// @param index            Set for indexed parameters (e.g paramaters
 ///                         for CONTROL and DATA frames), For general
 ///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
+/// @param target_name      Fully qulaified service class name/ agent name
 /// @param param_name       Parameter name
 /// @param value            Value to be set
 /// @return                 0 on success, -1 otherwise
@@ -245,10 +235,10 @@ int modem_iset(modem_t modem, int index, char *target_name, char *param_name, in
 /// Setter for float parameters.
 ///
 /// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
+/// @param index            Set for indexed parameters (e.g paramaters
 ///                         for CONTROL and DATA frames), For general
 ///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
+/// @param target_name      Fully qulaified service class name/ agent name
 /// @param param_name       Parameter name
 /// @param value            Value to be set
 /// @return                 0 on success, -1 otherwise
@@ -258,10 +248,10 @@ int modem_fset(modem_t modem, int index, char *target_name, char *param_name, fl
 /// Setter for boolean parameters.
 ///
 /// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
+/// @param index            Set for indexed parameters (e.g paramaters
 ///                         for CONTROL and DATA frames), For general
 ///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
+/// @param target_name      Fully qulaified service class name/ agent name
 /// @param param_name       Parameter name
 /// @param value            Value to be set
 /// @return                 0 on success, -1 otherwise
@@ -271,10 +261,10 @@ int modem_bset(modem_t modem, int index, char *target_name, char *param_name, bo
 /// Setter for String parameters.
 ///
 /// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
+/// @param index            Set for indexed parameters (e.g paramaters
 ///                         for CONTROL and DATA frames), For general
 ///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
+/// @param target_name      Fully qulaified service class name/ agent name
 /// @param param_name       Parameter name
 /// @param value            Value to be set
 /// @return                 0 on success, -1 otherwise
@@ -284,10 +274,10 @@ int modem_sset(modem_t modem, int index, char *target_name, char *param_name, ch
 /// Getter for integer parameters.
 ///
 /// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
+/// @param index            Set for indexed parameters (e.g paramaters
 ///                         for CONTROL and DATA frames), For general
 ///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
+/// @param target_name      Fully qulaified service class name/ agent name
 /// @param param_name       Parameter name
 /// @param value            Value to get
 /// @return                 0 on success, -1 otherwise
@@ -297,10 +287,10 @@ int modem_iget(modem_t modem, int index, char *target_name, char *param_name, in
 /// Getter for float parameters.
 ///
 /// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
+/// @param index            Set for indexed parameters (e.g paramaters
 ///                         for CONTROL and DATA frames), For general
 ///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
+/// @param target_name      Fully qulaified service class name/ agent name
 /// @param param_name       Parameter name
 /// @param value            Values to get
 /// @return                 0 on success, -1 otherwise
@@ -310,10 +300,10 @@ int modem_fget(modem_t modem, int index, char *target_name, char *param_name, fl
 /// Getter for boolean parameters.
 ///
 /// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
+/// @param index            Set for indexed parameters (e.g paramaters
 ///                         for CONTROL and DATA frames), For general
 ///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
+/// @param target_name      Fully qulaified service class name/ agent name
 /// @param param_name       Parameter name
 /// @param value            Value to get
 /// @return                 0 on success, -1 otherwise
@@ -323,23 +313,16 @@ int modem_bget(modem_t modem, int index, char *target_name, char *param_name, bo
 /// Getter for string parameters.
 ///
 /// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
+/// @param index            Set for indexed parameters (e.g paramaters
 ///                         for CONTROL and DATA frames), For general
 ///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
+/// @param target_name      Fully qulaified service class name/ agent name
 /// @param param_name       Parameter name
 /// @param buf              String to get
 /// @param buflen           Length of the string
 /// @return                 0 on success, -1 otherwise
 
 int modem_sget(modem_t modem, int index, char *target_name, char *param_name, char *buf, int buflen);
-
-/// Self test for Subnero modem
-///
-/// @param modem            Gateway
-/// @return                 0 on PASS, -1 otherwise
-
-int modem_selftest(modem_t modem);
 
 
 #endif
