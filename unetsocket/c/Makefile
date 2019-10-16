@@ -59,10 +59,8 @@ test: libs test_unet
 	rm -rf *.zip
 	rm -rf fjage-*
 
-deepclean: clean
-	rm -rf "$(FJAGE_DIR)" "$(FJAGE_VER).zip" fjage.h libfjage.a kissfft kiss_fft.h fjage
-
 clean:
 	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/rxdata
+	rm -rf "$(FJAGE_DIR)" "$(FJAGE_VER).zip" fjage.h libfjage.a kissfft kiss_fft.h fjage
 
 .PHONY: all clean

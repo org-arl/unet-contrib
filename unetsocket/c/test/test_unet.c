@@ -1,14 +1,29 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// To run tests, power on two modems, and connect to one of the modems and then
-// run the tests as following:
+// Steps to setup the test environment:
+//
+// 1. To run tests, run the unet simulator with two nodes
+//    (or)
+//    Power on two modems and set them up in water
+//
+// 2. Make sure a ethernet connection to one of the modem is available
+//
+// 3. Run the tests as following:
 //
 // In terminal window (an example):
 //
-// $ make test_unet
-// $ ./test_unet 192.168.1.74 9
+// $ make test
+// $ test/test_unet <ip_address> <peer_node_address> <port>
 //
-// Pass the actual IP address & destination address of the modems above.
+// NOTE: To run the simulator with 2 nodes, download the unet community edition
+// from https://unetstack.net/ and run the following:
+//
+// >> bin/unet samples/2-node-network.groovy
+//
+// For more details on using the unet simulator to deploy 2 node network, follow
+// the link below:
+//
+// https://unetstack.net/handbook/unet-handbook_getting_started.html
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
@@ -16,6 +31,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <netdb.h>
 #include "../unet.h"
 
 #define SIGLEN     2000
@@ -54,7 +70,7 @@ static void txcb(const char* id, modem_packet_t type, long time) {
 int main(int argc, char* argv[]) {
   printf("\n");
   int x;
-  int addressofDestination = (int)argv[2];
+  int port = 1100;
   char id[FRAME_ID_LEN];
   float buf[SIGLEN];
   float recbuf[RECBUFSIZE];
@@ -76,22 +92,39 @@ int main(int argc, char* argv[]) {
   char stringval[5];
   modem_t modem;
 
-  // Open a connection to modem
+  if (argc < 3) {
+    error("Usage : test_unet <ip_address> <peer_node_address> <port> \n"
+          "ip_address: IP address of the transmitter modem. \n"
+          "peer_node_address: Node address of the receiver modem. Set this to 0 for broadcast. \n"
+          "port: port number of the Unet service on the modem (default value used is 1100)"
+          "A usage example: \n"
+          "test_unet 192.168.1.20 231 1101\n");
+    return -1;
+  }
+
   if (argc > 3) {
-    modem = modem_open_rs232(argv[3], 115200, "N81");
-    if (modem == NULL) return error("Couldn't open modem on serial port");
+    port = (int)strtol(argv[3], NULL, 10);
   }
-  else {
-    modem = modem_open_eth(argv[1], 1100);
-    if (modem == NULL) return error("Couldn't open modem");
+
+  struct hostent *server = gethostbyname(argv[1]);
+  if (server == NULL) {
+    error("Enter a valid ip addreess\n");
+    return -1;
   }
+
+  int addressofDestination = (int)strtol(argv[2], NULL, 10);
+
+  // Open a connection to modem
+  modem = modem_open_eth(argv[1], port);
   if (modem == NULL) return error("Couldn't open modem");
+
+  // register callbacks
   modem_set_rx_callback(modem, rxcb);
   modem_set_tx_callback(modem, txcb);
   sleep(1);
 
   // Test packet transmission of different types
-  for (int i = 1; i <= 3 ; i++) {
+  for (int i = 1; i <= 2 ; i++) {
     x = modem_tx_data(modem, addressofDestination, data, 7, i, id);
     if (x == 0) printf("TX: %s\n", id);
     test_assert("Packet transmission", x == 0);
@@ -99,31 +132,20 @@ int main(int argc, char* argv[]) {
   }
 
   // Test transmission of signals
-  for (int i = 1; i <= 3; i++) {
+  for (int i = 1; i <= 2; i++) {
     x = modem_tx_signal(modem, basebandsignal, 1000, 192000 ,24000, id);
     if (x == 0) printf("TX: %s\n", id);
     test_assert("Baseband signal transmission", x == 0);
     sleep(3);
   }
 
-  for (int i = 1; i <= 3; i++) {
+  for (int i = 1; i <= 2; i++) {
     x = modem_tx_signal(modem, passbandsignal, 2000, 192000, 0, id);
     if (x == 0) printf("TX: %s\n", id);
     test_assert("Passband signal transmission", x == 0);
     sleep(3);
   }
 
-  sleep(3);
-
-  // // Test modem sleep
-  // x = modem_sleep(modem);
-  // test_assert("Modem put to sleep", x == 0);
-  // sleep(3);
-
-  // Test acoustic wakeup transmission
-  x = modem_tx_wakeup(modem, id);
-  if (x == 0) printf("TX wakeup: %s\n", id);
-  test_assert("Wakeup signal transmission", x == 0);
   sleep(3);
 
   // Test ranging
@@ -136,10 +158,10 @@ int main(int argc, char* argv[]) {
   test_assert("\nRecording", x == 0);
 
   // Test setter and getter for integer valued modem parameter
-  if (modem_iset(modem, 2, "org.arl.unet.Services.PHYSICAL", "nc", 256)==0) printf("Integer parameter is set.\n");
+  if (modem_iset(modem, 2, "org.arl.unet.Services.PHYSICAL", "fec", 0)==0) printf("Integer parameter is set.\n");
   sleep(1);
-  if (modem_iget(modem, 2, "org.arl.unet.Services.PHYSICAL", "nc", intval)==0) printf("Integer parameter is read.\n");
-  test_assert("Integer valued parameter setting", *intval == 256);
+  if (modem_iget(modem, 2, "org.arl.unet.Services.PHYSICAL", "fec", intval)==0) printf("Integer parameter is read.\n");
+  test_assert("Integer valued parameter setting", *intval == 0);
 
   // Test setter and getter for boolean valued modem parameter
   if (modem_bset(modem, 0, "org.arl.unet.Services.PHYSICAL", "rxEnable", true)==0) printf("Boolean parameter is set.\n");
@@ -148,16 +170,10 @@ int main(int argc, char* argv[]) {
   test_assert("Boolean valued parameter setting", *boolval == true);
 
   // Test setter and getter for floating point valued modem parameter
-  if (modem_fset(modem, 1, "org.arl.unet.Services.PHYSICAL", "fstep", 384.0)==0) printf("Float parameter is set.\n");
+  if (modem_fset(modem, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", -10.0)==0) printf("Float parameter is set.\n");
   sleep(1);
-  if (modem_fget(modem, 1, "org.arl.unet.Services.PHYSICAL", "fstep", floatval)==0) printf("Float parameter is read.\n");
-  test_assert("Float valued parameter setting", *floatval == 384.0);
-
-  // Test setter and getter for string valued modem parameter
-  test_assert("String valued parameter setting", modem_sset(modem, 3, "org.arl.unet.Services.PHYSICAL", "modulation", "none")==0);
-  sleep(1);
-  if (modem_sget(modem, 3, "org.arl.unet.Services.PHYSICAL", "modulation",stringval, 6)==0) printf("The value of stringval is %s\n", stringval);
-  test_assert("String valued parameter getting", strcmp(stringval, "none") == 0);
+  if (modem_fget(modem, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", floatval)==0) printf("Float parameter is read.\n");
+  test_assert("Float valued parameter setting", *floatval == -10.0);
 
   test_summary();
 

@@ -285,7 +285,7 @@ int modem_tx_signal(modem_t modem, float *signal, int nsamples, int rate, float 
     fjage_msg_t msg;
     msg = fjage_msg_create(TXBASEBANDSIGNALREQ, FJAGE_REQUEST);
     fjage_msg_set_recipient(msg, mm->baseband);
-    if (fc >= 0) fjage_msg_add_float(msg, "fc", fc);
+    if (fc == 0) fjage_msg_add_float(msg, "fc", fc);
     if (signal != NULL) fjage_msg_add_float_array(msg, "signal", signal, (fc ? 2 : 1)*nsamples);
     if (id != NULL) strcpy(id, fjage_msg_get_id(msg));
     msg = request(mm, msg, 5 * TIMEOUT);

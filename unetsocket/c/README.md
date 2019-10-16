@@ -24,34 +24,35 @@ make samples
 
 To compile and run the tests, the following steps need to be performed:
 
-1. Two modems are needed to be setup in the water for communication.
+1. Set up the test environment. Folows the steps below to setup the test environment:
 
-2. Connect to one of the modem via ethernet or wifi.
+	a. To run tests, run the unet simulator with two nodes (or) if you have modems, power on two modems and set them up in water.
 
-3. Open a terminal window and compile `test_unet.c` using :
+	b. Make sure an ethernet connection to one of the modem is available.
 
-```bash
-make test
-```
+2. Run the tests as following:
 
-4. Run test as follows:
+In terminal window (an example):
 
 ```bash
-test/test_unet <IP> <NODE_ID>
+$ make test
+$ test/test_unet <ip_address> <peer_node_address> <port>
 ```
-where `<IP>` argument must be the IP address of the modem to connect to, `<PORT>` is the port number of the Unet service on that modem and `<NODE_ID>` is the node address of the other modem in the water for ranging tests.
+where `<ip_address>` argument must be the IP address of the modem to connect to, `<port>` is the port number of the Unet service on that modem and `<peer_node_address>` is the node address of the other modem in the water for ranging tests.
 
 Upon completion of the tests, the test results will be summarized.
+
+**NOTE**: To run the simulator with two nodes, download the unet community edition from [UnetStack](https://unetstack.net/) and run the following:
+
+```bash
+$ bin/unet samples/2-node-network.groovy
+```
+
+For more details on using the unet simulator to deploy 2 node network, follow the instructions in [unet handbook](https://unetstack.net/handbook/unet-handbook_getting_started.html)
 
 ## Clean
 
 To clean all the built files and the depencencies, run
-
-```bash
-make deepclean
-```
-
-To clean only the built files and not the dependencies, run
 
 ```bash
 make clean
