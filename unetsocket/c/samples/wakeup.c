@@ -32,7 +32,7 @@ static int error(const char *msg)
 int main(int argc, char *argv[])
 {
     int ret = 0;
-    if (argc <= 1)
+    if (argc < 2)
     {
         error("Usage : ./wakeup <device_MAC_address> \n"
               "device_MAC_address: Hardware MAC address of the sleeping modem. \n"

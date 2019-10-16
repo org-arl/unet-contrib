@@ -60,12 +60,14 @@ int main(int argc, char *argv[])
     modem_set_tx_callback(modem, txcb);
 
     // Test packet transmission of different types
-    for (int i = 1; i <= 3 ; i++)
+    for (int i = 1; i <= 2 ; i++)
     {
         x = modem_tx_data(modem, address, data, sizeof(data), i, id);
-        if (x == 0) printf("TX: %s\n", id);
+        if (x == 0) printf("Transmitted packet %d \n", i);
         sleep(3);
     }
+
+    sleep(1);
 
     // close the connection to modem
     modem_close(modem);
