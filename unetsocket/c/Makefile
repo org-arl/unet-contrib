@@ -1,6 +1,6 @@
 CC = gcc
 CGLAGS = $(CGLAGS) -std=c99 -Wall -Wextra -Werror -O2
-FJAGE_VER=edc9ecffd444adaf789d7eb2ecc650d1d7044d84
+FJAGE_VER=c8e62495f2283d1b57a559112ccce3ccd608bb2a
 FJAGE_DIR=fjage-$(FJAGE_VER)
 
 all: libs
@@ -14,9 +14,9 @@ samples: libs wakeup rs232_wakeup txdata rxdata
 libs: libfjage.a libunet.a
 
 libfjage.a: $(FJAGE_DIR)
-	make -C $(FJAGE_DIR)/src/main/c/
-	cp $(FJAGE_DIR)/src/main/c/fjage.h .
-	cp $(FJAGE_DIR)/src/main/c/libfjage.a .
+	make -C $(FJAGE_DIR)/gateways/c/
+	cp $(FJAGE_DIR)/gateways/c/fjage.h .
+	cp $(FJAGE_DIR)/gateways/c/libfjage.a .
 
 $(FJAGE_DIR):
 	curl -LO https://github.com/org-arl/fjage/archive/$(FJAGE_VER).zip
