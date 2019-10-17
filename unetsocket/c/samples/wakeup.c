@@ -33,26 +33,20 @@ static int error(const char *msg)
 static int isValidMacAddress(const char* mac) {
     int i = 0;
     int s = 0;
-
     while (*mac) {
        if (isxdigit(*mac)) {
           i++;
        }
        else if (*mac == ':' || *mac == '-') {
-
           if (i == 0 || i / 2 - 1 != s)
             break;
-
           ++s;
        }
        else {
            s = -1;
        }
-
-
        ++mac;
     }
-
     return (i == 12 && (s == 5 || s == 0));
 }
 
@@ -78,12 +72,13 @@ int main(int argc, char *argv[])
     if (ret < 0) return ret;
     ret = modem_ethernet_wakeup(mac_addr);
     if (ret < 0) return ret;
+    printf("Wakeup packet sent.\n");
+    return 0;
 }
 
 
 int packMacAddr(char *mac, unsigned char *packedMac )
 {
-
     char *delimiter = (char *) ":";
     char *tok;
 

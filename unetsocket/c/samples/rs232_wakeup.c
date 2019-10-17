@@ -5,7 +5,9 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./rs232_wakeup <dev_name> 
+// $ ./rs232_wakeup <dev_name>
+//
+// NOTE: Validity of the <dev_name> is not checked in this example code.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -25,7 +27,6 @@ static int error(const char *msg)
 
 int main(int argc, char *argv[])
 {
-
     if (argc < 2)
     {
         error("Usage : rs232_wakeup <dev_name> \n"
@@ -34,10 +35,8 @@ int main(int argc, char *argv[])
               "rs232_wakeup /dev/tty.usbserial \n");
         return -1;
     }
-
-    modem_rs232_wakeup(argv[1], 115200, "N81");
-
-    printf("Done..\n");
-
+    ret = modem_rs232_wakeup(argv[1], 115200, "N81");
+    if (ret < 0) return ret;
+    printf("Wakeup packet sent.\n");
     return 0;
 }
