@@ -2,14 +2,15 @@
 
 #### Overview
 
-1. Setup MATLAB to use Java 1.8
-2. Add relevant jars to MATLAB's static classpath
-3. Create a unet socket connection
-4. Example of recording a signal
-5. Example of transmitting a frame
-6. Example of transmitting a baseband signal
-7. Example of transmitting a passband signal
-8. Close the socket connection
+- Setup MATLAB to use Java 1.8
+- Add relevant jars to MATLAB's static classpath
+- Create a unet socket connection
+- Example of transmitting a frame
+- Example of receiving a frame
+- Example of recording a signal
+- Example of transmitting a baseband signal
+- Example of transmitting a passband signal
+- Close the socket connection
 
 ## Set up MATLAB to use Java 1.8
 
@@ -133,6 +134,31 @@ Since, we are receiving this message in MATLAB, we can utilize it to extract and
 plot(ntf.getSignal())
 ```
 
+## Example of transmitting a frame
+
+```matlab
+% subscribe to the agent providing the physical service
+agent = modem.agentForService(org.arl.unet.Services.PHYSICAL);
+modem.subscribe(agent);
+
+% create the message with relevant attributes to be sent to the modem
+req = org.arl.unet.phy.TxFrameReq();
+req.setRecipient(agent);
+
+% send the message to the modem and wait for the response
+rsp = modem.request(req, 5000);
+
+% check if the message was successfully sent
+if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
+	cls = org.arl.unet.phy.TxFrameNtf().getClass();
+	% receive the notification message
+	ntf = modem.receive(cls, 5000);
+end
+```
+
+## Example of receiving a frame
+TODO:
+
 ## Example of recording a signal
 
 ```matlab
@@ -156,28 +182,6 @@ end
 
 % plot the recorded signal
 plot(ntf.getSignal())
-```
-
-## Example of transmitting a frame
-
-```matlab
-% subscribe to the agent providing the physical service
-agent = modem.agentForService(org.arl.unet.Services.PHYSICAL);
-modem.subscribe(agent);
-
-% create the message with relevant attributes to be sent to the modem
-req = org.arl.unet.phy.TxFrameReq();
-req.setRecipient(agent);
-
-% send the message to the modem and wait for the response
-rsp = modem.request(req, 5000);
-
-% check if the message was successfully sent
-if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
-	cls = org.arl.unet.phy.TxFrameNtf().getClass();
-	% receive the notification message
-	ntf = modem.receive(cls, 5000);
-end
 ```
 
 ## Example of transmitting a baseband signal
