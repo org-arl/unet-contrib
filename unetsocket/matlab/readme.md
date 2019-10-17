@@ -57,57 +57,108 @@ To do this, first find out where MATLAB stores it's preferences. In MATLAB:
 Now, edit/create a file called `/home/myname/.matlab/R2016a/javaclasspath.txt` and add the following jars to it:
 
 ```
-/home/myname/matlab-api/jars/commons-lang3-3.6.jar
-/home/myname/matlab-api/jars/fjage-1.5.2-SNAPSHOT.jar
-/home/myname/matlab-api/jars/gson‐2.8.2.jar
-/home/myname/matlab-api/jars/unet-framework-1.4.jar
-/home/myname/matlab-api/jars/unet-stack-1.4.jar
-/home/myname/matlab-api/jars/unet-yoda-1.4.jar
+/home/myname/matlab-api/jars/commons-lang*.jar
+/home/myname/matlab-api/jars/fjage-*.jar
+/home/myname/matlab-api/jars/gson‐*.jar
+/home/myname/matlab-api/jars/unet-framework-*.jar
+/home/myname/matlab-api/jars/unet-basic-*.jar
+/home/myname/matlab-api/jars/unet-yoda-*.jar
+/home/myname/matlab-api/jars/groovy-all-*.jar
 ```
 
 Of course, when doing this, use your actual folders, not `/home/myname/...`.
 
-And restart MATLAB once you've edited the static classpath. If you type `javaclasspath`
-in MATLAB, you should be able to see these files on the static classpath.
+And restart MATLAB once you've edited the static classpath. If you type `javaclasspath` in MATLAB, you should be able to see these files on the static classpath. All the UnetStack JAVA APIs can be directly accessed in MATLAB once the jars are included in the `javaclasspath`. In the rest of this article we will show few examples of accessing the UnetStack Java APIs from MATLAB and interaction with UnetStack.
 
-## Create a fjåge Gateway and connect to modem, send messages, and shutdown
+## Create a unet socket and establish connection to modem
 
-In MATLAB, connect to the modem (e.g. 192.168.0.42), send messages (e.g. ask for a baseband recording), and shutdown:
+In MATLAB, open a unet socket connection to the modem (e.g. 192.168.0.42):
 
 ```matlab
->> modem = org.arl.fjage.remote.Gateway('192.168.0.42', 1100)
->> bb = modem.agentForService(org.arl.unet.Services.BASEBAND)
+>> sock = org.arl.unet.api.UnetSocket('192.168.0.42', 1100)
+```
+
+### Look for agents providing specific services
+
+In order to search for agents providing a specific service, we can use the `agentForService` method. An example is shown below where we are looking for agent providing the BASEBAND service.
+
+```matlab
+>> bb = sock.agentForService(org.arl.unet.Services.BASEBAND)
+```
+
+### Get the fjåge Gateway
+
+It is easy to get access to the gateway class and it's methods as shown below:
+
+```matlab
+>> modem = sock.getGateway()
+```
+
+### Create a message
+
+We can create messages that UnetStack supports and understands for interacting with it. For example, to create a message to record a signal, we can create a [`RecordBasebandSignalReq`](https://unetstack.net/javadoc/3.0/org/arl/unet/bb/RecordBasebandSignalReq.html) message as shown below:
+
+```matlab
 >> msg = org.arl.unet.bb.RecordBasebandSignalReq()
 >> msg.setRecipient(bb)
+```
+
+In the code snippet shown above, we created a `RecordBasebandSignalReq` message and set it's recipient to be the `AgentID` of the agent providing the BASEBAND service.
+
+### Send the message to UnetStack running on modem
+
+```matlab
 >> modem.request(msg, 1000)
 ans =
 AGREE
+```
+
+### Receive notifications from UnetStack
+
+Sometimes there are unsolicited notifications that are published on the agent's topic and anyone subscribing to the topic receives these notifications. In addition, certain notifications are generated and sent to the requestor. An example to receive these notifications on the gateway is shown below:
+
+```matlab
 >> ntf = modem.receive()
 ntf =
 RxBasebandSignalNtf:INFORM rxTime:42836833 rssi:‐79.5 adc:1 fc:12000 fs:12000 (12000 samples)
->> plot(ntf.getSignal())
->> modem.shutdown()
 ```
+Since, we are receiving this message in MATLAB, we can utilize it to extract and analyze the data. Since in this case, we recorded a signal, we can plot it as shown below:
+
+```matlab
+plot(ntf.getSignal())
+```
+
+### Close the socket connection
+
+To close the socket connection
+
+```matlab
+sock.close()
+```
+
+Once the connection is closed, the socket and the gaetway methods can no longer be accessed.
+
 ## Example of recording a signal
 
 ```matlab
 % subscribe to the agent providing the baseband service
-agent = modem.agentForService(org.arl.unet.Services.BASEBAND); 
+agent = modem.agentForService(org.arl.unet.Services.BASEBAND);
 modem.subscribe(agent);
 
-% create the message with relevant attributes to be sent to the modem 
-req = org.arl.unet.bb.RecordBasebandSignalReq(); 
+% create the message with relevant attributes to be sent to the modem
+req = org.arl.unet.bb.RecordBasebandSignalReq();
 req.setRecipient(agent);
 
-% send the message to the modem and wait for the response 
+% send the message to the modem and wait for the response
 rsp = modem.request(req, 5000);
 
 % check if the message was successfully sent
 if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
-	cls = org.arl.unet.bb.RxBasebandSignalNtf().getClass(); % receive the notification message containing the signal ntf = modem.receive(cls, 5000);
+	cls = org.arl.unet.bb.RxBasebandSignalNtf().getClass(); % receive the notification message containing the signal
+	ntf = modem.receive(cls, 5000);
 end
 
-% plot the recorded signal 
+% plot the recorded signal
 plot(ntf.getSignal())
 ```
 
@@ -115,13 +166,14 @@ plot(ntf.getSignal())
 
 ```matlab
 % subscribe to the agent providing the physical service
-agent = modem.agentForService(org.arl.unet.Services.PHYSICAL); 
+agent = modem.agentForService(org.arl.unet.Services.PHYSICAL);
 modem.subscribe(agent);
 
-% create the message with relevant attributes to be sent to the modem req = org.arl.unet.phy.TxFrameReq();
+% create the message with relevant attributes to be sent to the modem
+req = org.arl.unet.phy.TxFrameReq();
 req.setRecipient(agent);
 
-% send the message to the modem and wait for the response 
+% send the message to the modem and wait for the response
 rsp = modem.request(req, 5000);
 
 % check if the message was successfully sent
@@ -145,7 +197,7 @@ modem = org.arl.fjage.remote.Gateway('192.168.0.42', 1100);
 % subscribe to the agent providing baseband service
 bb = modem.agentForService(org.arl.unet.Services.BASEBAND);
 
-% create the message with relevant attributes to be sent to the modem 
+% create the message with relevant attributes to be sent to the modem
 msg = org.arl.unet.bb.TxBasebandSignalReq();
 msg.setSignal(x);
 msg.setRecipient(bb);
@@ -155,7 +207,7 @@ rsp = modem.request(msg, 1000);
 
 % check if the message was successfully sent
 if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
-	cls = org.arl.unet.phy.TxFrameNtf().getClass(); 
+	cls = org.arl.unet.phy.TxFrameNtf().getClass();
 	% receive the notification message
 	ntf = modem.receive(cls, 5000);
 end
@@ -175,7 +227,7 @@ modem = org.arl.fjage.remote.Gateway('192.168.0.42', 1100);
 bb = modem.agentForService(org.arl.unet.Services.BASEBAND);
 
 % create the message with relevant attributes to be sent to the modem
-msg = org.arl.unet.bb.TxBasebandSignalReq(); 
+msg = org.arl.unet.bb.TxBasebandSignalReq();
 msg.setSignal(x);
 msg.setRecipient(bb);
 
@@ -187,7 +239,7 @@ rsp = modem.request(msg, 1000);
 
 % check if the message was successfully sent
 if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
-	cls = org.arl.unet.phy.TxFrameNtf().getClass(); 
+	cls = org.arl.unet.phy.TxFrameNtf().getClass();
 	% receive the notification message
 	ntf = modem.receive(cls, 5000);
 end
