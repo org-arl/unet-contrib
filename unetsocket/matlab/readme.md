@@ -1,12 +1,15 @@
 # Accessing UnetStack Java APIs using MATLAB
 
-#### Key steps:
+#### Overview
 
 1. Setup MATLAB to use Java 1.8
 2. Add relevant jars to MATLAB's static classpath
-3. Open a connection to modem
-4. Send and receive messages
-5. Close the connection to modem
+3. Create a unet socket connection
+4. Example of recording a signal
+5. Example of transmitting a frame
+6. Example of transmitting a baseband signal
+7. Example of transmitting a passband signal
+8. Close the socket connection
 
 ## Set up MATLAB to use Java 1.8
 
@@ -70,7 +73,7 @@ Of course, when doing this, use your actual folders, not `/home/myname/...`.
 
 And restart MATLAB once you've edited the static classpath. If you type `javaclasspath` in MATLAB, you should be able to see these files on the static classpath. All the UnetStack JAVA APIs can be directly accessed in MATLAB once the jars are included in the `javaclasspath`. In the rest of this article we will show few examples of accessing the UnetStack Java APIs from MATLAB and interaction with UnetStack.
 
-## Create a unet socket and establish connection to modem
+## Create a unet socket connection
 
 In MATLAB, open a unet socket connection to the modem (e.g. 192.168.0.42):
 
@@ -86,7 +89,7 @@ In order to search for agents providing a specific service, we can use the `agen
 >> bb = sock.agentForService(org.arl.unet.Services.BASEBAND)
 ```
 
-### Get the fjåge Gateway
+### Get the fjåge gateway
 
 It is easy to get access to the gateway class and it's methods as shown below:
 
@@ -106,6 +109,8 @@ We can create messages that UnetStack supports and understands for interacting w
 In the code snippet shown above, we created a `RecordBasebandSignalReq` message and set it's recipient to be the `AgentID` of the agent providing the BASEBAND service.
 
 ### Send the message to UnetStack running on modem
+
+To send a message to UnetStack and receive the response message back, we can use `request` method as shown below:
 
 ```matlab
 >> modem.request(msg, 1000)
@@ -128,16 +133,6 @@ Since, we are receiving this message in MATLAB, we can utilize it to extract and
 plot(ntf.getSignal())
 ```
 
-### Close the socket connection
-
-To close the socket connection
-
-```matlab
-sock.close()
-```
-
-Once the connection is closed, the socket and the gaetway methods can no longer be accessed.
-
 ## Example of recording a signal
 
 ```matlab
@@ -154,7 +149,8 @@ rsp = modem.request(req, 5000);
 
 % check if the message was successfully sent
 if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
-	cls = org.arl.unet.bb.RxBasebandSignalNtf().getClass(); % receive the notification message containing the signal
+	% receive the notification message containing the signal
+	cls = org.arl.unet.bb.RxBasebandSignalNtf().getClass();
 	ntf = modem.receive(cls, 5000);
 end
 
@@ -188,7 +184,8 @@ end
 
 ```matlab
 % load the baseband signal
-% signal.txt contains interleaved real and imaginary values in a single column % with values normalized between +1 and ‐1
+% signal.txt contains interleaved real and imaginary values in a single column
+% with values normalized between +1 and ‐1
 x = load('signal.txt');
 
 % open the modem gateway
@@ -217,7 +214,8 @@ end
 
 ```matlab
 % load the passband signal
-% signal.txt must contain the real values in single column sampled at 192KHz % with values normalized between +1 and ‐1
+% signal.txt must contain the real values in single column sampled at 192KHz
+% with values normalized between +1 and ‐1
 x = load('signal.txt');
 
 % open the modem gateway
@@ -245,6 +243,15 @@ if isjava(rsp) && rsp.getPerformative() == org.arl.fjage.Performative.AGREE
 end
 ```
 
+## Close the socket connection
+
+To close the socket connection
+
+```matlab
+sock.close()
+```
+
+Once the connection is closed, the socket and the gaetway methods can no longer be accessed.
 
 
 
