@@ -162,12 +162,13 @@ end
 
 The code snippet below should be run on the receiver modem,
 
-```bash
+```matlab
 % subscribe to the agent providing the physical service
 agent = modem.agentForService(org.arl.unet.Services.PHYSICAL);
 modem.subscribe(agent);
-cls = org.arl.unet.phy.RxFrameNtf().getClass();
+
 % receive the notification message
+cls = org.arl.unet.phy.RxFrameNtf().getClass();
 ntf = modem.receive(cls, 5000);
 ```
 If the `RxFrameNtf` is successfully received, the following output can be seen in the `ntf` variable 
@@ -274,18 +275,3 @@ sock.close()
 ```
 
 Once the connection is closed, the socket and the gaetway methods can no longer be accessed.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
