@@ -27,6 +27,7 @@ static int error(const char *msg)
 
 int main(int argc, char *argv[])
 {
+    int ret = 0;
     if (argc < 2)
     {
         error("Usage : rs232_wakeup <dev_name> \n"
