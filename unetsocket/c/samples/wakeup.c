@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 #include "../unet.h"
 
 #define MAC_ADDR_MAX       6
@@ -29,6 +30,32 @@ static int error(const char *msg)
     return -1;
 }
 
+static int isValidMacAddress(const char* mac) {
+    int i = 0;
+    int s = 0;
+
+    while (*mac) {
+       if (isxdigit(*mac)) {
+          i++;
+       }
+       else if (*mac == ':' || *mac == '-') {
+
+          if (i == 0 || i / 2 - 1 != s)
+            break;
+
+          ++s;
+       }
+       else {
+           s = -1;
+       }
+
+
+       ++mac;
+    }
+
+    return (i == 12 && (s == 5 || s == 0));
+}
+
 int main(int argc, char *argv[])
 {
     int ret = 0;
@@ -38,6 +65,11 @@ int main(int argc, char *argv[])
               "device_MAC_address: Hardware MAC address of the sleeping modem. \n"
               "A usage example: \n"
               "wakeup 00:14:2D:2F:C0:9A \n");
+        return -1;
+    }
+
+    if (isValidMacAddress(argv[1]) == 0) {
+        error("Enter valid MAC address. \n");
         return -1;
     }
 
