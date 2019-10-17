@@ -37,7 +37,10 @@ int main(int argc, char *argv[])
         return -1;
     }
     ret = modem_rs232_wakeup(argv[1], 115200, "N81");
-    if (ret < 0) return ret;
+    if (ret < 0) {
+        error("Wakeup failed. Enter a valid device name.");
+        return ret;
+    }
     printf("Wakeup packet sent.\n");
     return 0;
 }

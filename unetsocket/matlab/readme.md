@@ -136,6 +136,8 @@ plot(ntf.getSignal())
 
 ## Example of transmitting a frame
 
+The code snippet below is an example for transmitting a frame
+
 ```matlab
 % subscribe to the agent providing the physical service
 agent = modem.agentForService(org.arl.unet.Services.PHYSICAL);
@@ -157,7 +159,23 @@ end
 ```
 
 ## Example of receiving a frame
-TODO:
+
+The code snippet below should be run on the receiver modem,
+
+```bash
+% subscribe to the agent providing the physical service
+agent = modem.agentForService(org.arl.unet.Services.PHYSICAL);
+modem.subscribe(agent);
+cls = org.arl.unet.phy.RxFrameNtf().getClass();
+% receive the notification message
+ntf = modem.receive(cls, 5000);
+```
+If the `RxFrameNtf` is successfully received, the following output can be seen in the `ntf` variable 
+
+```matlab
+ntf =
+RxFrameNtf:INFORM[type:CONTROL from:200 rxTime:6066483160 rssi:-2.6 cfo:0.0 ber:3/432]
+```
 
 ## Example of recording a signal
 
