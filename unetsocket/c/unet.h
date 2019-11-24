@@ -3,47 +3,34 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "fjage.h"
 
-typedef void *modem_t;        ///< modem connection
+typedef void *unetsocket_t;        ///< unet socket connection
 
 // Services
-#define PHYSICAL                 "org.arl.unet.Services.PHYSICAL"
-#define BASEBAND                 "org.arl.unet.Services.BASEBAND"
-#define RANGING                  "org.arl.unet.Services.RANGING"
-#define SCHEDULER                "org.arl.unet.Services.SCHEDULER"
-#define SHELL                    "org.arl.fjage.shell.Services.SHELL"
+// #define PHYSICAL                 "org.arl.unet.Services.PHYSICAL"
+// #define BASEBAND                 "org.arl.unet.Services.BASEBAND"
+// #define RANGING                  "org.arl.unet.Services.RANGING"
+// #define SCHEDULER                "org.arl.unet.Services.SCHEDULER"
+// #define SHELL                    "org.arl.fjage.shell.Services.SHELL"
 
-// Messages
-#define TXFRAMEREQ               "org.arl.unet.phy.TxFrameReq"
-#define TXFRAMENTF               "org.arl.unet.phy.TxFrameNtf"
-#define RXFRAMENTF               "org.arl.unet.phy.RxFrameNtf"
-#define TXFRAMESTARTNTF          "org.arl.unet.phy.TxFrameStartNtf"
-#define DATAGRAMREQ              "org.arl.unet.DatagramReq"
-#define RANGEREQ                 "org.arl.unet.phy.RangeReq"
-#define RANGENTF                 "org.arl.unet.phy.RangeNtf"
-#define TXBASEBANDSIGNALREQ      "org.arl.unet.bb.TxBasebandSignalReq"
-#define RECORDBASEBANDSIGNALREQ  "org.arl.unet.bb.RecordBasebandSignalReq"
-#define RXBASEBANDSIGNALNTF      "org.arl.unet.bb.RxBasebandSignalNtf"
-#define ADDSCHEDULEDSLEEPREQ     "org.arl.unet.scheduler.AddScheduledSleepReq"
-#define PARAMETERREQ             "org.arl.unet.ParameterReq"
+// // Messages
+// #define TXFRAMEREQ               "org.arl.unet.phy.TxFrameReq"
+// #define TXFRAMENTF               "org.arl.unet.phy.TxFrameNtf"
+// #define RXFRAMENTF               "org.arl.unet.phy.RxFrameNtf"
+// #define TXFRAMESTARTNTF          "org.arl.unet.phy.TxFrameStartNtf"
+// #define DATAGRAMREQ              "org.arl.unet.DatagramReq"
+// #define RANGEREQ                 "org.arl.unet.phy.RangeReq"
+// #define RANGENTF                 "org.arl.unet.phy.RangeNtf"
+// #define TXBASEBANDSIGNALREQ      "org.arl.unet.bb.TxBasebandSignalReq"
+// #define RECORDBASEBANDSIGNALREQ  "org.arl.unet.bb.RecordBasebandSignalReq"
+// #define RXBASEBANDSIGNALNTF      "org.arl.unet.bb.RxBasebandSignalNtf"
+// #define ADDSCHEDULEDSLEEPREQ     "org.arl.unet.scheduler.AddScheduledSleepReq"
+// #define PARAMETERREQ             "org.arl.unet.ParameterReq"
 
 /// Port number
 
 #define PORT                1100
-
-// Tx offset
-
-#define TX_OFFSET           200
-
-/// Pre-amplifier gain in dB
-
-#define TRIS_PGA_GAIN_0       0
-#define TRIS_PGA_GAIN_6       6
-#define TRIS_PGA_GAIN_12      12
-#define TRIS_PGA_GAIN_18      18
-#define TRIS_PGA_GAIN_24      24
-#define TRIS_PGA_GAIN_30      30
-#define TRIS_PGA_GAIN_36      36
 
 /// Maximum length of a frame ID string
 
@@ -57,272 +44,231 @@ typedef void *modem_t;        ///< modem connection
 
 #define TIMEOUT                  1000   //ms
 
-/// Types of frames.
+/// Well-known protocol number assignments.
 
-typedef enum
-{
-  CONTROL_FRAME = 1,
-  DATA_FRAME = 2,
-  DATAGRAM = 3
-} modem_packet_t;
+#define	DATA                     0      // Protocol number for user application data.
+#define RANGING				     1      // Protocol number for use by ranging agents.
+#define LINK 					 2      // Protocol number for use by link agents.
+#define REMOTE                   3      // Protocol number for use by remote management agents.
+#define MAC 					 4      // Protocol number for use by MAC protocol agents.
+#define ROUTING 				 5      // Protocol number for use by routing agents.
+#define TRANSPORT 				 6      // Protocol number for use by transport agents.
+#define ROUTE_MAINTENANCE 		 7 		// Protocol number for use by route maintenance agents.
+#define LINK2 					 8      // Protocol number for use by secondary link agents.
+#define USER 					32      // Lowest protocol number allowable for user protocols.
+#define MAX 					63      // Largest protocol number allowable.
 
-/// Tx callback.
+
+/// Open a unet socket connection to the modem.
 ///
-/// @param id               Frame ID of the transmitted frame
-/// @param type             Type of the frame
-/// @param txtime           Transmit start timestamp in microseconds
-/// @return                 void
-
-typedef void (*modem_txcb_t)(const char *id, modem_packet_t type, long txtime);
-
-/// Rx callback.
-///
-/// @param from             Address of the node from which the
-///                         message is received
-/// @param to               Address of the node to which the
-///                         message is intended
-/// @param type             Type of the frame
-/// @param data             Received data
-/// @param nbytes           Number of bytes
-/// @param rxtime           Receive start timestamp in microseconds
-/// @return                 void
-///
-/// [NOTE: The received data through this callback is freed after this callback returns. Therefore, the user must copy the data buffer if needed.]
-
-typedef void (*modem_rxcb_t)(int from, int to, modem_packet_t type, void *data, int nbytes, long rxtime);
-
-/// Open a connection to the Subnero modem.
-///
-/// @param ip_address       Host name or IP address
+/// @param hostname         Host name or IP address
 /// @param port             Port number
-/// @return                 Gateway
+/// @return                 Unet socket
 
-modem_t modem_open_eth(char *ip_address, int port);
+unetsocket_t unetsocket_open(const char* hostname, int port);
 
-/// Open a connection to the Subnero modem.
+/// Open a unet socket connection to the modem.
 ///
-/// @param devname        Device name
-/// @param baud           Baud rate
-/// @param settings       RS232 settings (NULL or "N81")
-/// @return               Gateway
+/// @param devname          Device name
+/// @param baud             Baud rate
+/// @param settings         RS232 settings (NULL or "N81")
+/// @return                 Unet socket
 
-modem_t modem_open_rs232(char *devname, int baud, const char *settings);
+unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* settings);
 
-/// Close connection to the Subnero modem.
+/// Close connection to the modem.
 ///
-/// @param modem            Gateway
+/// @param sock             Unet socket
 /// @return                 0 on success, -1 otherwise
 
-int modem_close(modem_t modem);
+int unetsocket_close(unetsocket_t sock);
 
-/// Transmit a frame
+/// Checks if a socket is closed.
 ///
-/// @param modem            Gateway
-/// @param to               The to/destination node address
+/// @param sock             Unet socket
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_is_closed(unetsocket_t sock);
+
+/// Binds a socket to listen to a specific protocol datagrams.
+/// Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are reserved
+/// protocols and cannot be bound. Unbound sockets listen to all unreserved
+/// protocols.
+///
+/// @param sock             Unet socket
+/// @param protocol         Protocol number to listen for
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_bind(unetsocket_t sock, int protocol);
+
+/// Unbinds a socket so that it listens to all unreserved protocols.
+/// Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered
+/// reserved.
+///
+/// @param sock             Unet socket
+
+void unetsocket_unbind(unetsocket_t sock);
+
+/// Checks if a socket is bound.
+///
+/// @param sock             Unet socket
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_is_bound(unetsocket_t sock);
+
+/// Sets the default destination address and destination protocol number for
+/// datagrams sent using this socket. The defaults can be overridden for specific
+/// send() calls.
+/// The default protcol number when a socket is opened is Protcol.DATA. The default
+/// node address is undefined. Protocol numbers between Protocol.DATA+1 to
+/// Protocol.USER-1 are considered reserved, and cannot be used for sending datagrams
+/// using the socket.
+///
+/// @param sock             Unet socket
+/// @param to               Default destination node address
+/// @param protocol         Default protocol number
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_connect(unetsocket_t sock, int to, int protocol);
+
+/// Resets the default destination address to undefined, and the default protocol
+/// number to Protocol.DATA.
+///
+/// @param sock             Unet socket
+
+void unetsocket_disconnect(unetsocket_t sock);
+
+/// Checks if a socket is connected, i.e., has a default destination address and
+/// protocol number.
+///
+/// @param sock             Unet socket
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_is_connected(unetsocket_t sock);
+
+/// Gets the local node address.
+///
+/// @param sock             Unet socket
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_get_local_address(unetsocket_t sock);
+
+/// Gets the protocol number that the socket is bound to.
+///
+/// @param sock             Unet socket
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_get_local_protocol(unetsocket_t sock);
+
+/// Gets the default destination node address for a connected socket.
+///
+/// @param sock             Unet socket
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_get_remote_address(unetsocket_t sock);
+
+/// Gets the default transmission protocol number.
+///
+/// @param sock             Unet socket
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_get_remote_protocol(unetsocket_t sock);
+
+/// Sets the timeout for datagram reception. The default timeout is infinite,
+/// i.e., the :func:`~receive()` call blocks forever. A timeout of 0 means the
+/// :func:`~receive()` call is non-blocking.
+///
+/// @param sock             Unet socket
+/// @param ms               Timeout in milliseconds, or -1 for infinite timeout
+
+void unetsocket_set_timeout(unetsocket_t sock, long ms);
+
+/// Gets the timeout for datagram reception.
+///
+/// @param sock             Unet socket
+/// @return                 Timeout in milliseconds, 0 for non-blocking, or -1 for infinite
+
+long unetsocket_get_timeout(unetsocket_t sock);
+
+/// Transmits a datagram to the specified node address using the specified protocol.
+/// Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,
+/// and cannot be used for sending datagrams using the socket.
+///
+/// @param sock             Unet socket
 /// @param data             Data to send across
-/// @param nbytes           Number of bytes in the data
-/// @param type             Type of frame
-/// @param id               Buffer to return frame ID, or NULL
+/// @param len              Number of bytes in the data
+/// @param to               Destination node address
+/// @param protocol         Protocol number
 /// @return                 0 on success, -1 otherwise
 
-int modem_tx_data(modem_t modem, int to, void *data, int nbytes, modem_packet_t type, char *id);
+int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int protocol);
 
-/// Register a callback to receive data.
+/// Transmits a datagram to the specified node address using the specified protocol.
+/// Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,
+/// and cannot be used for sending datagrams using the socket.
 ///
-/// @param modem            Gateway
-/// @param callback         Pointer to function handling received data
+/// @param sock             Unet socket
+/// @param req              Datagram transmission request
 /// @return                 0 on success, -1 otherwise
 
-int modem_set_rx_callback(modem_t modem, modem_rxcb_t callback);
+int unetsocket_send_request(unetsocket_t sock, fjage_msg_t req); // req must be a DatagramReq
 
-/// Register a callback to receive transmission notifications.
+/// Receives a datagram sent to the local node and the bound protocol number. If the
+/// socket is unbound, then datagrams with all unreserved protocols are received. Any
+/// broadcast datagrams are also received.
+/// This call blocks until a datagram is available, the socket timeout is reached,
+/// or until :func:`~unetsocket_cancel()` is called.
 ///
-/// @param modem            Gateway
-/// @param callback         Pointer to function handling transmit notifications
+/// @param sock             Unet socket
+/// @return                 Datagram reception notification, or NULL if none available
+
+fjage_msg_t unetsocket_receive(unetsocket_t sock); // returns a DatagramNtf
+
+/// Cancels an ongoing blocking receive().
+///
+/// @param sock             Unet socket
+
+void unetsocket_cancel(unetsocket_t sock);
+
+/// Gets a Gateway to provide low-level access to UnetStack.
+///
+/// @param sock             Unet socket
+/// @return 				Gateway
+
+fjage_gw_t unetsocket_get_gateway(unetsocket_t sock);
+
+/// Gets an AgentID providing a specified service for low-level access to UnetStack.
+///
+/// @param sock             Unet socket
+/// @param svc              Fully qualified name of a service
+/// @return                 AgentID of an agent providing the service, NULL if none found
+
+fjage_aid_t unetsocket_agent_for_service(unetsocket_t sock, const char* svc);
+
+/// Gets a list of AgentIDs providing a specified service for low-level access to UnetStack.
+///
+/// @param sock             Unet socket
+/// @param svc              Fully qualified name of a service
+/// @param agents           Pointer to array containing list of AgentIDs found
+/// @param max              Maximum number of elements allowed in the list
 /// @return                 0 on success, -1 otherwise
 
-int modem_set_tx_callback(modem_t modem, modem_txcb_t callback);
+int unetsocket_agents_for_service(unetsocket_t sock, const char* svc, fjage_aid_t* agents, int max);
 
-/// Get the range information
+/// Gets a named AgentID for low-level access to UnetStack.
 ///
-/// @param modem            Gateway
-/// @param to               Address of the node to which range is requested
-/// @param range            Measured range
+/// @param sock             Unet socket
+/// @return                 AgentID of an agent providing the service, NULL if none found
+
+fjage_aid_t unetsocket_agent(unetsocket_t sock, const char* name);
+
+/// Resolve node name to node address.
+///
+/// @param sock             Unet socket
+/// @param node_name        Name of node to resolve
 /// @return                 0 on success, -1 otherwise
 
-int modem_get_range(modem_t modem, int to, float *range);
-
-/// Transmit a signal.
-///
-/// For a 18-36 KHz modem, set fc to 24000 for baseband signal transmission
-///
-/// @param modem            Gateway
-/// @param signal           Baseband signal or Passband signal.
-///                         Baseband signal must be an sequence of
-///                         numbers with alternating real and imaginary values.
-///                         Passband signal is a real time series to transmit.
-/// @param nsamples         Number of samples.
-///                         For baseband signal, this is equal to number of
-///                         baseband samples.
-/// @param rate             Baseband/ Passband sampling rate of signal in Hz
-/// @param fc               Signal carrier frequency in Hz for passband transmission.
-/// @return                 0 on success, -1 otherwise
-
-int modem_tx_signal(modem_t modem, float *signal, int nsamples, int rate, float fc, char *id);
-
-/// Record a baseband signal.
-///
-/// @param modem            Gateway
-/// @param buf              Buffer to store the recorded signal
-/// @param nsamples         Number of samples
-/// @return                 0 on success, -1 otherwise
-
-int modem_record(modem_t modem, float *buf, int nsamples);
-
-/// Set ADC sampling rate.
-///
-/// @param modem            Gateway
-/// @param recordrate       Sampling rate for recording
-/// @return                 0 on success, -1 otherwise
-
-int modem_setrecordingrate(modem_t modem, int recordrate);
-
-/// Put modem to sleep immediately.
-///
-/// @param modem            Gateway
-/// @return                 0 on success, -1 otherwise
-
-int modem_sleep(modem_t modem);
-
-/// Ethernet wakeup
-///
-/// @param macaddr          6 bytes hex array mac address of the device to wake up
-/// @return                 0 on success, -1 otherwise
-
-int modem_ethernet_wakeup(unsigned char *macaddr);
-
-
-/// RS232 wakeup
-///
-/// @param devname        Device name
-/// @param baud           Baud rate
-/// @param settings       RS232 settings (NULL or "N81")
-/// @return               0 on success, -1 otherwise
-
-int modem_rs232_wakeup(char *devname, int baud, const char *settings);
-
-/// Acoustic wakeup
-///
-/// @param modem            Gateway
-/// @param id               Buffer to return frame ID, or NULL
-/// @return                 0 on success, -1 otherwise
-
-int modem_tx_wakeup(modem_t modem, char *id);
-
-/// Setter for integer parameters.
-///
-/// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to be set
-/// @return                 0 on success, -1 otherwise
-
-int modem_iset(modem_t modem, int index, char *target_name, char *param_name, int value);
-
-/// Setter for float parameters.
-///
-/// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to be set
-/// @return                 0 on success, -1 otherwise
-
-int modem_fset(modem_t modem, int index, char *target_name, char *param_name, float value);
-
-/// Setter for boolean parameters.
-///
-/// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to be set
-/// @return                 0 on success, -1 otherwise
-
-int modem_bset(modem_t modem, int index, char *target_name, char *param_name, bool value);
-
-/// Setter for String parameters.
-///
-/// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to be set
-/// @return                 0 on success, -1 otherwise
-
-int modem_sset(modem_t modem, int index, char *target_name, char *param_name, char *value);
-
-/// Getter for integer parameters.
-///
-/// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to get
-/// @return                 0 on success, -1 otherwise
-
-int modem_iget(modem_t modem, int index, char *target_name, char *param_name, int *value);
-
-/// Getter for float parameters.
-///
-/// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Values to get
-/// @return                 0 on success, -1 otherwise
-
-int modem_fget(modem_t modem, int index, char *target_name, char *param_name, float *value);
-
-/// Getter for boolean parameters.
-///
-/// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to get
-/// @return                 0 on success, -1 otherwise
-
-int modem_bget(modem_t modem, int index, char *target_name, char *param_name, bool *value);
-
-/// Getter for string parameters.
-///
-/// @param modem            Gateway
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param buf              String to get
-/// @param buflen           Length of the string
-/// @return                 0 on success, -1 otherwise
-
-int modem_sget(modem_t modem, int index, char *target_name, char *param_name, char *buf, int buflen);
-
+int unetsocket_host(unetsocket_t sock, const char* node_name);
 
 #endif
+
