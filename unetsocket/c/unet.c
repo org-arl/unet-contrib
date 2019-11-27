@@ -39,6 +39,7 @@ static void *monitor(void *p)
 {
 	_unetsocket_t *usock = p;
 	long deadline = -1;
+	int rv;
 	if (usock->timeout == 0) {
 		deadline = 0;
 	}
@@ -62,6 +63,11 @@ static void *monitor(void *p)
 		pthread_mutex_unlock(&usock->rxlock);
 		if (msg != NULL) {
 			printf("%s\n", msg);
+			rv = fjage_msg_get_int(msg, "protocol", 0);
+			if (rv == DATA || rv >= USER) {
+				if (usock->local_protocol < 0) return msg;
+				if (usock->local_protocol == rv) return msg;
+			}
 			fjage_msg_destroy(msg);
 		}
 	}
@@ -97,6 +103,15 @@ unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* se
 	if (usock->gw == NULL) {
 		free(usock);
 		return NULL;
+	}
+	int nagents = fjage_agents_for_service(usock->gw, "org.arl.unet.Services.DATAGRAM", NULL, 0);
+	fjage_aid_t agents[nagents];
+	if (fjage_agents_for_service(usock->gw, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
+		free(usock);
+		return NULL;
+	}
+	for(int i = 0; i < nagents; i++) {
+		fjage_subscribe_agent(usock->gw, agents[i]);
 	}
     return usock;
 }
@@ -314,4 +329,28 @@ int unetsocket_agents_for_service(unetsocket_t sock, const char* svc, fjage_aid_
 	if (sock == NULL) return -1;
 	_unetsocket_t *usock = sock;
 	return fjage_agents_for_service(usock->gw, svc, agents, max);
+}
+
+int unetsocket_host(unetsocket_t sock, const char* node_name)
+{
+	if (sock == NULL) return -1;
+	_unetsocket_t *usock = sock;
+	fjage_msg_t msg;
+	fjage_aid_t arp;
+	int rv;
+	arp = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.ADDRESS_RESOLUTION");
+	if (arp == NULL) return -1;
+	msg = fjage_msg_create("org.arl.unet.addr.AddressResolutionReq", FJAGE_REQUEST);
+	fjage_msg_set_recipient(msg, arp);
+	fjage_msg_add_int(msg, "index", -1);
+	fjage_msg_add_string(msg, "param", "name");
+	fjage_msg_add_string(msg, "value", node_name);
+	msg = fjage_request(usock->gw, msg, 5*TIMEOUT);
+	if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM) {
+		rv = fjage_msg_get_int(msg, "address", 0);
+		free(msg);
+		free(arp);
+		return rv;
+	}
+	return -1;
 }

@@ -32,26 +32,39 @@ int main(int argc, char* argv[]) {
 
 	printf("\n");
 	int rv;
-	int port = 1100;
+	int port_tx = 1101;
+	int port_rx = 1102;
 	uint8_t data[7] = {1,2,3,4,5,6,7};
-	unetsocket_t sock;
+	unetsocket_t sock_tx;
+	unetsocket_t sock_rx;
 
-	// create a unet socket connection to modem
-	sock = unetsocket_open(argv[1], port);
-	test_assert("Socket open", sock != NULL);
-	if (sock == NULL) return error("Couldn't open unet socket");
+	// create a unet socket connection to modems
+	sock_tx = unetsocket_open(argv[1], port_tx);
+	sock_rx = unetsocket_open(argv[1], port_rx);
+
+	test_assert("unetsocket_open", sock_tx != NULL);
+	if (sock_tx == NULL) return error("Couldn't open unet socket");
 
 	// get local node address
-	rv = unetsocket_get_local_address(sock);
-	test_assert("Get local address", rv >= 0);
+	rv = unetsocket_get_local_address(sock_tx);
+	test_assert("unetsocket_get_local_address", rv >= 0);
 
 	// send data
-	rv = unetsocket_send(sock, data, 7, 0, DATA);
-	test_assert("Transmit data", rv == 0);
+	rv = unetsocket_send(sock_tx, data, 7, 0, DATA);
+	test_assert("unetsocket_send", rv == 0);
+
+	// bind to protocol
+	unetsocket_bind(sock_rx, DATA);
+	unetsocket_send(sock_tx, data, 7, 0, DATA);
+	printf("%s\n", unetsocket_receive(sock_rx));
 
 	// close the unet socket connection
-	rv = unetsocket_close(sock);
-	test_assert("Socket close", rv == 0);
+	rv = unetsocket_close(sock_tx);
+	test_assert("unetsocket_close", rv == 0);
+
+	// check if closed
+	rv = unetsocket_is_closed(sock_tx);
+	test_assert("unetsocket_is_closed", rv == 0);
 
 	test_summary();
 
