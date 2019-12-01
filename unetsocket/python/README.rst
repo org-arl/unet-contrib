@@ -17,7 +17,7 @@ To import all general modules::
 
 Sample notebook:
 
-    `python-gateway-tutorial.ipynb <https://github.com/org-arl/unet-contrib/blob/master/contrib/Unet-Python-API/python-gateway-tutorial.ipynb>`_
+    `python-gateway-tutorial.ipynb <https://github.com/org-arl/unet-contrib/blob/master/unetsocket/python/python-gateway-tutorial.ipynb>`_
 
 Useful links
 ------------
