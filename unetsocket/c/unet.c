@@ -79,6 +79,7 @@ unetsocket_t unetsocket_open(const char* hostname, int port)
 	_unetsocket_t *usock = malloc(sizeof(_unetsocket_t));
 	if (usock == NULL) return NULL;
 	usock->gw = fjage_tcp_open(hostname, port);
+	usock->timeout = -1;
 	if (usock->gw == NULL) {
 		free(usock);
 		return NULL;
@@ -120,6 +121,8 @@ int unetsocket_close(unetsocket_t sock)
 {
 	if (sock == NULL) return -1;
 	_unetsocket_t *usock = sock;
+	usock->quit = true;
+	fjage_interrupt(usock->gw);
 	fjage_close(usock->gw);
 	free(usock);
 	return 0;
@@ -301,6 +304,7 @@ fjage_msg_t unetsocket_receive(unetsocket_t sock)
         return NULL;
     }
     usock->quit = false;
+    pthread_join(usock->tid, NULL);
     return NULL;
 }
 

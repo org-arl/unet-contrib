@@ -7,6 +7,10 @@ all: libs
 	rm -rf *.zip
 	rm -rf fjage-*
 
+samples: libs txdata rxdata
+	rm -rf *.zip
+	rm -rf fjage-*
+
 libs: libfjage.a libunet.a
 
 libfjage.a: $(FJAGE_DIR)
@@ -20,6 +24,18 @@ $(FJAGE_DIR):
 
 libunet.a: unet.o
 	$(AR) rc $@ $^
+
+txdata.o: samples/txdata.c unet.h fjage.h
+	$(CC) $(CFLAGS) -c samples/txdata.c -o samples/txdata.o
+
+txdata: libs txdata.o
+	$(CC) -o samples/txdata samples/txdata.o libunet.a libfjage.a -lpthread -lm
+
+rxdata.o: samples/rxdata.c unet.h fjage.h
+	$(CC) $(CFLAGS) -c samples/rxdata.c -o samples/rxdata.o
+
+rxdata: libs rxdata.o
+	$(CC) -o samples/rxdata samples/rxdata.o libunet.a libfjage.a -lpthread -lm
 
 test: libs test_unet
 	rm -rf *.zip

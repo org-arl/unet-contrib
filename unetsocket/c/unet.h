@@ -260,6 +260,7 @@ int unetsocket_agents_for_service(unetsocket_t sock, const char* svc, fjage_aid_
 /// @param sock             Unet socket
 /// @return                 AgentID of an agent providing the service, NULL if none found
 
+// TODO: Need a function in fjage.c to provide this functionality
 fjage_aid_t unetsocket_agent(unetsocket_t sock, const char* name);
 
 /// Resolve node name to node address.
