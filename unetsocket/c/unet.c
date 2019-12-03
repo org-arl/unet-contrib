@@ -74,6 +74,74 @@ static void *monitor(void *p)
 	return NULL;
 }
 
+static fjage_msg_t receive(_unetsocket_t *usock, const char *clazz, const char *id, long timeout)
+{
+    pthread_mutex_lock(&usock->txlock);
+    fjage_interrupt(usock->gw);
+    int rv = pthread_mutex_trylock(&usock->rxlock);
+    while (rv == EBUSY)
+    {
+        usleep(100000);
+        fjage_interrupt(usock->gw);
+        rv = pthread_mutex_trylock(&usock->rxlock);
+    }
+    fjage_msg_t msg = fjage_receive(usock->gw, clazz, id, timeout);
+    pthread_mutex_unlock(&usock->rxlock);
+    pthread_mutex_unlock(&usock->txlock);
+    return msg;
+}
+
+static fjage_msg_t request(_unetsocket_t *usock, const fjage_msg_t request, long timeout)
+{
+    pthread_mutex_lock(&usock->txlock);
+    fjage_interrupt(usock->gw);
+    int rv = pthread_mutex_trylock(&usock->rxlock);
+    while (rv == EBUSY)
+    {
+        usleep(100000);
+        fjage_interrupt(usock->gw);
+        rv = pthread_mutex_trylock(&usock->rxlock);
+    }
+    fjage_msg_t msg = fjage_request(usock->gw, request, timeout);
+    pthread_mutex_unlock(&usock->rxlock);
+    pthread_mutex_unlock(&usock->txlock);
+    return msg;
+}
+
+static fjage_aid_t agent_for_service(_unetsocket_t *usock, const char *service)
+{
+    pthread_mutex_lock(&usock->txlock);
+    fjage_interrupt(usock->gw);
+    int rv = pthread_mutex_trylock(&usock->rxlock);
+    while (rv == EBUSY)
+    {
+        usleep(100000);
+        fjage_interrupt(usock->gw);
+        rv = pthread_mutex_trylock(&usock->rxlock);
+    }
+    fjage_aid_t aid = fjage_agent_for_service(usock->gw, service);
+    pthread_mutex_unlock(&usock->rxlock);
+    pthread_mutex_unlock(&usock->txlock);
+    return aid;
+}
+
+static int agents_for_service(_unetsocket_t *usock, const char *service, fjage_aid_t* agents, int max)
+{
+    pthread_mutex_lock(&usock->txlock);
+    fjage_interrupt(usock->gw);
+    int rv = pthread_mutex_trylock(&usock->rxlock);
+    while (rv == EBUSY)
+    {
+        usleep(100000);
+        fjage_interrupt(usock->gw);
+        rv = pthread_mutex_trylock(&usock->rxlock);
+    }
+    int as = fjage_agents_for_service(usock->gw, service, agents, max);
+    pthread_mutex_unlock(&usock->rxlock);
+    pthread_mutex_unlock(&usock->txlock);
+    return as;
+}
+
 unetsocket_t unetsocket_open(const char* hostname, int port)
 {
 	_unetsocket_t *usock = malloc(sizeof(_unetsocket_t));
@@ -84,9 +152,11 @@ unetsocket_t unetsocket_open(const char* hostname, int port)
 		free(usock);
 		return NULL;
 	}
-	int nagents = fjage_agents_for_service(usock->gw, "org.arl.unet.Services.DATAGRAM", NULL, 0);
+	pthread_mutex_init(&usock->rxlock, NULL);
+    pthread_mutex_init(&usock->txlock, NULL);
+	int nagents = agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", NULL, 0);
 	fjage_aid_t agents[nagents];
-	if (fjage_agents_for_service(usock->gw, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
+	if (agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
 		free(usock);
 		return NULL;
 	}
@@ -105,9 +175,11 @@ unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* se
 		free(usock);
 		return NULL;
 	}
-	int nagents = fjage_agents_for_service(usock->gw, "org.arl.unet.Services.DATAGRAM", NULL, 0);
+	pthread_mutex_init(&usock->rxlock, NULL);
+    pthread_mutex_init(&usock->txlock, NULL);
+	int nagents = agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", NULL, 0);
 	fjage_aid_t agents[nagents];
-	if (fjage_agents_for_service(usock->gw, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
+	if (agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
 		free(usock);
 		return NULL;
 	}
@@ -193,13 +265,13 @@ int unetsocket_get_local_address(unetsocket_t sock)
 	fjage_msg_t msg;
 	fjage_aid_t node;
 	int rv;
-	node = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.NODE_INFO");
+	node = agent_for_service(usock, "org.arl.unet.Services.NODE_INFO");
 	if (node == NULL) return -1;
 	msg = fjage_msg_create("org.arl.unet.ParameterReq", FJAGE_REQUEST);
 	fjage_msg_set_recipient(msg, node);
 	fjage_msg_add_int(msg, "index", -1);
 	fjage_msg_add_string(msg, "param", "address");
-	msg = fjage_request(usock->gw, msg, 5*TIMEOUT);
+	msg = request(usock, msg, 5*TIMEOUT);
 	if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM) {
 		rv = fjage_msg_get_int(msg, "value", 0);
 		free(msg);
@@ -273,15 +345,15 @@ int unetsocket_send_request(unetsocket_t sock, fjage_msg_t req)
 	if (protocol != DATA && (protocol < USER || protocol > MAX)) return -1;
 	recipient = fjage_msg_get_string(req, "recipient");
 	if (recipient == NULL) {
-		if (usock->provider == NULL) usock->provider = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.TRANSPORT");
-		if (usock->provider == NULL) usock->provider = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.ROUTING");
-		if (usock->provider == NULL) usock->provider = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.LINK");
-		if (usock->provider == NULL) usock->provider = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.PHYSICAL");
-		if (usock->provider == NULL) usock->provider = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.DATAGRAM");
+		if (usock->provider == NULL) usock->provider = agent_for_service(usock, "org.arl.unet.Services.TRANSPORT");
+		if (usock->provider == NULL) usock->provider = agent_for_service(usock, "org.arl.unet.Services.ROUTING");
+		if (usock->provider == NULL) usock->provider = agent_for_service(usock, "org.arl.unet.Services.LINK");
+		if (usock->provider == NULL) usock->provider = agent_for_service(usock, "org.arl.unet.Services.PHYSICAL");
+		if (usock->provider == NULL) usock->provider = agent_for_service(usock, "org.arl.unet.Services.DATAGRAM");
 		if (usock->provider == NULL) return -1;
 		fjage_msg_set_recipient(req, usock->provider);
 	}
-	req = fjage_request(usock->gw, req, TIMEOUT);
+	req = request(usock, req, TIMEOUT);
 	if (req != NULL && fjage_msg_get_performative(req) == FJAGE_AGREE) {
 		free(req);
 		return 0;
@@ -294,8 +366,6 @@ fjage_msg_t unetsocket_receive(unetsocket_t sock)
 {
 	if (sock == NULL) return NULL;
 	_unetsocket_t *usock = sock;
-	pthread_mutex_init(&usock->rxlock, NULL);
-    pthread_mutex_init(&usock->txlock, NULL);
     if (pthread_create(&usock->tid, NULL, monitor, usock) < 0) {
     	pthread_mutex_destroy(&usock->rxlock);
     	pthread_mutex_destroy(&usock->txlock);
@@ -325,14 +395,14 @@ fjage_aid_t unetsocket_agent_for_service(unetsocket_t sock, const char* svc)
 {
 	if (sock == NULL) return NULL;
 	_unetsocket_t *usock = sock;
-	return fjage_agent_for_service(usock->gw, svc);
+	return agent_for_service(usock, svc);
 }
 
 int unetsocket_agents_for_service(unetsocket_t sock, const char* svc, fjage_aid_t* agents, int max)
 {
 	if (sock == NULL) return -1;
 	_unetsocket_t *usock = sock;
-	return fjage_agents_for_service(usock->gw, svc, agents, max);
+	return agents_for_service(usock, svc, agents, max);
 }
 
 int unetsocket_host(unetsocket_t sock, const char* node_name)
@@ -342,14 +412,14 @@ int unetsocket_host(unetsocket_t sock, const char* node_name)
 	fjage_msg_t msg;
 	fjage_aid_t arp;
 	int rv;
-	arp = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.ADDRESS_RESOLUTION");
+	arp = agent_for_service(usock, "org.arl.unet.Services.ADDRESS_RESOLUTION");
 	if (arp == NULL) return -1;
 	msg = fjage_msg_create("org.arl.unet.addr.AddressResolutionReq", FJAGE_REQUEST);
 	fjage_msg_set_recipient(msg, arp);
 	fjage_msg_add_int(msg, "index", -1);
 	fjage_msg_add_string(msg, "param", "name");
 	fjage_msg_add_string(msg, "value", node_name);
-	msg = fjage_request(usock->gw, msg, 5*TIMEOUT);
+	msg = request(usock, msg, 5*TIMEOUT);
 	if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM) {
 		rv = fjage_msg_get_int(msg, "address", 0);
 		free(msg);
