@@ -7,39 +7,6 @@
 
 typedef void *unetsocket_t;        ///< unet socket connection
 
-// Services
-// #define PHYSICAL                 "org.arl.unet.Services.PHYSICAL"
-// #define BASEBAND                 "org.arl.unet.Services.BASEBAND"
-// #define RANGING                  "org.arl.unet.Services.RANGING"
-// #define SCHEDULER                "org.arl.unet.Services.SCHEDULER"
-// #define SHELL                    "org.arl.fjage.shell.Services.SHELL"
-
-// // Messages
-// #define TXFRAMEREQ               "org.arl.unet.phy.TxFrameReq"
-// #define TXFRAMENTF               "org.arl.unet.phy.TxFrameNtf"
-// #define RXFRAMENTF               "org.arl.unet.phy.RxFrameNtf"
-// #define TXFRAMESTARTNTF          "org.arl.unet.phy.TxFrameStartNtf"
-// #define DATAGRAMREQ              "org.arl.unet.DatagramReq"
-// #define RANGEREQ                 "org.arl.unet.phy.RangeReq"
-// #define RANGENTF                 "org.arl.unet.phy.RangeNtf"
-// #define TXBASEBANDSIGNALREQ      "org.arl.unet.bb.TxBasebandSignalReq"
-// #define RECORDBASEBANDSIGNALREQ  "org.arl.unet.bb.RecordBasebandSignalReq"
-// #define RXBASEBANDSIGNALNTF      "org.arl.unet.bb.RxBasebandSignalNtf"
-// #define ADDSCHEDULEDSLEEPREQ     "org.arl.unet.scheduler.AddScheduledSleepReq"
-// #define PARAMETERREQ             "org.arl.unet.ParameterReq"
-
-/// Port number
-
-#define PORT                1100
-
-/// Maximum length of a frame ID string
-
-#define FRAME_ID_LEN        64
-
-/// Transmit sampling rate
-
-#define TXSAMPLINGFREQ           192000 //Hz
-
 /// Timeout
 
 #define TIMEOUT                  1000   //ms
@@ -57,7 +24,6 @@ typedef void *unetsocket_t;        ///< unet socket connection
 #define LINK2 					 8      // Protocol number for use by secondary link agents.
 #define USER 					32      // Lowest protocol number allowable for user protocols.
 #define MAX 					63      // Largest protocol number allowable.
-
 
 /// Open a unet socket connection to the modem.
 ///
@@ -255,13 +221,13 @@ fjage_aid_t unetsocket_agent_for_service(unetsocket_t sock, const char* svc);
 
 int unetsocket_agents_for_service(unetsocket_t sock, const char* svc, fjage_aid_t* agents, int max);
 
-/// Gets a named AgentID for low-level access to UnetStack.
+/// Gets a named AgentID for low-level access to UnetStack. The AgentID created using this function should be freed using
+/// fjage_aid_destroy().
 ///
-/// @param sock             Unet socket
+/// @param name             Name of the agent
 /// @return                 AgentID of an agent providing the service, NULL if none found
 
-// TODO: Need a function in fjage.c to provide this functionality
-fjage_aid_t unetsocket_agent(unetsocket_t sock, const char* name);
+fjage_aid_t unetsocket_agent(const char* name);
 
 /// Resolve node name to node address.
 ///

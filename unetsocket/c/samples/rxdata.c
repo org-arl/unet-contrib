@@ -26,6 +26,8 @@ static int error(const char *msg)
 int main(int argc, char *argv[])
 {
 	unetsocket_t sock;
+    fjage_msg_t ntf;
+    uint8_t data[7];
 
 	if (argc < 2)
     {
@@ -41,9 +43,14 @@ int main(int argc, char *argv[])
     if (sock == NULL) return error("Couldn't open unet socket");
 
     unetsocket_bind(sock, 0);
-    unetsocket_receive(sock);
-
-    sleep(5);
+    unetsocket_set_timeout(sock, 10000);
+    ntf = unetsocket_receive(sock);
+    printf("clazz is : %s\n", fjage_msg_get_clazz(ntf));
+    fjage_msg_get_byte_array(ntf, "data", data, 7);
+    for (int i = 0; i<7; i++) {
+        printf("%d\n", data[i]);
+    }
+    sleep(2);
 
     unetsocket_close(sock);
 
