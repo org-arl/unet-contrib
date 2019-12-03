@@ -39,23 +39,15 @@ static void *monitor(void *p) {
   _unetsocket_t *usock = p;
   long deadline = -1;
   int rv;
-  if (usock->timeout == 0) {
-    deadline = 0;
-  }
-  else if (usock->timeout > 0) {
-    deadline = _time_in_ms() + usock->timeout;
-  }
+  if (usock->timeout == 0) deadline = 0;
+  if (usock->timeout > 0) deadline = _time_in_ms() + usock->timeout;
   const char *list[] = {"org.arl.unet.DatagramNtf", "org.arl.unet.phy.RxFrameNtf"};
   while (!usock->quit) {
     int time_remaining = -1;
-    if (usock->timeout == 0) {
-      time_remaining = 0;
-	}
-	else if (usock->timeout > 0) {
+    if (usock->timeout == 0) time_remaining = 0;
+	if (usock->timeout > 0) {
 	  time_remaining = deadline - _time_in_ms();
-		if (time_remaining <= 0) {
-		  return NULL;
-	  }
+	  if (time_remaining <= 0) return NULL;
 	}
     pthread_mutex_lock(&usock->rxlock);
 	fjage_msg_t msg = fjage_receive_any(usock->gw, list, 2, usock->timeout<0?15*TIMEOUT:time_remaining);
