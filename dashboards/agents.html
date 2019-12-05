@@ -180,6 +180,12 @@
         return elem.name == agent.name;
       })
       params = found[0].paramList;
+      if (params) {
+        getHelp(agent.name, params[3].paramName)
+      }
+      else {
+        getHelp(agent.name, null)
+      }
       let clone = document.importNode(paramTmpl.content,true);
       divTab = clone.querySelector('.tab-pane');
       divTab.id = agent.name + '-param';
@@ -266,7 +272,7 @@
     return new Promise(async resolve=>{
       let req = new ShellExecReq();
       req.recipient = shell;
-      req.cmd = 'ps';
+      req.cmd = 'ps();';
       req.ans = true;
       gw.request(req).then(async (msg) => {
       let res= await parseRsp(msg.ans);
@@ -308,15 +314,22 @@ function getTitle(name) {
   })
 }
 
-function paramReq(name) {
-  return new Promise(resolve=>{
-  var foundObject = agentDetails.find(function(element) { 
+function getIndex(list, name) {
+  var foundObject = list.find(function(element) { 
     return element.name == name
   });
 
-  var foundIndex = agentDetails.findIndex(function(element, index) { 
+  var foundIndex = list.findIndex(function(element, index) { 
     return element === foundObject
-  }); 
+  });
+
+  return foundIndex;
+}
+
+function paramReq(name) {
+  return new Promise(resolve=>{
+  
+  var foundIndex = getIndex(agentDetails, name)
 
   let req = new ParameterReq()
   req.recipient = name
@@ -355,5 +368,40 @@ function paramReq(name) {
 })
 })
 }
+
+  function getHelp(name, paramName) {
+    let req = new ShellExecReq()
+    if (paramName != null) {
+      var helpToken = 'help(\''+name+'.'+paramName+'\');'
+    }
+    else {
+      var helpToken = 'help(\''+name+'\');'
+    }
+    
+    req.recipient = gw.agent('websh')
+    // console.log(helpToken)
+    req.cmd = helpToken
+    req.ans = true
+    gw.request(req).then(async (msg) => {
+      // console.log(msg.ans)
+      if (paramName != null) {
+        var pList = agentDetails[getIndex(agentDetails, name)].paramList
+        for (var i = 0; i < pList.length; i++) {
+          if (pList[i].paramName == paramName) {
+            pList[i].paramHelp = msg.ans
+            break;
+          }
+        }
+        // console.log(agentDetails)
+      }
+      else {
+        agentDetails[getIndex(agentDetails, name)].help=msg.ans
+        // console.log(agentDetails[getIndex(agentDetails, name)])
+      }
+    }).catch((ex) => {
+      console.log('Could not execute command: '+ex);
+    });
+  }
+
 </script>
 </html>
