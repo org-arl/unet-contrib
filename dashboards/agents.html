@@ -14,69 +14,54 @@
   <link rel='stylesheet' href='/css/style.css'>
   <link rel='stylesheet' href='/css/vendor/fontawesome.css' />
   <script src='/js/vendor/vendor/vendor.js' ></script>
-  <script type='module' src='/js/nodeInfo.js'></script>
+  <style>
+    :root{
+      --grey-color:#4f5f6f;
+      --label-color:rgba(0, 0, 0, 0.5);
+      --border-color:rgba(0, 0, 0, 0.2);
+    }
 
-  <script type='module'>
-    /*global sweetAlert*/
-    import { Gateway, Services, MessageClass} from '../js/unet.js';
+    .item{
+      padding: 0.4rem;
+    }
 
-    var gw1, gw2;
-    var nodeaddr1, nodeaddr2;
-    var testRunning = false;
-    const RxFrameNtf = MessageClass('org.arl.unet.phy.RxFrameNtf');
-    const TxFrameReq = MessageClass('org.arl.unet.phy.TxFrameReq');
-    const ShellExecReq = MessageClass('org.arl.fjage.shell.ShellExecReq');
+    .item a{
+      text-decoration: none;
+    }
 
+    .borderless td, .borderless th {
+      border: none;
+    }
 
-</script>
-<style>
-  :root{
-    --grey-color:#4f5f6f;
-    --label-color:rgba(0, 0, 0, 0.5);
-    --border-color:rgba(0, 0, 0, 0.2);
-  }
+    .label{
+      color: var(--label-color);
+    }
 
-  .item{
-    padding: 0.4rem;
-  }
+    [contenteditable]:focus {
+      outline: 1px solid var(--border-color);
+    }
 
-  .item a{
-    text-decoration: none;
-  }
+    .show-btn{
+      padding: 0 0.175rem;
+    }
 
-  .borderless td, .borderless th {
-    border: none;
-  }
-
-  .label{
-    color: var(--label-color);
-  }
-
-  [contenteditable]:focus {
-    outline: 1px solid var(--border-color);
-  }
-
-  .show-btn{
-    padding: 0 0.175rem;
-  }
-
-  .toast{
-    background-color:#FFF;
-    opacity: 1;
-  }
-</style>
+    .toast{
+      background-color:#FFF;
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
-    <div class='main-wrapper'>
+  <div class='main-wrapper'>
     <div class='app header-fixed footer-fixed sidebar-fixed' id='app'>
       <article class='content dashboard-page'>
         <section class='section'>
           <div class='row'>
-            <div class='col-md-2'>
+            <div class='col-md-3'>
               <div class='card'>
                 <div class='card-header bordered'>
                   <div class='header-block'>
-                      <h3 class='title'> Agents </h3>
+                    <h3 class='title'> Agents </h3>
                   </div>
                 </div>
                 <div class='card-block'>
@@ -86,45 +71,45 @@
                         <li class='item'> <a href='#' role="tab" aria-selected="true"></a></li>
                       </template>
                     </ul>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div class='col-md-5' id='paramtabs'>
-            <div class="tab-content" id="v-pills-tabContent">
-            <template id="param-tmpl">
-              <div class='tab-pane fade show active' role='tabpanel'>
-                <div class='card'>
-                  <div class='card-header bordered'>
-                    <div class='header-block'>
-                      <h3 class='title'> </h3>
-                    </div>
-                    <div class='header-block pull-right'>
-                      <button class='btn btn-sm rounded pull-right' id='close'>
-                        <i class='fa fa-times' style='color:var(--grey-color)'></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class='card-block'>
-                    <!-- <ul class='item-list' id='paramForm'></ul> -->
-                    <table class='table table-hover table-responsive borderless' id='paramform'>
-                      <tbody id='params'>
-                      </tbody>
-                    </table>
-                  </div>
+                  </section>
                 </div>
               </div>
-            </template>
-            <template id='paramform-tmpl'>
-              <tr>
-                <td class='label'></td>
-                <td contenteditable='true'></td>
-                <td>
-                  <button class='btn' id='param-save' hidden><i class='fa fa-check' style='color:green'></i></button>
-                  <button class='btn' id='param-cancel' hidden><i class='fa fa-times' style='color:red'></i></button>
-                </td>
-              </tr>
-            </template>
+            </div>
+            <div class='col-md-5' id='paramtabs'>
+              <div class="tab-content" id="v-pills-tabContent">
+                <template id="param-tmpl">
+                  <div class='tab-pane fade show active' role='tabpanel'>
+                    <div class='card'>
+                      <div class='card-header bordered'>
+                        <div class='header-block'>
+                          <h3 class='title'> </h3>
+                        </div>
+                        <div class='header-block pull-right'>
+                          <button class='btn btn-sm rounded pull-right' id='close'>
+                            <i class='fa fa-times' style='color:var(--grey-color)'></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div class='card-block'>
+                        <table class='table table-hover table-responsive borderless' id='paramform'>
+                          <tbody id='params'>
+                           <!-- <tr> <h5 class='title' style='font-size:1rem'>Physical</h5></tr> -->
+                         </tbody>
+                       </table>
+                     </div>
+                   </div>
+                 </div>
+               </template>
+               <template id='paramform-tmpl'>
+                <tr>
+                  <td class='label'></td>
+                  <td contenteditable='true'></td>
+                  <td>
+                    <button class='btn' id='param-save' hidden><i class='fa fa-check' style='color:green'></i></button>
+                    <button class='btn' id='param-cancel' hidden><i class='fa fa-times' style='color:red'></i></button>
+                  </td>
+                </tr>
+              </template>
             </div>
           </div>
           <div class='col-md-3'>
@@ -135,35 +120,35 @@
                 </button>
                 <span id='valmsg'>Hello, world! This is a toast message.</span>
               </div>
+            </div>
           </div>
-        </div>
-      </section>
-    </article>
-  </div>
+        </section>
+      </article>
+    </div>
   </div>
 </body>
-<script>
-  var agentTmpl, paramTmpl;
+<script type='module'>
+  import '/js/nodeInfo.js';
+  import { Gateway, Performative, MessageClass } from '../fjage/fjage.js';
 
-  var agents = [
-    {name:'phy', clazz:'org.arl.yoda.Physical',agentDetails:[
-    { title:'Physical',paramGrp:'org.arl.unet.bb.BasebandParam', paramName:'maxSignalLength',paramValue:2147483647},
-    { title:'Physical',paramGrp:'org.arl.unet.bb.BasebandParam', paramName:'signalPowerLevel',paramValue:-42},
-    { title:'Physical',paramGrp:'org.arl.unet.phy.PhysicalParam', paramName:'busy',paramValue:false},
-    { title:'Physical',paramGrp:'org.arl.unet.phy.PhysicalParam', paramName:'maxPowerLevel',paramValue:0}
-    ]},
-    {name:'node', clazz:'org.arl.unet.NodeInfo',agentDetails:[
-    { title:'NodeInfo',paramGrp:'org.arl.unet.phy.PhysicalParam', paramName:'busy',paramValue:false},
-    { title:'NodeInfo',paramGrp:'org.arl.unet.phy.PhysicalParam', paramName:'maxPowerLevel',paramValue:0}
-    ]}
-  ];
+  const avgtime = 10000;
 
-  window.addEventListener('load',function(){
+  var gw = new Gateway();
+  var agentDetails = []
+
+  var ParameterReq = MessageClass('org.arl.unet.ParameterReq');
+  var ParameterRsp = MessageClass('org.arl.unet.ParameterRsp');
+  var ShellExecReq = MessageClass('org.arl.fjage.shell.ShellExecReq');
+
+  var agentTmpl, paramTmpl,paramFormTmpl;
+
+  window.addEventListener('load',async function(){
     agentTmpl = document.getElementById('agent-tmpl');
     paramTmpl = document.getElementById('param-tmpl');
     paramFormTmpl = document.getElementById('paramform-tmpl');
+    agents = await makeRq(gw.agent('websh'));
     displayAgents();
-  })
+  });
 
   /**
    * To display the list of agents and the related details
@@ -176,7 +161,7 @@
       let acell = cells.getElementsByTagName('a')[0];
       acell.id = agent.name + '-param-tab';
       acell.href = '#'+agent.name + '-param';
-      acell.innerHTML = agent.name;
+      acell.innerHTML = agent.title;
       acell.setAttribute('aria-controls',agent.name + '-param')
       setAgentListener(acell,agent);
       agentTable.appendChild(clone);
@@ -186,15 +171,21 @@
   /**
    * To set event listener for the agent Id links
    */
-  function setAgentListener(elem,agent){
+   function setAgentListener(elem,agent){
     let paramTab = document.getElementById('v-pills-tabContent');
-    elem.addEventListener('click',function(){
+    let params,divTab;
+    elem.addEventListener('click',async function(){
+      let res = await paramReq(agent.name);
+      let found = res.filter((elem)=>{
+        return elem.name == agent.name;
+      })
+      params = found[0].paramList;
       let clone = document.importNode(paramTmpl.content,true);
-      let divTab = clone.querySelector('.tab-pane');
+      divTab = clone.querySelector('.tab-pane');
       divTab.id = agent.name + '-param';
       divTab.setAttribute('aria-labelledby',agent.name + '-param-tab')
       let title = divTab.querySelector('h3');
-      title.innerHTML = agent.clazz.split('.').pop();
+      title.innerHTML = agent.title;
       paramTab.appendChild(clone);
       let closeBtn = divTab.querySelector('#close');
       if(closeBtn){
@@ -203,24 +194,30 @@
           tabElem.parentNode.removeChild(tabElem);
         })
       }
-      displayParams(agent);
+      displayParams(params,divTab);
     })
   }
 
   /**
    * To display the parameters and values in the new tab
    */
-  function displayParams(agent){
-    let paramForm = document.getElementById('paramform');
-    let params = agent.agentDetails;
+   function displayParams(params,divTab){
+    let paramForm = divTab.querySelector('#paramform');
+    let firstParamGrp = null;
     params.forEach((param,idx)=>{
+      let nextParamGrp = param.paramGrp;
       let clone = document.importNode(paramFormTmpl.content,true);
       let cells = clone.querySelectorAll('td');
-      cells[0].innerHTML = param.paramName + ':';
-      cells[1].innerHTML = param.paramValue;
-      cells[1].id = param.paramName;
-      cells[1].dataset.paramName = param.paramName;
-      setParamListeners(cells[1],param);
+      if(firstParamGrp != nextParamGrp){
+        cells[0].innerHTML = param.paramGrp;
+      } else {
+        cells[0].innerHTML = param.paramName + ':';
+        cells[1].innerHTML = param.paramValue;
+        cells[1].id = param.paramName;
+        cells[1].dataset.paramName = param.paramName;
+        setParamListeners(cells[1],param);
+      }
+      firstParamGrp = nextParamGrp;
       paramForm.appendChild(clone);
     })
   }
@@ -228,34 +225,33 @@
   /**
    * To set event listeners on change of parameter values
    */
-  function setParamListeners(tdElem,param){
+   function setParamListeners(tdElem,param){
     tdElem.addEventListener('click',function(){
       let active = document.querySelectorAll('.show-btn');
       if(active) active.forEach(elem=>{
         elem.hidden=true;
       })
-      let parent = tdElem.parentNode;
-      let saveBtn = parent.querySelector('#param-save');
-      let cancelBtn = parent.querySelector('#param-cancel');
-      saveBtn.hidden=false;
-      saveBtn.classList.add('show-btn');
-      cancelBtn.hidden=false;
-      cancelBtn.classList.add('show-btn');
-      saveBtn.addEventListener('click',function(){
-        saveBtn.hidden=true;
-        cancelBtn.hidden=true;
-        saveParam(param,tdElem);
-      });
-      cancelBtn.addEventListener('click',function(ev){
-        saveBtn.hidden=true;
-        cancelBtn.hidden=true;
+        let parent = tdElem.parentNode;
+        let saveBtn = parent.querySelector('#param-save');
+        let cancelBtn = parent.querySelector('#param-cancel');
+        saveBtn.hidden=false;
+        saveBtn.classList.add('show-btn');
+        cancelBtn.hidden=false;
+        cancelBtn.classList.add('show-btn');
+        saveBtn.addEventListener('click',function(){
+          saveBtn.hidden=true;
+          cancelBtn.hidden=true;
+          saveParam(param,tdElem);
+        });
+        cancelBtn.addEventListener('click',function(ev){
+          saveBtn.hidden=true;
+          cancelBtn.hidden=true;
+        })
+
       })
-      
-    })
   }
 
   function saveParam(param,tdElem){
-    console.log('Old value: '+param.paramValue+'|New value|'+tdElem.innerHTML);
     if(param.paramValue != tdElem.innerHTML){
       let toast = document.querySelector('.toast');
       toast.hidden=false;
@@ -265,5 +261,99 @@
       })
     }
   }
+
+  function makeRq(shell) {
+    return new Promise(async resolve=>{
+      let req = new ShellExecReq();
+      req.recipient = shell;
+      req.cmd = 'ps';
+      req.ans = true;
+      gw.request(req).then(async (msg) => {
+      let res= await parseRsp(msg.ans);
+      resolve(agentDetails);
+    }).catch((ex) => {
+      console.log('Could not execute command: '+ex);
+    });
+  })
+  }
+
+  function parseRsp(ps) {
+    var agentList = ps.split("\n");
+    let promise = [];
+    for (var i = 0; i < agentList.length; i++) {
+      var j = agentList[i].split(/ ?[\-:] /)
+      if (j[1] != "REMOTE") {
+        promise.push(getTitle(j[0]));
+    }
+  }
+  return Promise.all(promise);
+}
+
+function getTitle(name) {
+  return new Promise(resolve=>{
+    let req = new ParameterReq()
+    req.recipient = gw.agent(name)
+    req.index = -1
+    req.param = 'title'
+    var sp = {}
+    gw.request(req).then( rsp => {
+      if (rsp.perf == Performative.INFORM) {
+        sp.name = name
+        sp.title = rsp.value
+        agentDetails.push(sp)
+        
+      }
+      resolve();
+    })
+  })
+}
+
+function paramReq(name) {
+  return new Promise(resolve=>{
+  var foundObject = agentDetails.find(function(element) { 
+    return element.name == name
+  });
+
+  var foundIndex = agentDetails.findIndex(function(element, index) { 
+    return element === foundObject
+  }); 
+
+  let req = new ParameterReq()
+  req.recipient = name
+  req.index = -1;
+  gw.request(req, 1000).then((rsp) => {
+    if (rsp.perf == Performative.INFORM) {
+      var specificParamList = []
+      if (rsp.values) {
+        rsp.values[rsp.param]=rsp.value
+        for (var i = 0; i < Object.keys(rsp.values).length; i++) {
+          var sp = {}
+          if (Object.keys(rsp.values)[i] != 'title' && Object.keys(rsp.values)[i] != 'description') {
+            sp.paramClassFullName = Object.keys(rsp.values)[i]
+            sp.paramValue = Object.values(rsp.values)[i]
+            var x = Object.keys(rsp.values)[i].split(".")
+            sp.paramName = x.pop()
+            sp.paramClassName = x.pop()
+            specificParamList.push(sp)
+          }
+          else if (Object.keys(rsp.values)[i] == 'title') {
+          // agentDetails[foundIndex].title = Object.values(rsp.values)[i]
+          // Skipping since we populate title initially
+        }
+        else if (Object.keys(rsp.values)[i] == 'description') {
+          agentDetails[foundIndex].description = Object.values(rsp.values)[i]
+        }
+      }
+
+      if (specificParamList.length != 0) {
+        agentDetails[foundIndex].paramList = specificParamList
+      }
+
+    }        
+  }
+  resolve(agentDetails);
+})
+})
+}
 </script>
 </html>
