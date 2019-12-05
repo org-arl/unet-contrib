@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html class='no-js' lang=''>
+
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='x-ua-compatible' content='ie=edge'>
+  <title>Unet | Comms Test</title>
+  <meta name='description' content=''>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link rel='icon' type='image/x-icon' href='/img/unet.ico'>
+  <link rel='stylesheet' href='/css/vendor/vendor.css'>
+  <link rel='stylesheet' href='/css/vendor/app-orange.css'>
+  <link rel='stylesheet' href='/css/vendor/font.css'>
+  <link rel='stylesheet' href='/css/style.css'>
+  <link rel='stylesheet' href='/css/vendor/fontawesome.css' />
+  <script src='/js/vendor/vendor/vendor.js' ></script>
+  <script type='module' src='/js/nodeInfo.js'></script>
+
+  <script type='module'>
+    /*global sweetAlert*/
+    import { Gateway, Services, MessageClass} from '../js/unet.js';
+
+    var gw1, gw2;
+    var nodeaddr1, nodeaddr2;
+    var testRunning = false;
+    const RxFrameNtf = MessageClass('org.arl.unet.phy.RxFrameNtf');
+    const TxFrameReq = MessageClass('org.arl.unet.phy.TxFrameReq');
+    const ShellExecReq = MessageClass('org.arl.fjage.shell.ShellExecReq');
+
+
+</script>
+<style>
+  :root{
+    --grey-color:#4f5f6f;
+  }
+
+  .item{
+    padding: 0.4rem;
+  }
+
+  .item a{
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+    <div class='main-wrapper'>
+    <div class='app header-fixed footer-fixed sidebar-fixed' id='app'>
+      <article class='content dashboard-page'>
+        <section class='section'>
+          <div class='row'>
+            <div class='col-md-2'>
+              <div class='card'>
+                <div class='card-header bordered'>
+                  <div class='header-block'>
+                      <h3 class='title'> Agents </h3>
+                  </div>
+                </div>
+                <div class='card-block'>
+                  <section class='example'>
+                    <ul class='item-list' id='agents-table'>
+                      <template id='agent-tmpl'>
+                        <li class='item'> <a href='#' role="tab" aria-selected="true"></a></li>
+                      </template>
+                    </ul>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div class='col-md-5' id='paramTabs'>
+            <div class="tab-content" id="v-pills-tabContent">
+            <template id="param-tmpl">
+              <div class='tab-pane fade show active' role='tabpanel'>
+                <div class='card'>
+                  <div class='card-header bordered'>
+                    <div class='header-block'>
+                      <h3 class='title'> </h3>
+                    </div>
+                    <div class='header-block pull-right'>
+                      <button class='btn btn-sm rounded pull-right' id='close'>
+                        <i class='fa fa-times' style='color:var(--grey-color)'></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class='card-block'>
+                    <ul class='item-list' id='paramForm'></ul>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <template id='paramForm-tmpl'>
+              <li class='item'>
+                <div class='item-row'>
+                  <div class='item-col'></div>
+                  <div class='item-col'></div>
+                </div>
+              </li>
+            </template>
+            <!-- <template id='paramForm-tmpl'>
+              <div class="form-group">
+                  <label class="control-label"></label>
+                  <input type="text" class="col-5 form-control boxed">
+              </div>
+            </template> -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </div>
+  </div>
+</body>
+<script>
+  var agentTmpl, paramTmpl;
+
+  var agents = [
+    {name:'phy', clazz:'org.arl.yoda.Physical',agentDetails:[
+    { title:'Physical',paramGrp:'org.arl.unet.bb.BasebandParam', paramName:'maxSignalLength',paramValue:2147483647},
+    { title:'Physical',paramGrp:'org.arl.unet.bb.BasebandParam', paramName:'signalPowerLevel',paramValue:-42},
+    { title:'Physical',paramGrp:'org.arl.unet.phy.PhysicalParam', paramName:'busy',paramValue:false},
+    { title:'Physical',paramGrp:'org.arl.unet.phy.PhysicalParam', paramName:'maxPowerLevel',paramValue:0}
+    ]},
+    {name:'node', clazz:'org.arl.unet.NodeInfo',agentDetails:[
+    { title:'NodeInfo',paramGrp:'org.arl.unet.phy.PhysicalParam', paramName:'busy',paramValue:false},
+    { title:'NodeInfo',paramGrp:'org.arl.unet.phy.PhysicalParam', paramName:'maxPowerLevel',paramValue:0}
+    ]}
+  ];
+
+  window.addEventListener('load',function(){
+    agentTmpl = document.getElementById('agent-tmpl');
+    paramTmpl = document.getElementById('param-tmpl');
+    paramFormTmpl = document.getElementById('paramForm-tmpl');
+    displayAgents();
+  })
+
+  /**
+   * To display the list of agents and the related details
+   */
+   function displayAgents(){
+    let agentTable = document.getElementById('agents-table');
+    agents.forEach((agent,idx)=>{
+      let clone = document.importNode(agentTmpl.content,true);
+      let cells = clone.querySelector('li');
+      let acell = cells.getElementsByTagName('a')[0];
+      acell.id = agent.name + '-param-tab';
+      acell.href = '#'+agent.name + '-param';
+      acell.innerHTML = agent.name;
+      acell.setAttribute('aria-controls',agent.name + '-param')
+      setListener(acell,agent);
+      agentTable.appendChild(clone);
+    })
+  }
+
+  /**
+   * To set event listener for the agent Id links
+   */
+  function setListener(elem,agent){
+    let paramTab = document.getElementById('v-pills-tabContent');
+    elem.addEventListener('click',function(){
+      let clone = document.importNode(paramTmpl.content,true);
+      let divTab = clone.querySelector('.tab-pane');
+      divTab.id = agent.name + '-param';
+      divTab.setAttribute('aria-labelledby',agent.name + '-param-tab')
+      let title = divTab.querySelector('h3');
+      title.innerHTML = agent.clazz.split('.').pop();
+      paramTab.appendChild(clone);
+      let closeBtn = divTab.querySelector('#close');
+      if(closeBtn){
+        closeBtn.addEventListener('click',function(ev){
+          var tabElem = document.getElementById(agent.name+'-param');
+          tabElem.parentNode.removeChild(tabElem);
+        })
+      }
+      displayParams(agent);
+    })
+  }
+
+  /**
+   * To display the parameter fields for config
+   */
+  function displayParams(agent){
+    let paramForm = document.getElementById('paramForm');
+    let params = agent.agentDetails;
+    console.log('Params: '+JSON.stringify(params));
+    params.forEach((param,idx)=>{
+      let clone = document.importNode(paramFormTmpl.content,true);
+      let cells = clone.querySelectorAll('.item-col');
+      let tableCol = cells.getElementsByTagName('label')[0];
+      labelElem.innerHTML = param.paramName;
+      paramForm.appendChild(clone);
+    })
+  }
+
+</script>
+</html>
