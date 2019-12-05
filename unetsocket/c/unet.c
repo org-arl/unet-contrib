@@ -297,8 +297,7 @@ long unetsocket_get_timeout(unetsocket_t sock) {
 }
 
 // NOTE: changed const uint8_t* to uint8_t*
-int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int protocol)
-{
+int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int protocol) {
   if (sock == NULL) return -1;
   _unetsocket_t *usock = sock;
   fjage_msg_t msg;
@@ -352,41 +351,35 @@ fjage_msg_t unetsocket_receive(unetsocket_t sock) {
   return usock->ntf;
 }
 
-void unetsocket_cancel(unetsocket_t sock)
-{
+void unetsocket_cancel(unetsocket_t sock) {
   _unetsocket_t *usock = sock;
   usock->quit = true;
 }
 
-fjage_gw_t unetsocket_get_gateway(unetsocket_t sock)
-{
+fjage_gw_t unetsocket_get_gateway(unetsocket_t sock) {
   if (sock == NULL) return NULL;
   _unetsocket_t *usock = sock;
   return usock->gw;
 }
 
-fjage_aid_t unetsocket_agent_for_service(unetsocket_t sock, const char* svc)
-{
+fjage_aid_t unetsocket_agent_for_service(unetsocket_t sock, const char* svc) {
   if (sock == NULL) return NULL;
   _unetsocket_t *usock = sock;
   return agent_for_service(usock, svc);
 }
 
-int unetsocket_agents_for_service(unetsocket_t sock, const char* svc, fjage_aid_t* agents, int max)
-{
+int unetsocket_agents_for_service(unetsocket_t sock, const char* svc, fjage_aid_t* agents, int max) {
   if (sock == NULL) return -1;
   _unetsocket_t *usock = sock;
   return agents_for_service(usock, svc, agents, max);
 }
 
 // NOTE: removed the first argument
-fjage_aid_t unetsocket_agent(const char* name)
-{
+fjage_aid_t unetsocket_agent(const char* name) {
   return fjage_aid_create(name);
 }
 
-int unetsocket_host(unetsocket_t sock, const char* node_name)
-{
+int unetsocket_host(unetsocket_t sock, const char* node_name) {
   if (sock == NULL) return -1;
   _unetsocket_t *usock = sock;
   fjage_msg_t msg;
