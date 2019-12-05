@@ -260,7 +260,7 @@ int unetsocket_get_local_address(unetsocket_t sock) {
   	return rv;
   }
   fjage_msg_destroy(msg);
-  free(node);
+  fjage_aid_destroy(node);
   return -1;
 }
 
@@ -396,7 +396,7 @@ int unetsocket_host(unetsocket_t sock, const char* node_name) {
   if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM) {
   	rv = fjage_msg_get_int(msg, "address", 0);
   	fjage_msg_destroy(msg);
-  	free(arp);
+  	fjage_aid_destroy(arp);
   	return rv;
   }
   fjage_msg_destroy(msg);
