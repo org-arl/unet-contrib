@@ -1,0 +1,159 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Unet Speedtest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="/img/unet.ico">
+  <link rel="stylesheet" href="/css/vendor/vendor.css">
+  <link rel="stylesheet" href="/css/vendor/app-orange.css">
+  <link rel="stylesheet" href="/css/vendor/font.css">
+  <link rel="stylesheet" href="/css/vendor/sweetalert.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/vendor/sweetalert/sweetalert.min.js"></script>
+  <script src="/js/vendor/fetch/fetch.umd.js"></script>
+  <script src="/js/vendor/vendor/vendor.js" ></script>
+  <!-- <script type='module' src='/js/nodeInfo.js'></script> -->
+  <script type='module'>
+    import { Gateway, Performative, MessageClass } from '../fjage/fjage.js';
+
+    const avgtime = 10000;
+
+    var gw = new Gateway();
+    var agentDetails = []
+
+    var ParameterReq = MessageClass('org.arl.unet.ParameterReq');
+    var ParameterRsp = MessageClass('org.arl.unet.ParameterRsp');
+    var ShellExecReq = MessageClass('org.arl.fjage.shell.ShellExecReq');
+
+    gw.agentForService('org.arl.fjage.shell.Services.SHELL').then((aid) => {
+      var shell = aid;
+      gw.subscribe(gw.topic(shell));
+      makeRq(shell);
+    }).catch((ex) => {
+      console.log('Could not find SHELL: '+ex);
+    });
+
+    function makeRq(shell) {
+      let req = new ShellExecReq();
+      req.recipient = shell;
+      req.cmd = 'ps';
+      req.ans = true;
+      gw.request(req).then((msg) => {
+        // console.log(msg);
+        parseRsp(msg.ans);
+      }).catch((ex) => {
+        console.log('Could not execute command: '+ex);
+      });
+    }
+
+    function parseRsp(ps) {
+      var agentList = ps.split("\n");
+
+      for (var i = 0; i < agentList.length; i++) {
+        var j = agentList[i].split(/ ?[\-:] /)
+
+        // console.log(i + ": " + j[1] + ": " + j[0])
+        if (j[1] != "REMOTE") {
+          getTitle(j[0])
+        }
+      }
+    }
+
+    function getTitle(name) {
+        let req = new ParameterReq()
+        req.recipient = gw.agent(name)
+        req.index = -1
+        req.param = 'title'
+        var sp = {}
+        gw.request(req).then( rsp => {
+          if (rsp.perf == Performative.INFORM) {
+            // console.log(name + ": " + rsp.value)
+            sp.name = name
+            sp.title = rsp.value
+            agentDetails.push(sp)
+          }
+          // else if (rsp.perf == Performative.NOT_UNDERSTOOD) {
+          //   console.log(name + ": NOT_UNDERSTOOD")
+          // }
+        })
+    }
+
+    // paramReq('phy', -1) // hard coded for now, needs to be from on click
+    window.addEventListener('load', () => {
+      document.getElementById('paramreq').addEventListener('click', paramReq);
+    })
+
+    function paramReq() {
+      var name = 'ranging'
+      var foundObject = agentDetails.find(function(element) { 
+        return element.name == name
+      });
+
+      var foundIndex = agentDetails.findIndex(function(element, index) { 
+        return element === foundObject
+      }); 
+
+      let req = new ParameterReq()
+      req.recipient = name
+      req.index = -1;
+      gw.request(req, 1000).then((rsp) => {
+        if (rsp.perf == Performative.INFORM) {
+          var specificParamList = []
+          if (rsp.values) {
+            rsp.values[rsp.param]=rsp.value
+            for (var i = 0; i < Object.keys(rsp.values).length; i++) {
+              var sp = {}
+              if (Object.keys(rsp.values)[i] != 'title' && Object.keys(rsp.values)[i] != 'description') {
+                sp.paramClassFullName = Object.keys(rsp.values)[i]
+                sp.paramValue = Object.values(rsp.values)[i]
+                var x = Object.keys(rsp.values)[i].split(".")
+                sp.paramName = x.pop()
+                sp.paramClassName = x.pop()
+                specificParamList.push(sp)
+              }
+              else if (Object.keys(rsp.values)[i] == 'title') {
+              // agentDetails[foundIndex].title = Object.values(rsp.values)[i]
+              // Skipping since we populate title initially
+            }
+            else if (Object.keys(rsp.values)[i] == 'description') {
+              agentDetails[foundIndex].description = Object.values(rsp.values)[i]
+            }
+          }
+
+          if (specificParamList.length != 0) {
+            agentDetails[foundIndex].paramList = specificParamList
+          }
+
+        }
+        console.log(agentDetails)          
+      }
+    })
+
+    }
+
+    // document.getElementById("print").innerHTML = Object.keys(rsp.values) + '\n'
+  </script>
+</head>
+
+<body>
+  <!--[if lte IE 9]>
+      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+  <![endif]-->
+  <div class="main-wrapper">
+    <div class="app header-fixed footer-fixed sidebar-fixed full-screen" id="app">
+      <article class="content dashboard-page d-flex flex-column">
+        <div class="row sameheight-container flex-grow-1">
+          <div class="col col-6">
+            <h1>Device Parameters</h1><hr>
+            <h2>Agent List</h2><br>
+            <pre id="print"></pre>
+            <button id='paramreq'>Click me</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</body>
+</html>
