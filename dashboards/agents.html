@@ -32,6 +32,8 @@
 <style>
   :root{
     --grey-color:#4f5f6f;
+    --label-color:rgba(0, 0, 0, 0.5);
+    --border-color:rgba(0, 0, 0, 0.2);
   }
 
   .item{
@@ -40,6 +42,27 @@
 
   .item a{
     text-decoration: none;
+  }
+
+  .borderless td, .borderless th {
+    border: none;
+  }
+
+  .label{
+    color: var(--label-color);
+  }
+
+  [contenteditable]:focus {
+    outline: 1px solid var(--border-color);
+  }
+
+  .show-btn{
+    padding: 0 0.175rem;
+  }
+
+  .toast{
+    background-color:#FFF;
+    opacity: 1;
   }
 </style>
 </head>
@@ -67,7 +90,7 @@
               </div>
             </div>
           </div>
-          <div class='col-md-5' id='paramTabs'>
+          <div class='col-md-5' id='paramtabs'>
             <div class="tab-content" id="v-pills-tabContent">
             <template id="param-tmpl">
               <div class='tab-pane fade show active' role='tabpanel'>
@@ -83,26 +106,35 @@
                     </div>
                   </div>
                   <div class='card-block'>
-                    <ul class='item-list' id='paramForm'></ul>
+                    <!-- <ul class='item-list' id='paramForm'></ul> -->
+                    <table class='table table-hover table-responsive borderless' id='paramform'>
+                      <tbody id='params'>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
             </template>
-            <template id='paramForm-tmpl'>
-              <li class='item'>
-                <div class='item-row'>
-                  <div class='item-col'></div>
-                  <div class='item-col'></div>
-                </div>
-              </li>
+            <template id='paramform-tmpl'>
+              <tr>
+                <td class='label'></td>
+                <td contenteditable='true'></td>
+                <td>
+                  <button class='btn' id='param-save' hidden><i class='fa fa-check' style='color:green'></i></button>
+                  <button class='btn' id='param-cancel' hidden><i class='fa fa-times' style='color:red'></i></button>
+                </td>
+              </tr>
             </template>
-            <!-- <template id='paramForm-tmpl'>
-              <div class="form-group">
-                  <label class="control-label"></label>
-                  <input type="text" class="col-5 form-control boxed">
-              </div>
-            </template> -->
             </div>
+          </div>
+          <div class='col-md-3'>
+            <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" hidden>
+              <div class="toast-body">
+                <button type="button" class="ml-2 mb-1 close pull-right" data-dismiss="toast" aria-label="Close" id='close-toast'>
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                <span id='valmsg'>Hello, world! This is a toast message.</span>
+              </div>
           </div>
         </div>
       </section>
@@ -129,7 +161,7 @@
   window.addEventListener('load',function(){
     agentTmpl = document.getElementById('agent-tmpl');
     paramTmpl = document.getElementById('param-tmpl');
-    paramFormTmpl = document.getElementById('paramForm-tmpl');
+    paramFormTmpl = document.getElementById('paramform-tmpl');
     displayAgents();
   })
 
@@ -146,7 +178,7 @@
       acell.href = '#'+agent.name + '-param';
       acell.innerHTML = agent.name;
       acell.setAttribute('aria-controls',agent.name + '-param')
-      setListener(acell,agent);
+      setAgentListener(acell,agent);
       agentTable.appendChild(clone);
     })
   }
@@ -154,7 +186,7 @@
   /**
    * To set event listener for the agent Id links
    */
-  function setListener(elem,agent){
+  function setAgentListener(elem,agent){
     let paramTab = document.getElementById('v-pills-tabContent');
     elem.addEventListener('click',function(){
       let clone = document.importNode(paramTmpl.content,true);
@@ -176,20 +208,62 @@
   }
 
   /**
-   * To display the parameter fields for config
+   * To display the parameters and values in the new tab
    */
   function displayParams(agent){
-    let paramForm = document.getElementById('paramForm');
+    let paramForm = document.getElementById('paramform');
     let params = agent.agentDetails;
-    console.log('Params: '+JSON.stringify(params));
     params.forEach((param,idx)=>{
       let clone = document.importNode(paramFormTmpl.content,true);
-      let cells = clone.querySelectorAll('.item-col');
-      let tableCol = cells.getElementsByTagName('label')[0];
-      labelElem.innerHTML = param.paramName;
+      let cells = clone.querySelectorAll('td');
+      cells[0].innerHTML = param.paramName + ':';
+      cells[1].innerHTML = param.paramValue;
+      cells[1].id = param.paramName;
+      cells[1].dataset.paramName = param.paramName;
+      setParamListeners(cells[1],param);
       paramForm.appendChild(clone);
     })
   }
 
+  /**
+   * To set event listeners on change of parameter values
+   */
+  function setParamListeners(tdElem,param){
+    tdElem.addEventListener('click',function(){
+      let active = document.querySelectorAll('.show-btn');
+      if(active) active.forEach(elem=>{
+        elem.hidden=true;
+      })
+      let parent = tdElem.parentNode;
+      let saveBtn = parent.querySelector('#param-save');
+      let cancelBtn = parent.querySelector('#param-cancel');
+      saveBtn.hidden=false;
+      saveBtn.classList.add('show-btn');
+      cancelBtn.hidden=false;
+      cancelBtn.classList.add('show-btn');
+      saveBtn.addEventListener('click',function(){
+        saveBtn.hidden=true;
+        cancelBtn.hidden=true;
+        saveParam(param,tdElem);
+      });
+      cancelBtn.addEventListener('click',function(ev){
+        saveBtn.hidden=true;
+        cancelBtn.hidden=true;
+      })
+      
+    })
+  }
+
+  function saveParam(param,tdElem){
+    console.log('Old value: '+param.paramValue+'|New value|'+tdElem.innerHTML);
+    if(param.paramValue != tdElem.innerHTML){
+      let toast = document.querySelector('.toast');
+      toast.hidden=false;
+      let closeToast = toast.querySelector('button[data-dismiss="toast"]');
+      closeToast.addEventListener('click',function(){
+        toast.hidden=true;
+      })
+    }
+  }
 </script>
 </html>
