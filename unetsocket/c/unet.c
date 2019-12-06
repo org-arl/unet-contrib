@@ -45,28 +45,28 @@ static void *monitor(void *p) {
   while (!usock->quit) {
     int time_remaining = -1;
     if (usock->timeout == 0) time_remaining = 0;
-	if (usock->timeout > 0) {
-	  time_remaining = deadline - _time_in_ms();
-	  if (time_remaining <= 0) return NULL;
-	}
+  	if (usock->timeout > 0) {
+  	  time_remaining = deadline - _time_in_ms();
+  	  if (time_remaining <= 0) return NULL;
+  	}
     pthread_mutex_lock(&usock->rxlock);
-	fjage_msg_t msg = fjage_receive_any(usock->gw, list, 2, usock->timeout<0?15*TIMEOUT:time_remaining);
-	pthread_mutex_unlock(&usock->rxlock);
-	if (msg == NULL) return NULL;
-	if (msg != NULL) {
-	  rv = fjage_msg_get_int(msg, "protocol", 0);
-	  if (rv == DATA || rv >= USER) {
-		if (usock->local_protocol < 0) {
-		  usock->ntf = msg;
-		  pthread_exit(NULL);
-		}
-		if (usock->local_protocol == rv) {
-		  usock->ntf = msg;
-		  pthread_exit(NULL);
-		}
-	  }
-	  fjage_msg_destroy(msg);
-	}
+  	fjage_msg_t msg = fjage_receive_any(usock->gw, list, 2, usock->timeout<0?15*TIMEOUT:time_remaining);
+  	pthread_mutex_unlock(&usock->rxlock);
+  	if (msg == NULL) return NULL;
+  	if (msg != NULL) {
+  	  rv = fjage_msg_get_int(msg, "protocol", 0);
+  	  if (rv == DATA || rv >= USER) {
+    		if (usock->local_protocol < 0) {
+    		  usock->ntf = msg;
+    		  pthread_exit(NULL);
+    		}
+    		if (usock->local_protocol == rv) {
+    		  usock->ntf = msg;
+    		  pthread_exit(NULL);
+    		}
+  	  }
+  	  fjage_msg_destroy(msg);
+  	}
   }
   return NULL;
 }

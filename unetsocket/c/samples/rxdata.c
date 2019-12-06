@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
         printf("clazz is : %s\n", fjage_msg_get_clazz(ntf));
     }
     else {
+        fjage_msg_destroy(ntf);
         return -1;
     }
     fjage_msg_get_byte_array(ntf, "data", data, 7);
