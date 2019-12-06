@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <netdb.h>
 #include "../unet.h"
 
 static int error(const char *msg)
@@ -40,6 +41,14 @@ int main(int argc, char *argv[])
     if (argc > 2) {
         port = (int)strtol(argv[2], NULL, 10);
     }
+
+    // Check valid ip address
+    struct hostent *server = gethostbyname(argv[1]);
+    if (server == NULL) {
+      error("Enter a valid ip addreess\n");
+      return -1;
+    }
+
     // Open a unet socket connection to modem
     sock = unetsocket_open(argv[1], port);
     if (sock == NULL) return error("Couldn't open unet socket");
