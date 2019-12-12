@@ -49,6 +49,13 @@
       background-color:#FFF;
       opacity: 1;
     }
+    .table th, .table td{
+      padding: 0.25rem
+    }
+    .title.section-title{
+      font-size: 1rem;
+      padding-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -68,14 +75,14 @@
                   <section class='example'>
                     <ul class='item-list' id='agents-table'>
                       <template id='agent-tmpl'>
-                        <li class='item'> <a href='#' role="tab" aria-selected="true"></a></li>
+                        <li class='item'> <a href='#' data-toggle='pill' role="tab" aria-selected="true"></a></li>
                       </template>
                     </ul>
                   </section>
                 </div>
               </div>
             </div>
-            <div class='col-md-5' id='paramtabs'>
+            <div class='col-md-6' id='paramtabs'>
               <div class="tab-content" id="v-pills-tabContent">
                 <template id="param-tmpl">
                   <div class='tab-pane fade show active' role='tabpanel'>
@@ -83,6 +90,9 @@
                       <div class='card-header bordered'>
                         <div class='header-block'>
                           <h3 class='title'> </h3>
+                          <p class='title-description'>Name <span style='padding-left: 35px'></span></p>
+                          <p class='title-description'>Class <span style='padding-left: 42px'></span></p>
+                          <p class='title-description'>Description <span></span></p>
                         </div>
                         <div class='header-block pull-right'>
                           <button class='btn btn-sm rounded pull-right' id='close'>
@@ -91,10 +101,10 @@
                         </div>
                       </div>
                       <div class='card-block'>
+                        <p class='title-description pull-right' id='edit-info'>Click param value to edit</p>
                         <table class='table table-hover table-responsive borderless' id='paramform'>
                           <tbody id='params'>
-                           <!-- <tr> <h5 class='title' style='font-size:1rem'>Physical</h5></tr> -->
-                         </tbody>
+                          </tbody>
                        </table>
                      </div>
                    </div>
@@ -118,7 +128,7 @@
                 <button type="button" class="ml-2 mb-1 close pull-right" data-dismiss="toast" aria-label="Close" id='close-toast'>
                   <span aria-hidden="true">&times;</span>
                 </button>
-                <span id='valmsg'>Hello, world! This is a toast message.</span>
+                <span id='valmsg'></span>
               </div>
             </div>
           </div>
@@ -129,12 +139,12 @@
 </body>
 <script type='module'>
   import '/js/nodeInfo.js';
-  import { Gateway, Performative, MessageClass } from '../fjage/fjage.js';
+  import { Gateway, Performative, MessageClass } from '/js/unet.js';
 
   const avgtime = 10000;
 
   var gw = new Gateway();
-  var agentDetails = []
+  var agentDetails = [],agents;
 
   var ParameterReq = MessageClass('org.arl.unet.ParameterReq');
   var ParameterRsp = MessageClass('org.arl.unet.ParameterRsp');
@@ -147,6 +157,9 @@
     paramTmpl = document.getElementById('param-tmpl');
     paramFormTmpl = document.getElementById('paramform-tmpl');
     agents = await makeRq(gw.agent('websh'));
+    agents.sort(function(a,b){
+      return a.title.localeCompare(b.title);  
+    })
     displayAgents();
   });
 
@@ -180,18 +193,20 @@
         return elem.name == agent.name;
       })
       params = found[0].paramList;
-      if (params) {
-        getHelp(agent.name, params[3].paramName)
-      }
-      else {
-        getHelp(agent.name, null)
-      }
+      let exists = document.getElementById(agent.name+'-param');
+      if(exists) return;
       let clone = document.importNode(paramTmpl.content,true);
       divTab = clone.querySelector('.tab-pane');
       divTab.id = agent.name + '-param';
       divTab.setAttribute('aria-labelledby',agent.name + '-param-tab')
       let title = divTab.querySelector('h3');
       title.innerHTML = agent.title;
+      let agentName = divTab.querySelectorAll('p span')[0];
+      agentName.innerHTML = ' - '+agent.name;
+      let agentClass = divTab.querySelectorAll('p span')[1];
+      agentClass.innerHTML = ' - '+agent.class;
+      let agentDesc = divTab.querySelectorAll('p span')[2];
+      agentDesc.innerHTML = ' - '+agent.description;
       paramTab.appendChild(clone);
       let closeBtn = divTab.querySelector('#close');
       if(closeBtn){
@@ -200,38 +215,64 @@
           tabElem.parentNode.removeChild(tabElem);
         })
       }
-      displayParams(params,divTab);
+      if(params) params.sort(function(a,b){
+        return a.paramClassName.localeCompare(b.paramClassName);
+      });
+      displayParams(params,divTab,agent);
     })
   }
 
   /**
    * To display the parameters and values in the new tab
    */
-   function displayParams(params,divTab){
-    let paramForm = divTab.querySelector('#paramform');
-    let firstParamGrp = null;
-    params.forEach((param,idx)=>{
-      let nextParamGrp = param.paramGrp;
+   function displayParams(params,divTab,agent){
+    let paramForm = divTab.querySelector('#params');
+    let firstParamGrp = null,nextParamGrp,grpLen=0;
+    if(!params){
       let clone = document.importNode(paramFormTmpl.content,true);
       let cells = clone.querySelectorAll('td');
-      if(firstParamGrp != nextParamGrp){
-        cells[0].innerHTML = param.paramGrp;
-      } else {
-        cells[0].innerHTML = param.paramName + ':';
-        cells[1].innerHTML = param.paramValue;
+      cells[0].innerHTML = 'No configurable parameters';
+      cells[0].setAttribute('colspan','2');
+      cells[0].setAttribute('style','font-style:italic;text-align:center;width:100%');
+      paramForm.appendChild(clone);
+      document.querySelector('#'+divTab.id+ ' #edit-info').hidden=true;
+      return
+    }
+    grpLen = 0;
+
+    for(let p=0;p<params.length;p=p+grpLen){
+      nextParamGrp = params[p].paramClassName;
+      if(!nextParamGrp) return
+      let paramGrps = params.filter(param => {return param.paramClassName == nextParamGrp});
+      grpLen = paramGrps.length;
+
+      paramGrps.forEach((param,idx)=>{
+        let clone = document.importNode(paramFormTmpl.content,true);
+        if(idx == 0){
+          let row = clone.querySelector('tr');
+          let thElem = document.createElement('th');
+          thElem.classList.add('title','section-title');
+          thElem.innerHTML = nextParamGrp;
+          row.parentNode.insertBefore(thElem,row);
+        }
+        let cells = clone.querySelectorAll('td');
+        cells[0].innerHTML = param.paramName + ': ';
+        if(param.paramValue.data)
+          cells[1].innerHTML = param.paramValue.data;
+        else
+          cells[1].innerHTML = param.paramValue;
         cells[1].id = param.paramName;
         cells[1].dataset.paramName = param.paramName;
-        setParamListeners(cells[1],param);
-      }
-      firstParamGrp = nextParamGrp;
-      paramForm.appendChild(clone);
-    })
+        setParamListeners(cells[1],param,agent);
+        paramForm.appendChild(clone);
+      })
+    }
   }
 
   /**
    * To set event listeners on change of parameter values
    */
-   function setParamListeners(tdElem,param){
+   function setParamListeners(tdElem,param,agent){
     tdElem.addEventListener('click',function(){
       let active = document.querySelectorAll('.show-btn');
       if(active) active.forEach(elem=>{
@@ -247,7 +288,7 @@
         saveBtn.addEventListener('click',function(){
           saveBtn.hidden=true;
           cancelBtn.hidden=true;
-          saveParam(param,tdElem);
+          saveParam(param,tdElem,agent);
         });
         cancelBtn.addEventListener('click',function(ev){
           saveBtn.hidden=true;
@@ -257,15 +298,23 @@
       })
   }
 
-  function saveParam(param,tdElem){
-    if(param.paramValue != tdElem.innerHTML){
-      let toast = document.querySelector('.toast');
-      toast.hidden=false;
-      let closeToast = toast.querySelector('button[data-dismiss="toast"]');
-      closeToast.addEventListener('click',function(){
-        toast.hidden=true;
+  function saveParam(param,tdElem,agent){
+    let aid = gw.agent(agent.name);
+      aid.set(param.paramName,tdElem.innerHTML).then(out=>{
+        if(!out){
+          let toast = document.querySelector('.toast');
+          toast.hidden=false;
+          document.getElementById('valmsg').innerHTML = 'The parameter value was set to '+param.paramValue;
+          toast.focus();
+          let closeToast = toast.querySelector('button[data-dismiss="toast"]');
+          closeToast.addEventListener('click',function(){
+            toast.hidden=true;
+          })
+        }
       })
-    }
+      .catch(ex=>{
+        console.warn('Error in setting param:'+ex+'|'+aid);
+      })
   }
 
   function makeRq(shell) {
@@ -278,7 +327,7 @@
       let res= await parseRsp(msg.ans);
       resolve(agentDetails);
     }).catch((ex) => {
-      console.log('Could not execute command: '+ex);
+      console.warn('Could not execute command: '+ex);
     });
   })
   }
@@ -289,13 +338,13 @@
     for (var i = 0; i < agentList.length; i++) {
       var j = agentList[i].split(/ ?[\-:] /)
       if (j[1] != "REMOTE") {
-        promise.push(getTitle(j[0]));
+        promise.push(getTitle(j[0],j[1]));
     }
   }
   return Promise.all(promise);
 }
 
-function getTitle(name) {
+function getTitle(name,agentCls) {
   return new Promise(resolve=>{
     let req = new ParameterReq()
     req.recipient = gw.agent(name)
@@ -306,6 +355,7 @@ function getTitle(name) {
       if (rsp.perf == Performative.INFORM) {
         sp.name = name
         sp.title = rsp.value
+        sp.class = agentCls
         agentDetails.push(sp)
         
       }
