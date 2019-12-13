@@ -13,7 +13,9 @@
   <link rel='stylesheet' href='/css/vendor/font.css'>
   <link rel='stylesheet' href='/css/style.css'>
   <link rel='stylesheet' href='/css/vendor/fontawesome.css' />
+  <!-- <link rel="stylesheet" href="/css/vendor/all.css"/> -->
   <script src='/js/vendor/vendor/vendor.js' ></script>
+  <!-- <script src="/js/vendor/fontawesome/solid.js"></script> -->
   <style>
     :root{
       --grey-color:#4f5f6f;
@@ -33,7 +35,7 @@
       border: none;
     }
 
-    .label{
+    .label,.fa.fa-question-circle{
       color: var(--label-color);
     }
 
@@ -52,9 +54,15 @@
     .table th, .table td{
       padding: 0.25rem
     }
+    .btn{
+      padding:0;
+    }
     .title.section-title{
       font-size: 1rem;
       padding-top: 1rem;
+    }
+    .help{
+      width:3px;
     }
   </style>
 </head>
@@ -64,7 +72,7 @@
       <article class='content dashboard-page'>
         <section class='section'>
           <div class='row'>
-            <div class='col-md-3'>
+            <div class='col-md-4'>
               <div class='card'>
                 <div class='card-header bordered'>
                   <div class='header-block'>
@@ -82,7 +90,7 @@
                 </div>
               </div>
             </div>
-            <div class='col-md-6' id='paramtabs'>
+            <div class='col-md-5' id='paramtabs'>
               <div class="tab-content" id="v-pills-tabContent">
                 <template id="param-tmpl">
                   <div class='tab-pane fade show active' role='tabpanel'>
@@ -90,11 +98,11 @@
                       <div class='card-header bordered'>
                         <div class='header-block'>
                           <h3 class='title'> </h3>
-                          <p class='title-description'>Name <span style='padding-left: 35px'></span></p>
-                          <p class='title-description'>Class <span style='padding-left: 42px'></span></p>
-                          <p class='title-description'>Description <span></span></p>
+                          <p class='title-description'></p>
+                          <p class='title-description'></p>
+<!--                           <p class='title-description'></p> -->
                         </div>
-                        <div class='header-block pull-right'>
+                        <div class='header-block pull-right' style='margin-bottom: 6rem'>
                           <button class='btn btn-sm rounded pull-right' id='close'>
                             <i class='fa fa-times' style='color:var(--grey-color)'></i>
                           </button>
@@ -112,8 +120,11 @@
                </template>
                <template id='paramform-tmpl'>
                 <tr>
+                  <td class='help'>
+                    <button class='btn' id='help-btn'><i class='fa fa-question-circle'></i></button>
+                  </td>
                   <td class='label'></td>
-                  <td contenteditable='true'></td>
+                  <td contenteditable='true' style='text-align: right'></td>
                   <td>
                     <button class='btn' id='param-save' hidden><i class='fa fa-check' style='color:green'></i></button>
                     <button class='btn' id='param-cancel' hidden><i class='fa fa-times' style='color:red'></i></button>
@@ -130,6 +141,12 @@
                 </button>
                 <span id='valmsg'></span>
               </div>
+            </div>
+            <div id='help' class="alert alert-light alert-dismissible fade show" role="alert" hidden>
+              <p class='title-description'></p>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
           </div>
         </section>
@@ -195,18 +212,25 @@
       params = found[0].paramList;
       let exists = document.getElementById(agent.name+'-param');
       if(exists) return;
+/*      if (params) {
+        getHelp(agent.name, params[3].paramName)
+      }
+      else {
+        getHelp(agent.name, null)
+      }
+	  */
       let clone = document.importNode(paramTmpl.content,true);
       divTab = clone.querySelector('.tab-pane');
       divTab.id = agent.name + '-param';
       divTab.setAttribute('aria-labelledby',agent.name + '-param-tab')
       let title = divTab.querySelector('h3');
       title.innerHTML = agent.title;
-      let agentName = divTab.querySelectorAll('p span')[0];
-      agentName.innerHTML = ' - '+agent.name;
-      let agentClass = divTab.querySelectorAll('p span')[1];
-      agentClass.innerHTML = ' - '+agent.class;
-      let agentDesc = divTab.querySelectorAll('p span')[2];
-      agentDesc.innerHTML = ' - '+agent.description;
+      let agentName = divTab.querySelectorAll('p')[0];
+      agentName.innerHTML = agent.name +' - '+agent.class;
+      let agentClass = divTab.querySelectorAll('p')[1];
+      agentClass.innerHTML = agent.description;
+      // let agentDesc = divTab.querySelectorAll('p span')[2];
+      // agentDesc.innerHTML = ' - '+agent.description;
       paramTab.appendChild(clone);
       let closeBtn = divTab.querySelector('#close');
       if(closeBtn){
@@ -253,17 +277,21 @@
           let thElem = document.createElement('th');
           thElem.classList.add('title','section-title');
           thElem.innerHTML = nextParamGrp;
+          thElem.setAttribute('colspan','3');
           row.parentNode.insertBefore(thElem,row);
         }
         let cells = clone.querySelectorAll('td');
-        cells[0].innerHTML = param.paramName + ': ';
+        cells[1].innerHTML = param.paramName;
         if(param.paramValue.data)
-          cells[1].innerHTML = param.paramValue.data;
+          cells[2].innerHTML = param.paramValue.data;
         else
-          cells[1].innerHTML = param.paramValue;
-        cells[1].id = param.paramName;
-        cells[1].dataset.paramName = param.paramName;
-        setParamListeners(cells[1],param,agent);
+          cells[2].innerHTML = param.paramValue;
+        cells[2].id = param.paramName;
+        cells[2].dataset.paramName = param.paramName;
+        setParamListeners(cells[2],param,agent);
+        let helpBtn = cells[0].querySelector('#help-btn');
+        // console.log('helpBtn: '+helpBtn.className);
+        setHelpListeners(helpBtn,param,agent);
         paramForm.appendChild(clone);
       })
     }
@@ -288,7 +316,7 @@
         saveBtn.addEventListener('click',function(){
           saveBtn.hidden=true;
           cancelBtn.hidden=true;
-          saveParam(param,tdElem,agent);
+          saveParam(tdElem,param,agent);
         });
         cancelBtn.addEventListener('click',function(ev){
           saveBtn.hidden=true;
@@ -298,7 +326,7 @@
       })
   }
 
-  function saveParam(param,tdElem,agent){
+  function saveParam(tdElem,param,agent){
     let aid = gw.agent(agent.name);
       aid.set(param.paramName,tdElem.innerHTML).then(out=>{
         if(!out){
@@ -314,6 +342,19 @@
       })
       .catch(ex=>{
         console.warn('Error in setting param:'+ex+'|'+aid);
+      })
+  }
+
+  function setHelpListeners(helpBtn,param,agent){
+    helpBtn.addEventListener('click',function(){
+      console.log('helpBtn clicked');
+      document.getElementById('help').hidden=false;
+      document.querySelector('#help p').innerHTML='Help';
+    })
+    let close = document.querySelector('#help .close');
+    if(close)
+      close.addEventListener('click',function(){
+        document.getElementById('help').hidden=true;
       })
   }
 
@@ -452,6 +493,5 @@ function paramReq(name) {
       console.log('Could not execute command: '+ex);
     });
   }
-
 </script>
 </html>
