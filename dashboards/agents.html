@@ -192,8 +192,10 @@
     paramTmpl = document.getElementById('param-tmpl');
     paramFormTmpl = document.getElementById('paramform-tmpl');
     agents = await makeRq(gw.agent('websh'));
+    // saveState(gw.agent('websh'));
+    // deleteState(gw.agent('websh'));
     agents.sort(function(a,b){
-      return a.title.localeCompare(b.title);  
+      return a.title.localeCompare(b.title);
     })
     displayAgents();
   });
@@ -398,7 +400,7 @@
     return new Promise(async resolve=>{
       let req = new ShellExecReq();
       req.recipient = shell;
-      req.cmd = 'ps();';
+      req.cmd = 'ps()';
       req.ans = true;
       gw.request(req).then(async (msg) => {
       let res= await parseRsp(msg.ans);
@@ -407,6 +409,22 @@
       console.warn('Could not execute command: '+ex);
     });
   })
+  }
+
+  function saveState(shell) {
+    let req = new ShellExecReq();
+    req.recipient = shell;
+    req.cmd = 'savestate();';
+    req.ans = true;
+    gw.request(req);
+  }
+
+  function deleteState(shell) {
+    let req = new ShellExecReq();
+    req.recipient = shell;
+    req.cmd = "file('saved-state.groovy').delete()";
+    req.ans = true;
+    gw.request(req);
   }
 
   function parseRsp(ps) {
