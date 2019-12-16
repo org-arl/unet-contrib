@@ -225,10 +225,15 @@
     let paramTab = document.getElementById('v-pills-tabContent');
     let params,divTab;
     elem.addEventListener('click',async function(){
-      let res = await paramReq(agent.name);
-      let found = res.filter((elem)=>{
+      let res = await paramReq(agent.name, -1);
+      let found = res.agentDetails.filter((elem)=>{
         return elem.name == agent.name;
       })
+      var i = 1
+      do {
+        res = await paramReq(agent.name, i);
+        i++
+      } while (res.paramListLength != 0)
       params = found[0].paramList;
       let exists = document.getElementById(agent.name+'-param');
       if(exists) return;
@@ -286,7 +291,7 @@
       grpLen = paramGrps.length;
 
       paramGrps.forEach((param,idx)=>{
-        console.log('Param: '+JSON.stringify(param));
+        //console.log('Param: '+JSON.stringify(param));
         let clone = document.importNode(paramFormTmpl.content,true);
         if(idx == 0){
           let row = clone.querySelector('tr');
@@ -448,14 +453,14 @@ function getIndex(list, name) {
   return foundIndex;
 }
 
-function paramReq(name) {
+function paramReq(name, index) {
   return new Promise(resolve=>{
   
   var foundIndex = getIndex(agentDetails, name)
 
   let req = new ParameterReq()
   req.recipient = name
-  req.index = -1;
+  req.index = index;
   gw.request(req, 1000).then((rsp) => {
     if (rsp.perf == Performative.INFORM) {
       var specificParamList = []
@@ -480,13 +485,21 @@ function paramReq(name) {
         }
       }
 
+      var p = 'paramList'
       if (specificParamList.length != 0) {
-        agentDetails[foundIndex].paramList = specificParamList
+        if (index > 0) {
+          p = 'paramList'+index
+        }
+        agentDetails[foundIndex][p] = specificParamList
       }
 
     }        
   }
-  resolve(agentDetails);
+  var ret = {}
+  ret.agentDetails=agentDetails
+  ret.paramListLength=specificParamList.length
+  // console.log(agentDetails)
+  resolve(ret);
 })
 })
 }
