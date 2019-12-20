@@ -6,7 +6,7 @@ Copy the contents of this folder to the `scripts` folder on your modem.
 
 To enable the dashboards:
 ```
-> webscripts
+> dashboards
 ```
 
 This will give you a list of dashboards installed. Control-clicking on

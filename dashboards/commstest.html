@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html class='no-js' lang=''>
+
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='x-ua-compatible' content='ie=edge'>
+  <title>Unet | Comms Test</title>
+  <meta name='description' content=''>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link rel='icon' type='image/x-icon' href='/img/unet.ico'>
+  <link rel='stylesheet' href='/css/vendor/vendor.css'>
+  <link rel='stylesheet' href='/css/vendor/app-orange.css'>
+  <link rel='stylesheet' href='/css/vendor/font.css'>
+  <link rel='stylesheet' href='/css/style.css'>
+  <link rel='stylesheet' href='/css/vendor/fontawesome.css' />
+  <script src='/js/vendor/vendor/vendor.js' ></script>
+
+  <style type='text/css'>
+    .app {
+      padding-left: 0;
+    }
+    .app .content{
+      padding-top: 0;
+    }
+  </style>
+
+  <script type='module'>
+    /*global sweetAlert*/
+    import { Gateway, Services, MessageClass} from '../js/unet.js';
+
+    var gw1, gw2;
+    var nodeaddr1, nodeaddr2;
+    var testRunning = false;
+    const RxFrameNtf = MessageClass('org.arl.unet.phy.RxFrameNtf');
+    const TxFrameReq = MessageClass('org.arl.unet.phy.TxFrameReq');
+    const ShellExecReq = MessageClass('org.arl.fjage.shell.ShellExecReq');
+
+    $(document).ready(function () {
+      $('.dropdown-menu button').on('click', ev => {
+        typeSel.innerHTML = ev.target.innerText;
+      });
+
+      $('.ipaddrs').on('input', checkValidAddrs);
+      $('#connect').on('click', connectDisconnect);
+      $('#start').on('click', runStop);
+
+      enableTestParams(false);
+      checkValidAddrs();
+    });
+
+    function isValidIP(str) {
+      const octet = '(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)';
+      const ipregex = new RegExp(`^${octet}\\.${octet}\\.${octet}\\.${octet}$`);
+      const localregex = new RegExp('localhost:?(\d)*')
+      return ipregex.test(str) || localregex.test(str);
+    }
+
+    function checkValidAddrs() {
+      let valid = $('.ipaddrs').map(function () { return this.value }).toArray().every(isValidIP);
+      $('#connect').prop('disabled', !valid);
+    }
+
+    async function connectToDevices(host1, host2) {
+      gw1 = new Gateway(host1.split(':')[0], host1.split(':')[1]);
+      gw2 = new Gateway(host2.split(':')[0], host2.split(':')[1]);
+      if (!gw1 || !gw2) return false;
+      let node1 = await gw1.agentForService(Services.NODE_INFO);
+      let node2 = await gw2.agentForService(Services.NODE_INFO);
+      if (!node1 || !node2) return false;
+      nodeaddr1 = await node1.get('address');
+      nodeaddr2 = await node2.get('address');
+      if (!nodeaddr1 || !nodeaddr2) return false;
+      $('#nodeaddr1').html(nodeaddr1);
+      $('#nodeaddr2').html(nodeaddr2);
+      return true;
+    }
+
+    function enableConnParams(state) {
+      if(state) $('.nodeaddrs').empty();
+      $('.ipaddrs').prop('disabled', !state);
+      $('#start').prop('disabled', !!state);
+      $('#start').html('Start');
+    }
+
+    function getHosts(){
+    }
+
+    async function connectDisconnect() {
+      if ($(this).text() == 'Connect') {
+        let hosts = $('.ipaddrs').map(function () { return this.value }).toArray();
+        let connected = connectToDevices(...hosts);
+        if (!connected) return console.warn('Unable to connect to targets');
+        log(`Connected to ${hosts[0]}`, 1);
+        log(`Connected to ${hosts[1]}`, 2);
+        log(`<hr>`, [1, 2]);
+        enableConnParams(false);
+        enableTestParams(true);
+        $(this).text('Disconnect');
+        $('#shell1').append(`<iframe src="/fjage/shell/index.html?url=${hosts[0]}" class="terminal shell-frame"></iframe>`);
+        $('#shell2').append(`<iframe src="/fjage/shell/index.html?url=${hosts[1]}" class="terminal shell-frame"></iframe>`);
+      } else {
+        log(`Disconnected`, [1,2]);
+        log(`<hr>`, [1, 2]);
+        $(this).text('Connect');
+        $('#shell1').empty();
+        $('#shell2').empty();
+        enableConnParams(true);
+        enableTestParams(false);
+      }
+    }
+
+    function intVal(query){
+      return parseInt($(query).val())
+    }
+    function runStop() {
+      if ($('#start').html() == 'Start') {
+        let plvl1 = intVal('#plvl1');;
+        let plvl2 = intVal('#plvl2');
+        let num = intVal('#npackets');
+        let timeout = intVal('#timeout');
+        let type = $('#type').val().trim();
+        startTest(gw1, gw2, plvl1, plvl2, type, num, timeout);
+        $('#start').html('Stop');
+      } else {
+        stopTest()
+      }
+    }
+
+    function stopTest() {
+      testRunning = false;
+      enableTestParams(true);
+      $('#start').html('Start');
+    }
+
+    function enableTestParams(state) {
+      $('.testparams').prop('disabled', !state);
+    }
+
+    async function sendAndReceive(phy1, gw2, nodeaddr2, type, timeout, data) {
+      const req = new TxFrameReq();
+      req.data = data;
+      req.type = type;
+      req.to = nodeaddr2;
+      let rsp = await phy1.request(req, timeout);
+      if (rsp.perf != 'AGREE') {
+        console.warn('Unable to send a message');
+        return [0, 0]
+      }
+      log(`Sent a message with the data ${data}`, 1);
+      try {
+        let rx = await gw2.receive(m => { return m instanceof RxFrameNtf }, timeout);
+         if (rx && rx.perf == 'INFORM' && rx.data) {
+          log(`Received a message with data ${data}`, 2);
+          return [1, 1];
+        }
+      } catch (err) { console.warn(err) }
+      log(`Error receiving a message.`, 2);
+      return [1, 0];
+    }
+
+    async function setPowerLevels(plvl1, plvl2, phy1, phy2, typeIndex){
+      var oldplvl1 = await phy1.get('powerLevel', typeIndex);
+      var oldplvl2 = await phy2.get('powerLevel', typeIndex);
+      await phy1.set('powerLevel', plvl1, typeIndex);
+      await phy2.set('powerLevel', plvl2, typeIndex);
+      return [oldplvl1, oldplvl2];
+    }
+
+    async function startTest(gw1, gw2, plvl1, plvl2, type, num, timeout) {
+      enableTestParams(false);
+      let now = (new Date()).toString().split(' (')[0];
+      let startmsg = `Starting test between ${nodeaddr1} and ${nodeaddr2} for ${num} ${type} packets at ${now}.`
+      log(startmsg, [1,2]);
+      let typeIndex = type == 'CONTROL' ? 1 : 2;
+      let phy1, shell1, remote1, phy2, shell2, remote2;
+      let agents = await Promise.all([
+        gw1.agentForService(Services.PHYSICAL),
+        gw1.agentForService(Services.SHELL),
+        gw1.agentForService(Services.REMOTE),
+        gw2.agentForService(Services.PHYSICAL),
+        gw2.agentForService(Services.SHELL),
+        gw2.agentForService(Services.REMOTE),
+      ]);
+      if (agents.some( a => !a)) {
+        log("Error getting agents from target devices", [1,2]);
+        return;
+      }
+      [phy1, shell1, remote1, phy2, shell2, remote2] = agents
+      gw1.subscribe(gw1.topic(phy1));
+      gw2.subscribe(gw2.topic(phy2));
+      let oldplvls = await setPowerLevels(plvl1, plvl2, phy1, phy2, typeIndex);
+      let count = [0, 0];
+      testRunning = true;
+      for (let i = 0; i < num; i++) {
+        let rv = await sendAndReceive(phy1, gw2, nodeaddr2, typeIndex, timeout, [i]);
+        if (!testRunning) break;
+        count[0] += rv[0];
+        count[1] += rv[1];
+      }
+      log(`Test Complete! ${count[0]}/${num} packets successfully transmitted`, 1);
+      log(`Test Complete! ${count[1]}/${count[0]} packets successfully received`, 2);
+      log(`<hr>`, [1,2]);
+      stopTest();
+      setPowerLevels(oldplvls[0], oldplvls[1], phy1, phy2);
+    }
+
+    function log(message, dev) {
+      if (!Array.isArray(dev)) dev = [dev];
+      dev.forEach(d => {
+        let logCont = $('#log' + d);
+        if (!logCont.length) return console.log(message);
+        logCont.append(`<div>${message}</div>`);
+      });
+    }
+
+</script>
+</head>
+<body>
+  <div class='main-wrapper'>
+    <div class='app'>
+      <article class='content dashboard-page'>
+        <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+          <h1 class="display-4">Communications Test</h1>
+        </div>
+        <section class='section'>
+          <div class='row'>
+            <div class='col col-12 col-sm-12 col-md-12 col-xl-12'>
+              <div class='card'>
+                <div class='card-block'>
+                  <div class='card-title-block'>
+                    <h2>Setup</h2>
+                  </div>
+                  <div class='row sameheight-container'>
+                    <div class='col col-12 col-sm-12 col-md-12 col-xl-5 border-right'>
+                      <div class='card-title-block'>
+                        <h3 class='title'>Device #1</span></h3>
+                      </div>
+                      <div class='form-group row'>
+                        <label class='col col-3 col-sm-3 form-control-label'>IP Address</label>
+                        <div class='col col-5 col-sm-5'>
+                          <input class='form-control ipaddrs' value='localhost:8081'>
+                        </div>
+                        <p class='col col-4 col-sm-4 nodeaddrs' id='nodeaddr1'></p>
+                      </div>
+                    </div>
+                    <div class='col col-12 col-sm-12 col-md-12 col-xl-5 border-right'>
+                      <div class='card-title-block'>
+                        <h3 class='title'>Device #2</span></h3>
+                      </div>
+                      <div class='form-group row'>
+                        <label class='col col-3 col-sm-3form-control-label'>IP Address</label>
+                        <div class='col col-5 col-sm-5'>
+                          <input class='form-control ipaddrs' placeholder='192.168.0.70' value='localhost:8082'>
+                        </div>
+                        <p class='col col-4 col-sm-4 nodeaddrs' id='nodeaddr2'></p>
+                      </div>
+                    </div>
+                    <div class='col col-12 col-sm-1 col-md-1 col-xl-1 ' style='padding-top: 1.5%;'>
+                      <button type='button' class='btn btn-primary btn-lg' id='connect' disabled>Connect</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class='section'>
+            <div class='row'>
+              <div class='col col-12 col-sm-12 col-md-12 col-xl-12'>
+                <div class='card'>
+                  <div class='card-block'>
+                    <div class='card-title-block'>
+                      <h2>Parameters</h2>
+                    </div>
+                    <div class='form-group row'>
+                        <label class='col col-4 col-sm-4 col-md-2 col-xl-2 form-control-label'>Packet Type</label>
+                        <div class='col col-2 col-sm-2 col-md-2 col-xl-2 btn-group'>
+                          <button type='button' class='btn btn-secondary dropdown-toggle testparams' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' id='type'> CONTROL </button>
+                          <div class='dropdown-menu'>
+                            <button class='dropdown-item active'> CONTROL </button>
+                            <button class='dropdown-item'> DATA </button>
+                          </div>
+                        </div>
+                    </div>
+                    <div class='form-group row'>
+                        <label class='col col-4 col-sm-4 col-md-2 col-xl-2 form-control-label'>Number of Packets</label>
+                         <div class='col col-2 col-sm-2 col-md-2 col-xl-2'>
+                          <input type='number' class='form-control testparams' id='npackets' value='10' min='1' max='100'>
+                        </div>
+                    </div>
+                    <div class='form-group row'>
+                      <label class='col col-4 col-sm-4 col-md-2 col-xl-2 form-control-label'>Timeout (ms)</label>
+                      <div class='col col-2 col-sm-2 col-md-2 col-xl-2'>
+                        <input type='number' class='form-control testparams' id='timeout' value='10000' min='100'>
+                      </div>
+                    </div>
+                    <div class='border-top my-3'></div>
+                    <div class='row sameheight-container'>
+                      <div class='col col-12 col-sm-12 col-md-5 col-xl-5 border-right'>
+                        <div class='card-title-block'>
+                          <h3 class='title'>Device #1</span></h3>
+                        </div>
+                        <div class='form-group row'>
+                          <label class='col col-3 col-sm-3 col-md-3 col-xl-3 form-control-label'>plvl</label>
+                          <div class='col col-3 col-sm-3 col-md-3 col-xl-3'>
+                            <input type='number' class='form-control testparams' id='plvl1' value='-20' max='0'>
+                          </div>
+                        </div>
+                      </div>
+                      <div class='col col-12 col-sm-12 col-md-5 col-xl-5 border-right'>
+                        <div class='card-title-block'>
+                          <h3 class='title'>Device #2</span></h3>
+                        </div>
+                        <div class='form-group row'>
+                          <label class='col col-3 col-sm-3 col-md-3 col-xl-3 form-control-label'>plvl</label>
+                          <div class='col col-3 col-sm-3 col-md-3 col-xl-3'>
+                            <input type='number' class='form-control testparams' id='plvl2' value='-20' max='0'>
+                          </div>
+                        </div>
+                      </div>
+                      <div class='col col-12 col-sm-1 col-md-1 col-xl-1 ' style='padding-top: 1.5%;'>
+                        <button type='button' class='btn btn-primary btn-lg' id='start' disabled>Start</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class='section'>
+            <div class='row'>
+              <div class='col col-12 col-sm-12 col-md-12 col-xl-12'>
+                <div class='card'>
+                  <div class='card-block'>
+                    <div class='card-title-block'>
+                      <h2>Logs</h2>
+                    </div>
+                    <div class='row sameheight-container overflow-auto'>
+                      <div class='col col-12 col-sm-12 col-md-6 col-xl-6 border-right'>
+                        <div class='card-title-block'>
+                          <h3 class='title'>Device #1</span></h3>
+                        </div>
+                        <div id='log1' style="max-height: 340px; overflow-y: scroll;">
+                        </div>
+                      </div>
+                      <div class='col col-12 col-sm-12 col-md-6 col-xl-6 border-right'>
+                        <div class='card-title-block'>
+                          <h3 class='title'>Device #2</span></h3>
+                        </div>
+                        <div id='log2' style="max-height: 340px; overflow-y: scroll;">
+                        </div>
+                      </div>
+                    </div>
+                </div>
+              </div>
+            </section>
+
+            <section class='section'>
+              <div class='row sameheight-container'>
+                <div class='col col-12 col-sm-12 col-md-6 col-xl-6 '>
+                  <div class='card sameheight-item'>
+                    <div class='card-block'>
+                      <div class='title-block'>
+                        <h3 class='title'>Device #1 - Shell</span></h3>
+                      </div>
+                      <div id='shell1'>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class='col col-12 col-sm-12 col-md-6 col-xl-6 '>
+                  <div class='card sameheight-item '>
+                    <div class='card-block'>
+                      <div class='title-block'>
+                        <h3 class='title'>Device #2 - Shell</span></h3>
+                      </div>
+                      <div id='shell2'>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+            </article>
+          </div>
+        </div>
+      </body>
+      </html>
