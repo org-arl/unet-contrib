@@ -9,6 +9,11 @@ from warnings import warn as _warn
 import threading as _td
 import time as _time
 
+#shell
+PutFileReq             = _MessageClass('org.arl.fjage.shell.PutFileReq')
+GetFileReq             = _MessageClass('org.arl.fjage.shell.GetFileReq')
+ShellExecReq           = _MessageClass('org.arl.fjage.shell.ShellExecReq')
+
 #unet
 ParameterReq           = _MessageClass('org.arl.unet.ParameterReq')
 ParameterRsp           = _MessageClass('org.arl.unet.ParameterRsp')
@@ -141,12 +146,13 @@ class Services:
     TRANSPORT = 'org.arl.unet.Services.TRANSPORT'
     REMOTE = 'org.arl.unet.Services.REMOTE'
     STATE_MANAGER = 'org.arl.unet.Services.STATE_MANAGER'
+    SHELL = 'org.arl.fjage.shell.Services.SHELL'
 
 class Topics:
     """Topics that can be subscribed to.
     """
-    PARAMCHANGE = 0           # Topic for parameter change notification.
-    ABNORMAL_TERMINATION = 1  # Topic for abnormal agent termination.
+    PARAMCHANGE = 'org.arl.unet.Topics.PARAMCHANGE'  # Topic for parameter change notification.
+    LIFECYCLE = 'org.arl.unet.Topics.LIFECYCLE'      # Topic for abnormal agent termination.
 
 class Protocol:
     """Well-known protocol number assignments.
@@ -227,7 +233,7 @@ class _ParameterRsp(ParameterRsp):
         return None
 
     def parameters(self):
-        if 'values' in self.__dict__:
+        if ('values' in self.__dict__) and (self.__dict__['values'] is not None):
             p = self.values.copy()
         else:
             p = {}
@@ -579,6 +585,12 @@ class UnetSocket():
         if self.gw == None:
             return None
         return self.gw.agentForService(svc)
+
+    def agentsForService(self, svc):
+        """Find all agents providing a specified service for low-level access to UnetStack."""
+        if self.gw == None:
+            return None
+        return self.gw.agentsForService(svc)
 
     def agent(self, name):
         """Gets a named AgentID for low-level access to UnetStack."""
