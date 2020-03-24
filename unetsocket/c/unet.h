@@ -1,8 +1,6 @@
 #ifndef _UNET_H_
 #define _UNET_H_
 
-#include <stdbool.h>
-#include <stdint.h>
 #include "fjage.h"
 
 typedef void *unetsocket_t;        ///< unet socket connection

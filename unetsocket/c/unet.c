@@ -1,20 +1,22 @@
 #define _BSD_SOURCE
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <math.h>
 #include <pthread.h>
-#include <inttypes.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include <errno.h>
+
+#ifdef _WIN32
+#pragma comment(lib, "ws2_32.lib")
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <io.h>
+#include <winsock2.h>
+#include <Ws2tcpip.h>
+#else
+#include <unistd.h>
+#include <sys/time.h>
+#endif
+
 #include "fjage.h"
 #include "unet.h"
-#include <sys/time.h>
-#include <errno.h>
 
 typedef struct {
   fjage_gw_t gw;

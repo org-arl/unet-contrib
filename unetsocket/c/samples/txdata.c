@@ -11,10 +11,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+#pragma comment(lib, "ws2_32.lib")
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <io.h>
+#include <winsock2.h>
+#include <Ws2tcpip.h>
+#else
 #include <unistd.h>
-#include <string.h>
-#include <math.h>
 #include <netdb.h>
+#include <sys/time.h>
+#endif
+
 #include "../unet.h"
 
 static int error(const char *msg)
@@ -25,9 +35,9 @@ static int error(const char *msg)
 
 int main(int argc, char *argv[])
 {
-    unetsocket_t sock;
+  unetsocket_t sock;
 	int address = 0;
-    int port = 1100;
+  int port = 1100;
 	uint8_t data[7] = {1, 2, 3, 4, 5, 6, 7};
 	if (argc < 2)
     {
