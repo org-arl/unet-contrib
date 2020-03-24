@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     if (argc > 2)
     {
         address = (int)strtol(argv[2], NULL, 10);
-        port = (int)strtol(argv[3], NULL, 10);
+        if (argc > 3) port = (int)strtol(argv[3], NULL, 10);
     }
 
     // Check valid ip address
