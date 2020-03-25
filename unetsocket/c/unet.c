@@ -2,20 +2,12 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "pthreadwindows.h"
-
-#ifdef _WIN32
-#pragma comment(lib, "ws2_32.lib")
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <io.h>
-#include <winsock2.h>
-#include <Ws2tcpip.h>
-#else
-#include <sys/time.h>
-#endif
-
 #include "fjage.h"
 #include "unet.h"
+
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
 
 typedef struct {
   fjage_gw_t gw;

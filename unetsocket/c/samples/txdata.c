@@ -11,21 +11,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "../unet.h"
 
-#ifdef _WIN32
-#pragma comment(lib, "ws2_32.lib")
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <io.h>
-#include <winsock2.h>
-#include <Ws2tcpip.h>
-#else
+#ifndef _WIN32
 #include <unistd.h>
 #include <netdb.h>
 #include <sys/time.h>
 #endif
-
-#include "../unet.h"
 
 static int error(const char *msg)
 {
@@ -55,12 +47,14 @@ int main(int argc, char *argv[])
         if (argc > 3) port = (int)strtol(argv[3], NULL, 10);
     }
 
+#ifndef _WIN32
     // Check valid ip address
     struct hostent *server = gethostbyname(argv[1]);
     if (server == NULL) {
       error("Enter a valid ip addreess\n");
       return -1;
     }
+#endif
 
     // Open a unet socket connection to modem
     sock = unetsocket_open(argv[1], port);
@@ -69,7 +63,7 @@ int main(int argc, char *argv[])
     // Transmit data
     unetsocket_send(sock, data, 7, address, DATA);
 
-    sleep(2);
+    // sleep(2);
     // Close the unet socket
     unetsocket_close(sock);
 
