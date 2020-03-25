@@ -28,10 +28,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <math.h>
+#ifdef _WIN32
+#pragma comment(lib, "ws2_32.lib")
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <io.h>
+#include <winsock2.h>
+#include <Ws2tcpip.h>
+#else
 #include <netdb.h>
+#include <sys/time.h>
+#endif
+#include "../pthreadwindows.h"
 #include "../unet.h"
 
 static int passed = 0;

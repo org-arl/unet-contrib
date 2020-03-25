@@ -41,6 +41,8 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex);
 #else
 
 #include <pthread.h>
+#include <unistd.h>
+#define Sleep(num) usleep(num*1000)
 
 #endif
 #endif /* PTHREAD_WINDOWS_H */

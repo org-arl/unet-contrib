@@ -11,7 +11,6 @@
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 #else
-#include <unistd.h>
 #include <sys/time.h>
 #endif
 
@@ -79,7 +78,7 @@ static fjage_msg_t receive(_unetsocket_t *usock, const char *clazz, const char *
   int rv = pthread_mutex_trylock(&usock->rxlock);
   while (rv == EBUSY)
   {
-    usleep(100000);
+    Sleep(100);
     fjage_interrupt(usock->gw);
     rv = pthread_mutex_trylock(&usock->rxlock);
   }
@@ -95,7 +94,7 @@ static fjage_msg_t request(_unetsocket_t *usock, const fjage_msg_t request, long
   int rv = pthread_mutex_trylock(&usock->rxlock);
   while (rv == EBUSY)
   {
-    usleep(100000);
+    Sleep(100);
     fjage_interrupt(usock->gw);
     rv = pthread_mutex_trylock(&usock->rxlock);
   }
@@ -111,7 +110,7 @@ static fjage_aid_t agent_for_service(_unetsocket_t *usock, const char *service) 
   int rv = pthread_mutex_trylock(&usock->rxlock);
   while (rv == EBUSY)
   {
-    usleep(100000);
+    Sleep(100);
     fjage_interrupt(usock->gw);
     rv = pthread_mutex_trylock(&usock->rxlock);
   }
@@ -127,7 +126,7 @@ static int agents_for_service(_unetsocket_t *usock, const char *service, fjage_a
   int rv = pthread_mutex_trylock(&usock->rxlock);
   while (rv == EBUSY)
   {
-    usleep(100000);
+    Sleep(100);
     fjage_interrupt(usock->gw);
     rv = pthread_mutex_trylock(&usock->rxlock);
   }
