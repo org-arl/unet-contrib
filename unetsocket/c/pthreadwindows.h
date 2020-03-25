@@ -16,8 +16,12 @@ typedef struct pthread_mutex_tag {
 } pthread_mutex_t;
 
 typedef struct pthread_attr_tag {
-    int attr;
+  int attr;
 } pthread_attr_t;
+
+typedef struct pthread_mutexattr_tag {
+  int attr;
+} pthread_mutexattr_t;
 
 typedef DWORD pthread_key_t;
 
