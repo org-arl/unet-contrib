@@ -1,7 +1,7 @@
 #define _BSD_SOURCE
 #include <stdlib.h>
-#include <pthread.h>
 #include <errno.h>
+#include "pthreadwindows.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "ws2_32.lib")
@@ -148,17 +148,21 @@ unetsocket_t unetsocket_open(const char* hostname, int port) {
   pthread_mutex_init(&usock->rxlock, NULL);
   pthread_mutex_init(&usock->txlock, NULL);
   int nagents = agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", NULL, 0);
-  fjage_aid_t agents[nagents];
+  // fjage_aid_t agents[nagents];
+  fjage_aid_t* agents = malloc(nagents*sizeof(fjage_aid_t));
   if (agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
     free(usock);
+    free(agents);
     return NULL;
   }
   for(int i = 0; i < nagents; i++) {
     fjage_subscribe_agent(usock->gw, agents[i]);
   }
+  free(agents);
   return usock;
 }
 
+#ifndef _WIN32
 unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* settings) {
   _unetsocket_t *usock = malloc(sizeof(_unetsocket_t));
   if (usock == NULL) return NULL;
@@ -180,6 +184,7 @@ unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* se
   }
   return usock;
 }
+#endif
 
 int unetsocket_close(unetsocket_t sock) {
   if (sock == NULL) return -1;
