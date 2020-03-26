@@ -2,7 +2,9 @@
 
 This folder contains the files `unet.h` and `unet.c`. The header file includes the definition and documentation of the C APIs and the source code is provided in the `unet.c` file. 
 
-## Build Unet C API library on Linux / macOS
+## Instructions for building and using Unet C API library on Linux / macOS
+
+### Build unet library
 
 For building on Linux/macOS operating systems a `Makefile` is provided to collate the necessary files and compile the source code and run tests.
 
@@ -14,7 +16,7 @@ make
 
 This will generate a library (`libunet.a`) which can be used to link.
 
-## Build samples
+### Build samples
 
 To build the object files for the samples, run
 
@@ -22,29 +24,49 @@ To build the object files for the samples, run
 make samples
 ```
 
-## Build Unet C API library on Windows
+### Clean
 
-*Prerequisite:* You can build C applications on the command line by using tools that are included in Visual Studio. We use the Developer command prompt for Visual Studio to build from command line. To install these tools visit the following [link][https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs].
+To clean all the built files and the depencencies, run
 
-In order to build on Windows operating system, follow the steps provided below:
+```bash
+make clean
+```
 
-1. Build the fjage C library using the instructions provided on this [link](https://github.com/org-arl/fjage/tree/dev/gateways/c). This should provide you with a `fjage.lib` library which can be used to link.
+## Instructions for building and using Unet C API library on Windows
 
-2. Copy the `fjage.lib` and `fjage.h` file to this directory.
+*Prerequisites:*
 
-3. To build unet library, run the following commands:
+1. You can build C applications on the command line by using tools that are included in Visual Studio. We use the Developer command prompt for Visual Studio to build from command line. To install these tools visit the following [link](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs).
+
+2. Build the fjage C library using the instructions provided on this [link](https://github.com/org-arl/fjage/tree/dev/gateways/c). This should provide you with a `fjage.lib` library which can be used to link.
+
+3. Copy the `fjage.lib` and `fjage.h` file to this directory.
+
+### Build unet library
+
+To build unet library, run
+
 ```bash
 $ cl /LD fjage.lib *.c
 $ lib unet.obj pthreadwindows.obj /out:unet.lib
 ```
 
-4. Build applications
+This will generate a library (`unet.lib`) which can be used to link.
+
+
+### Build samples
+
+To build the executable files for the samples, run
+
 ```bash
 $ cl fjage.lib unet.lib samples\txdata.c /link /out:samples\txdata.exe
 $ cl fjage.lib unet.lib samples\rxdata.c /link /out:samples\rxdata.exe
 ```
 
-5. Clean
+### Clean
+
+To clean all the built files and the depencencies, run
+
 ```bash
 del *.obj *.dll unet.lib test\*.obj test\*.exe samples\*.obj samples\*.exe 2>nul
 ```
@@ -91,11 +113,3 @@ $ bin\unet.bat samples\2-node-network.groovy
 on Windows.
 
 For more details on using the unet simulator to deploy 2 node network, follow the instructions in [unet handbook](https://unetstack.net/handbook/unet-handbook_getting_started.html)
-
-## Clean
-
-To clean all the built files and the depencencies, run
-
-```bash
-make clean
-```
