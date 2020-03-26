@@ -8,7 +8,7 @@ all: libs
 	rm -rf *.zip
 	rm -rf fjage-*
 
-samples: libs txdata rxdata
+samples: txdata rxdata
 	rm -rf *.zip
 	rm -rf fjage-*
 
@@ -29,23 +29,23 @@ libunet.a: unet.o
 txdata.o: samples/txdata.c unet.h fjage.h
 	$(CC) $(CFLAGS) -c samples/txdata.c -o samples/txdata.o
 
-txdata: libs txdata.o
+txdata: txdata.o
 	$(CC) -o samples/txdata samples/txdata.o libunet.a libfjage.a -lpthread -lm
 
 rxdata.o: samples/rxdata.c unet.h fjage.h
 	$(CC) $(CFLAGS) -c samples/rxdata.c -o samples/rxdata.o
 
-rxdata: libs rxdata.o
+rxdata: rxdata.o
 	$(CC) -o samples/rxdata samples/rxdata.o libunet.a libfjage.a -lpthread -lm
 
-test: libs test_unet
+test: test_unet
 	rm -rf *.zip
 	rm -rf fjage-*
 
 test_unet.o: test/test_unet.c unet.h fjage.h
 	$(CC) $(CFLAGS) -c test/test_unet.c -o test/test_unet.o
 
-test_unet: libs test_unet.o
+test_unet: test_unet.o
 	$(CC) -o test/test_unet test/test_unet.o libunet.a libfjage.a -lpthread -lm
 
 clean:
