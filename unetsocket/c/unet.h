@@ -31,6 +31,7 @@ typedef void *unetsocket_t;        ///< unet socket connection
 
 unetsocket_t unetsocket_open(const char* hostname, int port);
 
+#ifndef _WIN32
 /// Open a unet socket connection to the modem.
 ///
 /// @param devname          Device name
@@ -39,6 +40,7 @@ unetsocket_t unetsocket_open(const char* hostname, int port);
 /// @return                 Unet socket
 
 unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* settings);
+#endif
 
 /// Close connection to the modem.
 ///

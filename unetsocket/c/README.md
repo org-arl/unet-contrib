@@ -1,8 +1,10 @@
 # Unet C APIs
 
-## Build Unet C API library
+This folder contains the files `unet.h` and `unet.c`. The header file includes the definition and documentation of the C APIs and the source code is provided in the `unet.c` file. 
 
-This folder contains the files `unet.h` and `unet.c`. The header file includes the definition and documentation of the C APIs and the source code is provided in the `unet.c` file. `Makefile` is used to collate the necessary files and compile the source code and run tests.
+## Build Unet C API library on Linux / macOS
+
+For building on Linux/macOS operating systems a `Makefile` is provided to collate the necessary files and compile the source code and run tests.
 
 To build Unet C APIs library, run
 
@@ -20,6 +22,33 @@ To build the object files for the samples, run
 make samples
 ```
 
+## Build Unet C API library on Windows
+
+*Prerequisite:* You can build C applications on the command line by using tools that are included in Visual Studio. We use the Developer command prompt for Visual Studio to build from command line. To install these tools visit the following [link][https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs].
+
+In order to build on Windows operating system, follow the steps provided below:
+
+1. Build the fjage C library using the instructions provided on this [link](https://github.com/org-arl/fjage/tree/dev/gateways/c). This should provide you with a `fjage.lib` library which can be used to link.
+
+2. Copy the `fjage.lib` and `fjage.h` file to this directory.
+
+3. To build unet library, run the following commands:
+```bash
+$ cl /LD fjage.lib *.c
+$ lib unet.obj pthreadwindows.obj /out:unet.lib
+```
+
+4. Build applications
+```bash
+$ cl fjage.lib unet.lib samples\txdata.c /link /out:samples\txdata.exe
+$ cl fjage.lib unet.lib samples\rxdata.c /link /out:samples\rxdata.exe
+```
+
+5. Clean
+```bash
+del *.obj *.dll unet.lib test\*.obj test\*.exe samples\*.obj samples\*.exe 2>nul
+```
+
 ## Test Unet C API library
 
 To compile and run the tests, the following steps need to be performed:
@@ -32,12 +61,20 @@ To compile and run the tests, the following steps need to be performed:
 
 2. Run the tests as following:
 
-In terminal window (an example):
+On Linux / macOS, in terminal window (an example):
 
 ```bash
 $ make test
 $ test/test_unet <ip_address> <peer_node_address> <port>
 ```
+
+On Windows, in Developer command prompt for Visual Studio
+
+```bash
+$ cl fjage.lib unet.lib test\test_unet.c /link /out:test\test_unet.exe
+$ test/test_unet.exe <ip_address> <peer_node_address> <port>
+```
+
 where `<ip_address>` argument must be the IP address of the modem to connect to, `<port>` is the port number of the Unet service on that modem and `<peer_node_address>` is the node address of the other modem in the water for ranging tests.
 
 Upon completion of the tests, the test results will be summarized.
@@ -47,6 +84,11 @@ Upon completion of the tests, the test results will be summarized.
 ```bash
 $ bin/unet samples/2-node-network.groovy
 ```
+on Linux / macOS and
+```bash
+$ bin\unet.bat samples\2-node-network.groovy
+```
+on Windows.
 
 For more details on using the unet simulator to deploy 2 node network, follow the instructions in [unet handbook](https://unetstack.net/handbook/unet-handbook_getting_started.html)
 

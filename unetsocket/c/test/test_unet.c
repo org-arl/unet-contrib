@@ -30,19 +30,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#ifdef _WIN32
-#pragma comment(lib, "ws2_32.lib")
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <io.h>
-#include <winsock2.h>
-#include <Ws2tcpip.h>
-#else
+#include "../pthreadwindows.h"
+#include "../unet.h"
+#ifndef _WIN32
 #include <netdb.h>
 #include <sys/time.h>
 #endif
-#include "../pthreadwindows.h"
-#include "../unet.h"
 
 static int passed = 0;
 static int failed = 0;
@@ -91,11 +84,13 @@ int main(int argc, char* argv[]) {
     port_tx = (int)strtol(argv[3], NULL, 10);
     port_rx = (int)strtol(argv[4], NULL, 10);
   }
+#ifndef _WIN32
   struct hostent *server = gethostbyname(argv[1]);
   if (server == NULL) {
     error("Enter a valid ip addreess\n");
     return -1;
   }
+#endif
   int peer_node_address = (int)strtol(argv[2], NULL, 10);
   // create a unet socket connection to modems
   sock_tx = unetsocket_open(argv[1], port_tx);
