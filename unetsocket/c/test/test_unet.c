@@ -13,7 +13,7 @@
 // In terminal window (an example):
 //
 // $ make test
-// $ test/test_unet <ip_address>  rx_node_address> <port_tx> <port_rx>
+// $ test/test_unet <ip_tx> <ip_rx> <port_tx> <port_rx>
 //
 // NOTE: To run the simulator with 2 nodes, download the unet community edition
 // from https://unetstack.net/ and run the following:
@@ -64,20 +64,22 @@ int main(int argc, char* argv[]) {
   int rv;
   int port_tx = 1100;
   int port_rx = 1100;
-  fjage_msg_t ntf;
   uint8_t tdata[7];
   uint8_t data[7] = {1,2,3,4,5,6,7};
-
+  fjage_msg_t ntf;
+  struct hostent *server = NULL;
   unetsocket_t sock_tx;
   unetsocket_t sock_rx;
   if (argc < 5) {
-    error("Usage : test_unet <ip_address> <rx_node_address> <port_tx> <port_rx> \n"
-          "ip_address: IP address of the transmitter modem. \n"
-          "rx_node_address: Node address of the receiver modem. Set this to 0 for broadcast. \n"
-          "port_tx: port number of the Unet service on the tx modem (default value used is 1100)"
-          "port_rx: port number of the Unet service on the rx modem (default value used is 1100)"
+    error("Usage : test_unet <ip_tx> <ip_rx> <port_tx> <port_rx> \n"
+          "ip_tx: IP address of the transmitter modem. \n"
+          "ip_rx: IP address of the receiver modem. \n"
+          "port_tx: port number of the Unet service on the tx modem (default value used is 1100). \n"
+          "port_rx: port number of the Unet service on the rx modem (default value used is 1100). \n"
           "A usage example: \n"
-          "test_unet 192.168.1.20 231 1101 1102\n");
+          "test_unet localhost localhost 1101 1102 \n"
+          "(or) \n"
+          "test_unet 192.168.1.10 192.168.1.20 1100 1100 \n");
     return -1;
   }
   if (argc > 4) {
@@ -85,20 +87,29 @@ int main(int argc, char* argv[]) {
     port_rx = (int)strtol(argv[4], NULL, 10);
   }
 #ifndef _WIN32
-  struct hostent *server = gethostbyname(argv[1]);
+  server = gethostbyname(argv[1]);
   if (server == NULL) {
-    error("Enter a valid ip addreess\n");
+    error("Enter a valid ip address of transmitter modem\n");
+    return -1;
+  }
+  server = gethostbyname(argv[2]);
+  if (server == NULL) {
+    error("Enter a valid ip address of receiver modem\n");
     return -1;
   }
 #endif
-  int rx_node_address = (int)strtol(argv[2], NULL, 10);
   // create a unet socket connection to modems
   sock_tx = unetsocket_open(argv[1], port_tx);
   test_assert("unetsocket_open_tx", sock_tx != NULL);
   if (sock_tx == NULL) return error("Couldn't open unet socket on transmitter");
-  sock_rx = unetsocket_open(argv[1], port_rx);
+  sock_rx = unetsocket_open(argv[2], port_rx);
   test_assert("unetsocket_open_rx", sock_rx != NULL);
   if (sock_rx == NULL) return error("Couldn't open unet socket on receiver");
+  int rx_node_address = unetsocket_get_local_address(sock_rx);
+  if (rx_node_address < 0) {
+    error("Couldn't fetch the rx node address");
+    return -1;
+  }
   // send data
   rv = unetsocket_send(sock_tx, data, 7, rx_node_address, DATA);
   test_assert("unetsocket_send", rv == 0);

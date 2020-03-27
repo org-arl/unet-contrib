@@ -87,17 +87,17 @@ On Linux / macOS, in terminal window (an example):
 
 ```bash
 $ make test
-$ test/test_unet <ip_address> <rx_node_address> <port>
+$ test/test_unet <ip_tx> <ip_rx> <port_tx> <port_rx>
 ```
 
 On Windows, in Developer command prompt for Visual Studio
 
 ```bash
 $ cl fjage.lib unet.lib test\test_unet.c /link /out:test\test_unet.exe
-$ test/test_unet.exe <ip_address> <rx_node_address> <port>
+$ test/test_unet.exe <ip_tx> <ip_rx> <port_tx> <port_rx>
 ```
 
-where `<ip_address>` argument must be the IP address of the modem to connect to, `<port>` is the port number of the Unet service on that modem and `<rx_node_address>` is the node address of the other modem in the water for ranging tests.
+where `<ip_tx>` argument is the IP address of the transmitter modem to connect to and `<ip_rx>` argument is the IP address of the receiver modem to connect to, `<port_tx>` and `<port_rx>` is the port numbers of the Unet service on transmitter and receiver modems respectively.
 
 Upon completion of the tests, the test results will be summarized.
 
