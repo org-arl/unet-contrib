@@ -5,7 +5,7 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./txdata <ip_address> <peer_node_address> <port>
+// $ ./txdata <ip_address> <rx_node_address> <port>
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,9 +33,9 @@ int main(int argc, char *argv[])
 	uint8_t data[7] = {1, 2, 3, 4, 5, 6, 7};
 	if (argc < 2)
     {
-        error("Usage : txdata <ip_address> <peer_node_address> <port> \n"
+        error("Usage : txdata <ip_address> <rx_node_address> <port> \n"
               "ip_address: IP address of the transmitter modem. \n"
-              "peer_node_address: Node address of the receiver modem. Set this to 0 for broadcast. \n"
+              "rx_node_address: Node address of the receiver modem. Set this to 0 for broadcast. \n"
               "port: port number \n"
               "A usage example: \n"
               "txdata 192.168.1.20 5\n");

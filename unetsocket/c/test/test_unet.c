@@ -13,7 +13,7 @@
 // In terminal window (an example):
 //
 // $ make test
-// $ test/test_unet <ip_address> <peer_node_address> <port_tx> <port_rx>
+// $ test/test_unet <ip_address>  rx_node_address> <port_tx> <port_rx>
 //
 // NOTE: To run the simulator with 2 nodes, download the unet community edition
 // from https://unetstack.net/ and run the following:
@@ -71,9 +71,9 @@ int main(int argc, char* argv[]) {
   unetsocket_t sock_tx;
   unetsocket_t sock_rx;
   if (argc < 5) {
-    error("Usage : test_unet <ip_address> <peer_node_address> <port> \n"
+    error("Usage : test_unet <ip_address> <rx_node_address> <port_tx> <port_rx> \n"
           "ip_address: IP address of the transmitter modem. \n"
-          "peer_node_address: Node address of the receiver modem. Set this to 0 for broadcast. \n"
+          "rx_node_address: Node address of the receiver modem. Set this to 0 for broadcast. \n"
           "port_tx: port number of the Unet service on the tx modem (default value used is 1100)"
           "port_rx: port number of the Unet service on the rx modem (default value used is 1100)"
           "A usage example: \n"
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 #endif
-  int peer_node_address = (int)strtol(argv[2], NULL, 10);
+  int rx_node_address = (int)strtol(argv[2], NULL, 10);
   // create a unet socket connection to modems
   sock_tx = unetsocket_open(argv[1], port_tx);
   test_assert("unetsocket_open_tx", sock_tx != NULL);
@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
   test_assert("unetsocket_open_rx", sock_rx != NULL);
   if (sock_rx == NULL) return error("Couldn't open unet socket on receiver");
   // send data
-  rv = unetsocket_send(sock_tx, data, 7, peer_node_address, DATA);
+  rv = unetsocket_send(sock_tx, data, 7, rx_node_address, DATA);
   test_assert("unetsocket_send", rv == 0);
   // bind to protocol
   if (unetsocket_bind(sock_rx, 0) == 0 && unetsocket_bind(sock_rx, USER+1) == 0 && unetsocket_bind(sock_rx, 10) == -1) {
@@ -119,12 +119,12 @@ int main(int argc, char* argv[]) {
   rv = unetsocket_get_local_address(sock_tx);
   test_assert("unetsocket_get_local_address", rv >= 0);
   // connect and protocol
-  rv = unetsocket_connect(sock_tx, peer_node_address, USER+1);
+  rv = unetsocket_connect(sock_tx, rx_node_address, USER+1);
   test_assert("unetsocket_connect", rv == 0);
   rv = unetsocket_is_connected(sock_tx);
   test_assert("unetsocket_is_connected", rv == 0);
   rv = unetsocket_get_remote_address(sock_tx);
-  test_assert("unetsocket_get_remote_address", rv == peer_node_address);
+  test_assert("unetsocket_get_remote_address", rv == rx_node_address);
   rv = unetsocket_get_remote_protocol(sock_tx);
   test_assert("unetsocket_get_local_protocol", rv == USER+1);
   // disconnect
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
   rv = unetsocket_get_timeout(sock_tx);
   test_assert("unetsocket_get_timeout", rv == -1);
   // receive
-  unetsocket_send(sock_tx, data, 7, peer_node_address, DATA);
+  unetsocket_send(sock_tx, data, 7, rx_node_address, DATA);
   unetsocket_set_timeout(sock_rx, 10000);
   ntf = unetsocket_receive(sock_rx);
   test_assert("unetsocket_receive", strcmp("org.arl.unet.DatagramNtf", fjage_msg_get_clazz(ntf))==0);
