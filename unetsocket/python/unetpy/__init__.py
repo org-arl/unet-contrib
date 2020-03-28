@@ -2,6 +2,7 @@ from fjagepy import *
 from fjagepy import Message as _Message
 from fjagepy import MessageClass as _MessageClass
 from fjagepy import Performative as _Performative
+from fjagepy import Services as _Services
 from fjagepy import Gateway
 from fjagepy import AgentID as _AgentID
 from types import MethodType as _mt
@@ -9,14 +10,7 @@ from warnings import warn as _warn
 import threading as _td
 import time as _time
 
-#shell
-PutFileReq             = _MessageClass('org.arl.fjage.shell.PutFileReq')
-GetFileReq             = _MessageClass('org.arl.fjage.shell.GetFileReq')
-ShellExecReq           = _MessageClass('org.arl.fjage.shell.ShellExecReq')
-
 #unet
-ParameterReq           = _MessageClass('org.arl.unet.ParameterReq')
-ParameterRsp           = _MessageClass('org.arl.unet.ParameterRsp')
 TestReportNtf          = _MessageClass('org.arl.unet.TestReportNtf')
 AbnormalTerminationNtf = _MessageClass('org.arl.unet.AbnormalTerminationNtf')
 CapabilityListRsp      = _MessageClass('org.arl.unet.CapabilityListRsp')
@@ -99,36 +93,8 @@ WakeFromSleepNtf       = _MessageClass('org.arl.unet.scheduler.WakeFromSleepNtf'
 ClearStateReq          = _MessageClass('org.arl.unet.state.ClearStateReq')
 SaveStateReq           = _MessageClass('org.arl.unet.state.SaveStateReq')
 
-def _short(p):
-    return p.split('.')[-1]
 
-
-def _value(v):
-    # TODO: support complex objects
-    if isinstance(v, dict):
-        if 'clazz' in v:
-            if v['clazz'] == 'java.util.Date':
-                return v['data']
-            if v['clazz'] == 'java.util.ArrayList':
-                return v['data']
-            p = _GenericObject()
-            p.__dict__.update(v)
-            return p
-        if 'data' in v:
-            return v['data']
-    return v
-
-
-class _GenericObject:
-
-    def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
-
-    def __repr__(self):
-        return self.__dict__['clazz'] + '(...)'
-
-
-class Services:
+class Services(_Services):
     """Services provided by agents.
 
     Agents can be looked up based on the services they provide.
@@ -146,7 +112,6 @@ class Services:
     TRANSPORT = 'org.arl.unet.Services.TRANSPORT'
     REMOTE = 'org.arl.unet.Services.REMOTE'
     STATE_MANAGER = 'org.arl.unet.Services.STATE_MANAGER'
-    SHELL = 'org.arl.fjage.shell.Services.SHELL'
 
 class Topics:
     """Topics that can be subscribed to.
@@ -183,150 +148,6 @@ class Address:
     Defined constants for addressing.
     """
     BROADCAST = 0         # Broadcast address.
-
-class _ParameterReq(ParameterReq):
-
-    def __init__(self, index=-1, **kwargs):
-        super().__init__()
-        self.index = index
-        self.requests = []
-        self.perf = _Performative.REQUEST
-        self.__dict__.update(kwargs)
-
-    def get(self, param):
-        self.requests.append({'param': param});
-        return self
-
-    def set(self, param, value):
-        self.requests.append({'param': param, 'value': value});
-        return self
-
-    def __str__(self):
-        p = ' '.join([_short(str(request['param'])) + ':' + (str(request['value']) if 'value' in request else '?') for request in self.requests])
-        return self.__class__.__name__ + ':' + self.perf + '[' + (('index:' + str(self.index)) if self.index > 0 else '') + p.strip() + ']'
-
-    def _repr_pretty_(self, p, cycle):
-        p.text(str(self) if not cycle else '...')
-
-
-class _ParameterRsp(ParameterRsp):
-
-    def __init__(self, **kwargs):
-        super().__init__()
-        self.index = -1
-        self.values = dict()
-        self.perf = _Performative.REQUEST
-        self.__dict__.update(kwargs)
-
-    def get(self, param):
-        if 'param' in self.__dict__ and self.param == param:
-            return _value(self.value)
-        if 'values' in self.__dict__ and param in self.values:
-            return _value(self.values[param])
-        if 'param' in self.__dict__ and _short(self.param) == param:
-            return _value(self.value)
-        if 'values' not in self.__dict__:
-            return None
-        for v in self.values:
-            if _short(v) == param:
-                return _value(self.values[v])
-        return None
-
-    def parameters(self):
-        if ('values' in self.__dict__) and (self.__dict__['values'] is not None):
-            p = self.values.copy()
-        else:
-            p = {}
-        if 'param' in self.__dict__:
-            p[self.param] = self.value
-        for k in p:
-            if isinstance(p[k], dict):
-                p[k] = _value(p[k])
-        return p
-
-    def __str__(self):
-        p = ''
-        if 'param' in self.__dict__:
-            p += _short(str(self.param)) + ':' + str(_value(self.value)) + ' '
-        if 'values' in self.__dict__ and len(self.values) > 0:
-            p += ' '.join([_short(str(v)) + ':' + str(_value(self.values[v])) for v in self.values])
-        return self.__class__.__name__ + ':' + self.perf + '[' + (('index:' + str(self.index)) if self.index > 0 else '') + p.strip() + ']'
-
-    def _repr_pretty_(self, p, cycle):
-        p.text(str(self) if not cycle else '...')
-
-def getter(self, param):
-    rsp = self.request(_ParameterReq(index=self.index).get(param))
-    if rsp is None:
-        return None
-    ursp = _ParameterRsp()
-    ursp.__dict__.update(rsp.__dict__)
-    if 'value' in list(ursp.__dict__.keys()):
-        return ursp.get(param)
-    else:
-        return None
-
-setattr(_AgentID, '__getattr__', getter)
-
-def setter(self, param, value):
-    if param in ['name', 'owner', 'is_topic', 'index']:
-        self.__dict__[param] = value
-        return value
-    rsp = self.request(_ParameterReq(index=self.index).set(param, value))
-    if rsp is None:
-        _warn('Could not set parameter ' + param)
-        return None
-    ursp = _ParameterRsp()
-    ursp.__dict__.update(rsp.__dict__)
-    v = ursp.get(param)
-    if v != value:
-        _warn('Parameter ' + param + ' set to ' + str(v))
-    return v
-
-setattr(_AgentID, '__setattr__', setter)
-
-def __getitem__(self, index):
-    c = AgentID(self.name, owner=self.owner)
-    c.index = index
-    return c
-
-setattr(_AgentID, '__getitem__', __getitem__)
-
-def __str__(self):
-    peer = self.owner.socket.getpeername()
-    return self.name + ' on ' + peer[0] + ':' + str(peer[1])
-
-setattr(_AgentID, '__str__', __str__)
-
-def _repr_pretty_(self, p, cycle):
-    if cycle:
-        p.text('...')
-        return
-    rsp = self.request(_ParameterReq(index=self.index))
-    if rsp is None:
-        p.text(self.__str__())
-        return
-    ursp = _ParameterRsp()
-    ursp.__dict__.update(rsp.__dict__)
-    params = ursp.parameters()
-    if 'title' in params:
-        p.text('<<< ' + str(params['title']) + ' >>>\n')
-    else:
-        p.text('<<< ' + str(self.name).upper() + ' >>>\n')
-    if 'description' in params:
-        p.text('\n' + str(params['description']) + '\n')
-    oprefix = ''
-    for param in sorted(params):
-        pp = param.split('.')
-        prefix = '.'.join(pp[:-1]) if len(pp) > 1 else ''
-        if prefix == '':
-            continue
-        if prefix != oprefix:
-            oprefix = prefix
-            p.text('\n[' + prefix + ']\n')
-        p.text('  ' + pp[-1] + ' = ' + str(params[param]) + '\n')
-
-setattr(_AgentID, '_repr_pretty_', _repr_pretty_)
 
 class UnetSocket():
     """Unet socket for transmission/reception of datagrams.
