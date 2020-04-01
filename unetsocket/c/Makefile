@@ -1,7 +1,7 @@
 CC = gcc
 CGLAGS = $(CGLAGS) -std=c99 -Wall -Wextra -Werror -O2
 # FJAGE_VER=c8e62495f2283d1b57a559112ccce3ccd608bb2a
-FJAGE_VER=dev
+FJAGE_VER=master
 FJAGE_DIR=fjage-$(FJAGE_VER)
 
 all: libs
