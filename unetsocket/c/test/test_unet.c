@@ -30,7 +30,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "../pthreadwindows.h"
 #include "../unet.h"
 #ifndef _WIN32
 #include <netdb.h>
