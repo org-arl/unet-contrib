@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     {
         error("Usage : rxdata <ip_address> <port>\n"
               "ip_address: IP address of the receiver modem. \n"
-              "port: port number \n"
+              "port: port number of the receiver modem \n"
               "A usage example: \n"
               "rxdata 192.168.1.10 1100\n");
         return -1;

@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
     {
         error("Usage : txdata <ip_address> <rx_node_address> <port> \n"
               "ip_address: IP address of the transmitter modem. \n"
-              "rx_node_address: Node address of the receiver modem. Set this to 0 for broadcast. \n"
-              "port: port number \n"
+              "rx_node_address: Node address of the receiver modem. \n"
+              "port: port number of transmitter modem. \n"
               "A usage example: \n"
               "txdata 192.168.1.20 5\n");
         return -1;
