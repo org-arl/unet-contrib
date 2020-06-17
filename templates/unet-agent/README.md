@@ -11,7 +11,7 @@ To get started:
 * You'll find the compiled jar file in `build/libs/`
 * Test with `gradle test`
 * Copy the jar file to the `jars` folder on a UnetStack modem or simulator
-* You should now be able to load your agent in UnetStack
+* You should now be able to load your agent in UnetStack using `container.add MyAgent()`
 
 Related information:
 * [UnetStack](https://unetstack.net/)
