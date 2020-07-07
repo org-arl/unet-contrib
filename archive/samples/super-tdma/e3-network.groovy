@@ -55,7 +55,6 @@ simulate time, {
     n1.startup = {
       def phy = agentForService PHYSICAL
       phy[Physical.DATA].frameLength = phy[Physical.CONTROL].frameLength
-      phy[Physical.DATA].dataRate = phy[Physical.CONTROL].dataRate
       add new TickerBehavior(1000*slot, {
         def slen = schedule[i].size()
         def s = schedule[i][(tickCount-1)%slen]
