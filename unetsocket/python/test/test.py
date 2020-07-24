@@ -150,13 +150,12 @@ class UnetTest(unittest.TestCase):
 if __name__ == '__main__':
 
   def cancel_task(usock):
-  	print("Hello World")
   	time.sleep(2)
   	usock.cancel()
 
   # start simulator
   print("Starting 2-node simulation...")
-  os.system('bash sim.sh start')
+  os.system('bash test/sim.sh start')
   time.sleep(5)
 
   # tests
@@ -167,7 +166,7 @@ if __name__ == '__main__':
 
   # stop simulator
   print("Stopping 2-node simulation...")
-  p = os.system('bash sim.sh stop')
+  p = os.system('bash test/sim.sh stop')
   time.sleep(1)
   if p != 0:
   	print("Could not stop!")
