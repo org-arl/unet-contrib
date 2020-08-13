@@ -5,7 +5,7 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./txdata <ip_address> <rx_node_address> <port>
+// $ ./txdata <ip_address> <rx_node_address> [port]
 //
 ////////////////////////////////////////////////////////////////////////////////
 
