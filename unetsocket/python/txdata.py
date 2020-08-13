@@ -14,6 +14,7 @@ import sys
 port = 1100
 ip_address = 'localhost'
 node_address = 0
+data = [1,2,3,4,5,6,7]
 
 if (len(sys.argv) < 3):
 	print("Usage : txdata <ip_address> <rx_node_address> <port> \n"
@@ -36,7 +37,8 @@ if ( sock == None ):
 	sys.exit();
 
 # Transmit data
-sock.send([1,2,3,4,5,6,7], node_address, Protocol.DATA);
+print("Transmitting " + str(len(data)) + " bytes of data to " + str(node_address));
+sock.send(data, node_address, Protocol.DATA);
 
 # Close the unet socket
 sock.close()

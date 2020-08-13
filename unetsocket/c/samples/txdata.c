@@ -57,6 +57,7 @@ int main(int argc, char *argv[]) {
   if (sock == NULL) return error("Couldn't open unet socket");
 
 // Transmit data
+  printf("Transmitting %d bytes of data to %d\n", 7, address);
   rv = unetsocket_send(sock, data, 7, address, DATA);
 
   if (rv != 0) return error("Error transmitting data");
