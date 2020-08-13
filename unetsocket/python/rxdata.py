@@ -33,12 +33,16 @@ if ( sock == None ):
 	sys.exit();
 
 # Bind to protocol DATA
-sock.bind(Protocol.DATA);
+if (not sock.bind(Protocol.DATA)):
+	print("Couldn't open bind to socket");
+	sys.exit();
 
 # Set a timeout of 10 seconds
 sock.setTimeout(10000);
 
 # Receive and display data
+printf("Waiting for a Datagram");
+
 ntf = sock.receive()
 
 if (ntf != None):
