@@ -31,6 +31,7 @@ node_address = sys.argv[2]
 if (len(sys.argv) > 3):
 	port = int(sys.argv[3])
 
+print("Connecting to " + ip_address + ":" + str(port));
 sock = UnetSocket(ip_address, port)
 if ( sock == None ):
 	print("Couldn't open unet socket");

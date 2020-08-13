@@ -27,6 +27,7 @@ ip_address = sys.argv[1]
 if (len(sys.argv) > 2):
 	port = int(sys.argv[2])
 
+print("Connecting to " + ip_address + ":" + str(port));
 sock = UnetSocket(ip_address, port)
 if ( sock == None ):
 	print("Couldn't open unet socket");
@@ -41,7 +42,7 @@ if (not sock.bind(Protocol.DATA)):
 sock.setTimeout(10000);
 
 # Receive and display data
-printf("Waiting for a Datagram");
+print("Waiting for a Datagram");
 
 ntf = sock.receive()
 

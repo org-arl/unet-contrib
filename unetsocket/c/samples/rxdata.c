@@ -51,6 +51,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     // Open a unet socket connection to modem
+    printf("Connecting to %s:%d\n",argv[1],port);
     sock = unetsocket_open(argv[1], port);
     if (sock == NULL) return error("Couldn't open unet socket");
 
