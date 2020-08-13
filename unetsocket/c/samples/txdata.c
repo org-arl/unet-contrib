@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 // Transmit data
   rv = unetsocket_send(sock, data, 7, address, DATA);
 
-  if (rv != 0) error("Error transmitting data");
+  if (rv != 0) return error("Error transmitting data");
 
 // Close the unet socket
   unetsocket_close(sock);
