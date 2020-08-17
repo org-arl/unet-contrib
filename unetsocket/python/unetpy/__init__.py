@@ -40,8 +40,6 @@ BadRangeNtf            = _MessageClass('org.arl.unet.phy.BadRangeNtf')
 BeaconReq              = _MessageClass('org.arl.unet.phy.BeaconReq')
 ClearSyncReq           = _MessageClass('org.arl.unet.phy.ClearSyncReq')
 CollisionNtf           = _MessageClass('org.arl.unet.phy.CollisionNtf')
-RangeNtf               = _MessageClass('org.arl.unet.phy.RangeNtf')
-RangeReq               = _MessageClass('org.arl.unet.phy.RangeReq')
 RxFrameNtf             = _MessageClass('org.arl.unet.phy.RxFrameNtf', DatagramNtf)
 RxFrameStartNtf        = _MessageClass('org.arl.unet.phy.RxFrameStartNtf')
 SyncInfoReq            = _MessageClass('org.arl.unet.phy.SyncInfoReq')
@@ -63,6 +61,17 @@ RecordBasebandSignalReq = _MessageClass('org.arl.unet.bb.RecordBasebandSignalReq
 RxBasebandSignalNtf    = _MessageClass('org.arl.unet.bb.RxBasebandSignalNtf', BasebandSignal)
 TxBasebandSignalReq    = _MessageClass('org.arl.unet.bb.TxBasebandSignalReq', BasebandSignal)
 
+#link
+LinkStatusNtf          = _MessageClass('org.arl.unet.link.LinkStatusNtf')
+
+#localization
+RangeNtf               = _MessageClass('org.arl.unet.localization.RangeNtf')
+RangeReq               = _MessageClass('org.arl.unet.localization.RangeReq')
+BeaconReq              = _MessageClass('org.arl.unet.localization.BeaconReq')
+RespondReq             = _MessageClass('org.arl.unet.localization.RespondReq')
+InterrogationNtf       = _MessageClass('org.arl.unet.localization.InterrogationNtf')
+
+
 #mac
 ReservationAcceptReq   = _MessageClass('org.arl.unet.mac.ReservationAcceptReq')
 ReservationCancelReq   = _MessageClass('org.arl.unet.mac.ReservationCancelReq')
@@ -71,6 +80,7 @@ ReservationRsp         = _MessageClass('org.arl.unet.mac.ReservationRsp')
 ReservationStatusNtf   = _MessageClass('org.arl.unet.mac.ReservationStatusNtf')
 RxAckNtf               = _MessageClass('org.arl.unet.mac.RxAckNtf')
 TxAckReq               = _MessageClass('org.arl.unet.mac.TxAckReq')
+
 
 #remote
 RemoteExecReq          = _MessageClass('org.arl.unet.remote.RemoteExecReq')
@@ -318,6 +328,8 @@ class UnetSocket():
                 data = list(data)
             req.data = data
             if to is None and protocol is None:
+                if self.remoteAddress < 0:
+                    return False
                 req.to = self.remoteAddress
                 req.protocol = self.remoteProtocol
             elif to is not None and protocol is None:
@@ -358,44 +370,28 @@ class UnetSocket():
            | This call blocks until a datagram is availbale, the socket timeout is reached,
            | or until :func:`~unetpy.UnetSocket.cancel()` is called.
         """
-        try:
-            if self.gw == None:
+        if self.gw == None:
+            return None
+        t0 = _time.time() * 1000
+        while (self.timeout <= 0 or ((_time.time() * 1000) - t0) < self.timeout):
+            self.waiting = True
+            ntf = self.gw.receive(DatagramNtf, self.timeout)
+            self.waiting = False
+            if ntf == None:
                 return None
-            self.waiting = _td.Event()
-            deadline = -1
-            if self.timeout == 0:
-                deadline = 0
-            elif self.timeout > 0:
-                deadline = int(round(_time.time() * 1000)) + self.timeout
-            ntf = None
-            while not self.waiting.is_set():
-                timeRemaining = -1
-                if self.timeout == 0:
-                    timeRemaining = 0
-                elif self.timeout > 0:
-                    timeRemaining = deadline - int(round(_time.time() * 1000))
-                    if timeRemaining <= 0:
-                        return None
-                ntf = self.gw.receive(DatagramNtf, timeRemaining)
-                if ntf == None:
-                    return None
-                if isinstance(ntf, DatagramNtf):
-                    dg = ntf
-                    p = dg.protocol
-                    if (p == Protocol.DATA or p >= Protocol.USER):
-                        if (self.localProtocol < 0):
-                            return dg
-                        if (self.localProtocol == p):
-                            return dg
-        except:
-            self.waiting = None
+            if isinstance(ntf, DatagramNtf):
+                p = ntf.protocol
+                if ((p == Protocol.DATA) or (p >= Protocol.USER)):
+                    if ((self.localProtocol < 0) or (self.localProtocol == p)):
+                        return ntf
         return None
 
     def cancel(self):
         """Cancels an ongoing blocking receive()."""
-        if self.waiting == None:
-            return
-        self.waiting.set()
+        if self.waiting:
+            self.gw.cv.acquire()
+            self.gw.cv.notify()
+            self.gw.cv.release()
 
     def getGateway(self):
         """Gets a Gateway to provide low-level access to UnetStack."""
