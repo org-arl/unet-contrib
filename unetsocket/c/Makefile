@@ -1,5 +1,5 @@
 CC = gcc
-CGLAGS = $(CGLAGS) -std=c99 -Wall -Wextra -Werror -O2
+CFLAGS += -std=c99 -Wall -Wextra -Werror -Wfloat-equal -Wconversion -Wparentheses -pedantic -Wunused-parameter -Wunused-variable -Wreturn-type -Wno-unused-function -Wredundant-decls -Wreturn-type -Wunused-value -Wswitch-default -Wuninitialized -Winit-self -O2
 # FJAGE_VER=c8e62495f2283d1b57a559112ccce3ccd608bb2a
 FJAGE_VER=master
 FJAGE_DIR=fjage-$(FJAGE_VER)

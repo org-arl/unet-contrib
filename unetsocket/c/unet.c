@@ -36,7 +36,7 @@ static void *monitor(void *p) {
   if (usock->timeout > 0) deadline = _time_in_ms() + usock->timeout;
   const char *list[] = {"org.arl.unet.DatagramNtf", "org.arl.unet.phy.RxFrameNtf"};
   while (!usock->quit) {
-    int time_remaining = -1;
+    long time_remaining = -1;
     if (usock->timeout == 0) time_remaining = 0;
   	if (usock->timeout > 0) {
   	  time_remaining = deadline - _time_in_ms();
@@ -140,7 +140,7 @@ unetsocket_t unetsocket_open(const char* hostname, int port) {
   pthread_mutex_init(&usock->txlock, NULL);
   int nagents = agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", NULL, 0);
   // fjage_aid_t agents[nagents];
-  fjage_aid_t* agents = malloc(nagents*sizeof(fjage_aid_t));
+  fjage_aid_t* agents = malloc((unsigned long)nagents*sizeof(fjage_aid_t));
   if (agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
     free(usock);
     free(agents);
