@@ -349,6 +349,53 @@ fjage_msg_t unetsocket_receive(unetsocket_t sock) {
   return usock->ntf;
 }
 
+int unetsocket_get_range(unetsocket_t sock, int to, float* range) {
+  if (sock == NULL) return -1;
+  _unetsocket_t *usock = sock;
+  fjage_aid_t ranging;
+  fjage_msg_t msg;
+  ranging = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.RANGING");
+  fjage_subscribe_agent(usock->gw, ranging);
+  msg = fjage_msg_create("org.arl.unet.localization.RangeReq", FJAGE_REQUEST);
+  fjage_msg_set_recipient(msg, ranging);
+  fjage_msg_add_int(msg, "to", to);
+  msg = request(usock, msg, TIMEOUT);
+  if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE) {
+    fjage_msg_destroy(msg);
+    msg = receive(usock, "org.arl.unet.localization.RangeNtf", NULL, 10000);
+    if (msg != NULL) {
+      *range = fjage_msg_get_float(msg, "range", 0);
+      fjage_msg_destroy(msg);
+      return 0;
+    }
+  }
+  fjage_msg_destroy(msg);
+  return -1;
+}
+
+int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value) {
+  if (sock == NULL) return -1;
+  _unetsocket_t *usock = sock;
+  fjage_msg_t msg;
+  fjage_aid_t phy;
+  phy = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.PHYSICAL");
+  msg = fjage_msg_create("org.arl.unet.ParameterReq", FJAGE_REQUEST);
+  fjage_msg_set_recipient(msg, phy);
+  if (index == 0) index = -1;
+  fjage_msg_add_int(msg, "index", index);
+  fjage_msg_add_string(msg, "param", "powerLevel");
+  fjage_msg_add_float(msg, "value", value);
+  msg = request(usock, msg, TIMEOUT);
+  if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM) {
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(phy);
+    return 0;
+  }
+  fjage_msg_destroy(msg);
+  fjage_aid_destroy(phy);
+  return -1;
+}
+
 void unetsocket_cancel(unetsocket_t sock) {
   _unetsocket_t *usock = sock;
   usock->quit = true;

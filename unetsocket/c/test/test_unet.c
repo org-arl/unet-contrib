@@ -63,8 +63,8 @@ int main(int argc, char* argv[]) {
   int rv;
   int port_tx = 1100;
   int port_rx = 1100;
-  uint8_t tdata[7];
   uint8_t data[7] = {1,2,3,4,5,6,7};
+  float* range = calloc(1,sizeof(float));
   fjage_msg_t ntf;
   struct hostent *server = NULL;
   unetsocket_t sock_tx;
@@ -145,17 +145,24 @@ int main(int argc, char* argv[]) {
   test_assert("unetsocket_disconnect 2", rv == 0);
   // set and get timeout
   unetsocket_set_timeout(sock_tx, 1000);
-  rv = unetsocket_get_timeout(sock_tx);
-  test_assert("unetsocket_set_timeout", rv == 1000);
+  long trv = unetsocket_get_timeout(sock_tx);
+  test_assert("unetsocket_set_timeout", trv == 1000);
   unetsocket_set_timeout(sock_tx, -10);
-  rv = unetsocket_get_timeout(sock_tx);
-  test_assert("unetsocket_get_timeout", rv == -1);
+  trv = unetsocket_get_timeout(sock_tx);
+  test_assert("unetsocket_get_timeout", trv == -1);
   // receive
   unetsocket_send(sock_tx, data, 7, rx_node_address, DATA);
   unetsocket_set_timeout(sock_rx, 10000);
   ntf = unetsocket_receive(sock_rx);
   test_assert("unetsocket_receive", strcmp("org.arl.unet.DatagramNtf", fjage_msg_get_clazz(ntf))==0);
   fjage_msg_destroy(ntf);
+  // ranging
+  rv = unetsocket_get_range(sock_tx, 31, range);
+  if (rv == 0) printf("Range measured is : %f \n", *range);
+  test_assert("Ranging", rv == 0);
+  // power level
+  rv = unetsocket_set_powerlevel(sock_tx, 1, -6);
+  test_assert("Power level", rv == 0);
   // // close the unet socket connection
   rv = unetsocket_close(sock_tx);
   test_assert("unetsocket_close_tx", rv == 0);

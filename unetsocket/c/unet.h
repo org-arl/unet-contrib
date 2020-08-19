@@ -190,6 +190,20 @@ int unetsocket_send_request(unetsocket_t sock, fjage_msg_t req); // req must be 
 
 fjage_msg_t unetsocket_receive(unetsocket_t sock); // returns a DatagramNtf
 
+/// Get the range information
+///
+/// @param sock             Unet socket
+/// @param to               Address of the node to which range is requested
+/// @param range            Measured range
+int unetsocket_get_range(unetsocket_t sock, int to, float* range);
+
+/// Set the transmission power level of frame
+///
+/// @param sock             Unet socket
+/// @param index            Index of the modulation scheme (1 for CONTROL scheme and 2 for DATA scheme)
+/// @param value            Transmission power level
+int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value);
+
 /// Cancels an ongoing blocking receive().
 ///
 /// @param sock             Unet socket

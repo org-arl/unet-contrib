@@ -8,7 +8,7 @@ all: libs
 	rm -rf *.zip
 	rm -rf fjage-*
 
-samples: txdata rxdata
+samples: txdata rxdata range setpowerlevel
 	rm -rf *.zip
 	rm -rf fjage-*
 
@@ -37,6 +37,18 @@ rxdata.o: samples/rxdata.c unet.h fjage.h
 
 rxdata: rxdata.o
 	$(CC) -o samples/rxdata samples/rxdata.o libunet.a libfjage.a -lpthread -lm
+
+range.o: samples/range.c unet.h fjage.h
+	$(CC) $(CFLAGS) -c samples/range.c -o samples/range.o
+
+range: range.o
+	$(CC) -o samples/range samples/range.o libunet.a libfjage.a -lpthread -lm
+
+setpowerlevel.o: samples/setpowerlevel.c unet.h fjage.h
+	$(CC) $(CFLAGS) -c samples/setpowerlevel.c -o samples/setpowerlevel.o
+
+setpowerlevel: setpowerlevel.o
+	$(CC) -o samples/setpowerlevel samples/setpowerlevel.o libunet.a libfjage.a -lpthread -lm
 
 test: test_unet
 	rm -rf *.zip
