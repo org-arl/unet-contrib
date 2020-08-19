@@ -61,5 +61,5 @@ test_unet: test_unet.o
 	$(CC) -o test/test_unet test/test_unet.o libunet.a libfjage.a -lpthread -lm
 
 clean:
-	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/rxdata
+	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/rxdata samples/range samples/setpowerlevel
 	rm -rf "$(FJAGE_DIR)" "$(FJAGE_VER).zip" fjage.h libfjage.a kissfft kiss_fft.h fjage
