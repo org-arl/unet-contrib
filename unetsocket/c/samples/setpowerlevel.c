@@ -27,7 +27,7 @@ static int error(const char *msg) {
 
 int main(int argc, char *argv[]) {
   unetsocket_t sock;
-  int power_value = -42;
+  float power_value = -42.0;
   int port = 1100;
   int rv;
   if (argc <= 3) {
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
       "setpowerlevel 192.168.1.20 -6 1101\n");
     return -1;
   } else {
-  	power_value = (int)strtol(argv[2], NULL, 10);
+  	power_value = strtof(argv[2], NULL);
     port = (int)strtol(argv[3], NULL, 10);
   }
 #ifndef _WIN32
@@ -59,11 +59,11 @@ int main(int argc, char *argv[]) {
 
   // set power level of the CONTROL frame
   rv = unetsocket_set_powerlevel(sock, 1, power_value);
-  if (rv == 0) printf("Transmission power level of CONTROL frame set to : %d \n", power_value);
+  if (rv == 0) printf("Transmission power level of CONTROL frame set to : %f \n", power_value);
 
   // set power level of the DATA frame
   rv = unetsocket_set_powerlevel(sock, 2, power_value);
-  if (rv == 0) printf("Transmission power level of DATA frame set to : %d \n", power_value);
+  if (rv == 0) printf("Transmission power level of DATA frame set to : %f \n", power_value);
 
   // Close the unet socket
   unetsocket_close(sock);
