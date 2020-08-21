@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
       "setpowerlevel 192.168.1.20 -6 1101\n");
     return -1;
   } else {
-  	power_value = strtof(argv[2], NULL, 10);
+  	power_value = strtof(argv[2], NULL);
     port = (int)strtol(argv[3], NULL, 10);
   }
 #ifndef _WIN32
