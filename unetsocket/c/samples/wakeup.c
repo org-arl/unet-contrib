@@ -86,7 +86,7 @@ int packMacAddr(char *mac, unsigned char *packedMac )
     for( int i = 0; i < MAC_ADDR_MAX; i++ )
     {
         if( tok == NULL ) return -1;
-        mac_addr[i] = (unsigned char) strtol( tok, NULL, CONVERT_BASE );
+        packedMac[i] = (unsigned char) strtol( tok, NULL, CONVERT_BASE );
         tok = strtok( NULL, delimiter );
     }
     return 0;
