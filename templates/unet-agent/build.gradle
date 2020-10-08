@@ -5,6 +5,8 @@ sourceCompatibility = 1.8
 
 defaultTasks 'build'
 
+version = '1.0.0'
+
 repositories {
   mavenCentral()
   flatDir { dirs "$rootDir/lib" }
