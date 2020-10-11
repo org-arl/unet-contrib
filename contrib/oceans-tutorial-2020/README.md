@@ -4,6 +4,10 @@ This readme serves the audience joining the tutorial on "Practical Software-Defi
 
 This directory contains the simulation scripts and other resources for you to be able to run the code explained in this tutorial by yourself.
 
+## Download unet simulator
+
+Download the package `unet-3.1.0.zip` and unzip to unveil the `unet-3.1.0` folder containing the simulation scripts.
+
 ## Part 3
 
 The `unet-3.1.0/samples/tutorial-network-part3.groovy` is the simulation script used in this session. Follow the instructions in the video to start the simulation and run this script.
