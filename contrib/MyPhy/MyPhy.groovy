@@ -40,11 +40,11 @@ import org.arl.yoda.ModemChannelParam
 @groovy.transform.CompileStatic
 class MyPhy extends UnetAgent {
 
-  private final static int HDRSIZE = 5
-  private final static int SAMPLES_PER_SYMBOL = 150
-  private final static float NFREQ = 1/15
+  private final int HDRSIZE = 5
+  private final int SAMPLES_PER_SYMBOL = 150
+  private final float NFREQ = 1/15
 
-  // default PHY agent name hardcoded for simplicity,
+  // default Yoda PHY agent name hardcoded for simplicity,
   // and assumed to provide PHYSICAL and BASEBAND services
   private final AgentID bbsp = agent('phy')
 
@@ -61,12 +61,12 @@ class MyPhy extends UnetAgent {
   void startup() {
     subscribe bbsp
     int nsamples = (MTU + HDRSIZE) * 8 * SAMPLES_PER_SYMBOL
-    set(bbsp, 1, ModemChannelParam.modulation, 'none')
-    set(bbsp, 1, ModemChannelParam.basebandExtra, nsamples)
-    set(bbsp, 1, ModemChannelParam.basebandRx, true)
-    set(bbsp, 2, ModemChannelParam.modulation, 'none')
-    set(bbsp, 2, ModemChannelParam.basebandExtra, nsamples)
-    set(bbsp, 2, ModemChannelParam.basebandRx, true)
+    set(bbsp, Physical.CONTROL, ModemChannelParam.modulation, 'none')
+    set(bbsp, Physical.CONTROL, ModemChannelParam.basebandExtra, nsamples)
+    set(bbsp, Physical.CONTROL, ModemChannelParam.basebandRx, true)
+    set(bbsp, Physical.DATA, ModemChannelParam.modulation, 'none')
+    set(bbsp, Physical.DATA, ModemChannelParam.basebandExtra, nsamples)
+    set(bbsp, Physical.DATA, ModemChannelParam.basebandRx, true)
   }
 
   ////// parameters
@@ -78,46 +78,36 @@ class MyPhy extends UnetAgent {
 
   @Override
   protected List<Parameter> getParameterList(int ndx) {
-    if (ndx == Physical.CONTROL || ndx == Physical.DATA) return allOf(DatagramParam, PhysicalChannelParam)
+    if (ndx == Physical.CONTROL || ndx == Physical.DATA)
+      return allOf(DatagramParam, PhysicalChannelParam)
     return null
   }
 
   // Datagram service parameters (read-only)
-
   final int MTU = 8
   final int RTU = MTU
 
-  // Physical service parameters (read-only)
-
-  final float refPowerLevel = 0.0
-  final float maxPowerLevel = 0.0
-  final float minPowerLevel = 0.0
-  final float rxSensitivity = 0.0
-
-  // Physical service parameters (read-write)
-
-  boolean rxEnable = true
-  float propagationSpeed = 1500.0
+  // Physical service parameters (read-only) delegated to Yoda PHY
+  Float getRefPowerLevel()    { return (Float)get(bbsp, PhysicalParam.refPowerLevel) }
+  Float getMaxPowerLevel()    { return (Float)get(bbsp, PhysicalParam.maxPowerLevel) }
+  Float getMinPowerLevel()    { return (Float)get(bbsp, PhysicalParam.minPowerLevel) }
+  Float getRxSensitivity()    { return (Float)get(bbsp, PhysicalParam.rxSensitivity) }
+  Float getPropagationSpeed() { return (Float)get(bbsp, PhysicalParam.propagationSpeed) }
+  Long getTime()              { return (Long)get(bbsp, PhysicalParam.time) }
+  Boolean getBusy()           { return (Boolean)get(bbsp, PhysicalParam.busy) }
+  Boolean getRxEnable()       { return (Boolean)get(bbsp, PhysicalParam.rxEnable) }
 
   // Physical service indexed parameter (read-only)
   int getMTU(int ndx)               { return MTU }
   int getRTU(int ndx)               { return RTU }
   int getFrameLength(int ndx)       { return MTU + HDRSIZE }
   int getMaxFrameLength(int ndx)    { return MTU + HDRSIZE }
-  int getFec(int ndx)               { return 0 }
-  List<String> getFecList(int ndx)  { return [] }
-  int getErrorDetection(int ndx)    { return 8 }
-  boolean getLlr(int ndx)           { return false }
+  int getFec(int ndx)               { return 0 }        // no FEC
+  List<String> getFecList(int ndx)  { return [] }       // FEC not supported
+  int getErrorDetection(int ndx)    { return 8 }        // 8 bits
+  boolean getLlr(int ndx)           { return false }    // LLR not supported
 
-  // Physical service dynamic parameters
-
-  Long getTime() {
-    return (Long)get(bbsp, PhysicalParam.time)
-  }
-
-  Boolean getBusy() {
-    return (Boolean)get(bbsp, PhysicalParam.busy)
-  }
+  // Physical service indexed dynamic parameters
 
   void setPowerLevel(int ndx, float lvl) {
     if (ndx != Physical.CONTROL && ndx != Physical.DATA) return
@@ -187,7 +177,7 @@ class MyPhy extends UnetAgent {
     return new Message(req, Performative.FAILURE)
   }
 
-  private final static PDU header = new PDU() {
+  private final PDU header = new PDU() {
     @Override
     void format() {
       length(HDRSIZE)
@@ -247,12 +237,13 @@ class MyPhy extends UnetAgent {
 
   @Override
   void processMessage(Message msg) {
+    addrCache.update(msg)
     if (msg instanceof TxFrameNtf) handleTxFrameNtf(msg)
     else if (msg instanceof RxBasebandSignalNtf) handleRxBasebandSignalNtf(msg)
   }
 
   private void handleTxFrameNtf(TxFrameNtf msg) {
-    def req = pending.get(msg.inReplyTo)
+    def req = pending.remove(msg.inReplyTo)
     if (req == null) return
     def ntf = new TxFrameNtf(req)
     ntf.type = msg.type
@@ -262,7 +253,7 @@ class MyPhy extends UnetAgent {
   }
 
   private void handleRxBasebandSignalNtf(RxBasebandSignalNtf msg) {
-    def buf = signal2bytes(msg.preamble, msg.signal)
+    def buf = signal2bytes(msg.signal, 2 * getPreambleLength(msg.preamble))
     if (buf == null) return
     int parity = 0
     for (int i = 1; i < buf.length; i++)
@@ -303,14 +294,14 @@ class MyPhy extends UnetAgent {
     )
   }
 
-  private static double abs2(double re, double im) {
+  private double abs2(double re, double im) {
     return re*re + im*im
   }
 
-  private byte[] signal2bytes(int ndx, float[] signal) {
+  private byte[] signal2bytes(float[] signal, int start) {
     int n = (int)(signal.length / (2 * SAMPLES_PER_SYMBOL * 8))
     def buf = new byte[n]
-    int p = 2 * getPreambleLength(ndx)
+    int p = start
     for (int i = 0; i < buf.length; i++) {
       for (int j = 0; j < 8; j++) {
         double s0re = 0
