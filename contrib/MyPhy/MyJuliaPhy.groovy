@@ -1,6 +1,6 @@
 /**
- * Sample custom PHYSICAL layer implementation for UnetStack based modems,
- * as described in blog article: https://blog.unetstack.net/custom-phy.
+ * Sample custom Julia PHYSICAL layer implementation for UnetStack based modems,
+ * as described in blog article: https://blog.unetstack.net/custom-phy-in-julia.
  *
  * Do note that this implementation is intentionally minimalistic, to aid
  * understanding. While this may be used as a starting point for your own
@@ -55,6 +55,9 @@ class MyJuliaPhy extends UnetAgent {
 
   @Override
   void setup() {
+    julia.open()
+    julia.exec(julia_bytes2signal)
+    julia.exec(julia_signal2bytes)
     register Services.DATAGRAM
     register Services.PHYSICAL
   }
@@ -69,9 +72,6 @@ class MyJuliaPhy extends UnetAgent {
     set(bbsp, Physical.DATA, ModemChannelParam.modulation, 'none')
     set(bbsp, Physical.DATA, ModemChannelParam.basebandExtra, nsamples)
     set(bbsp, Physical.DATA, ModemChannelParam.basebandRx, true)
-    julia.open()
-    julia.exec(julia_bytes2signal)
-    julia.exec(julia_signal2bytes)
   }
 
   @Override
@@ -239,7 +239,7 @@ class MyJuliaPhy extends UnetAgent {
           p += ${SAMPLES_PER_SYMBOL}
         end
       end
-      signal
+      return signal
     end
   """
 
@@ -310,10 +310,6 @@ class MyJuliaPhy extends UnetAgent {
     )
   }
 
-  private double abs2(double re, double im) {
-    return re*re + im*im
-  }
-
   private final String julia_signal2bytes = """
     function signal2bytes(signal)
       n = length(signal) ÷ (${SAMPLES_PER_SYMBOL} * 8)
@@ -331,7 +327,7 @@ class MyJuliaPhy extends UnetAgent {
           end
         end
       end
-      buf
+      return buf
     end
   """
 
