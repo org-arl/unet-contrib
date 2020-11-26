@@ -11,15 +11,16 @@ if len(sys.argv) < 2:
 
 ip_address = sys.argv[1]
 # Open a connection to modem
-modem = UnetGateway(ip_address, 1100)
+modem = UnetSocket(ip_address, 1100)
 
 ################### Transmission of CONTROL and DATA packet ###################
 
-# Look for agents providing physical service
+# Look for agents providing physical service def phy = modem.agentForService Services.PHYSICAL
 phy = modem.agentForService(Services.PHYSICAL)
 
 # Transmit a CONTROL packet
-phy << TxFrameReq(type=Physical.CONTROL, data=np.arange(4))
+phy << TxFrameReq(type=phy.CONTROL, data=np.arange(4))
+
 # Receive the transmit notification
 txntf1 = modem.receive(TxFrameNtf, 5000)
 if txntf1 is not None:
@@ -30,7 +31,7 @@ else:
     print('Transmission not successfull, try again!')
 
 # Transmit a DATA packet
-phy << TxFrameReq(type=Physical.DATA, data=np.arange(10))
+phy << TxFrameReq(type=phy.DATA, data=np.arange(10))
 # Receive the transmit notification
 txntf2 = modem.receive(TxFrameNtf, 5000)
 if txntf2 is not None:
