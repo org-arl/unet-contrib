@@ -18,8 +18,8 @@ modem = UnetSocket(ip_address, 1100)
 # Look for agents providing physical service def phy = modem.agentForService Services.PHYSICAL
 phy = modem.agentForService(Services.PHYSICAL)
 
-# Transmit a CONTROL packet
-phy << TxFrameReq(type=phy.CONTROL, data=np.arange(4))
+# Transmit a CONTROL packet (phy.CONTROL)
+phy << TxFrameReq(type=1, data=np.arange(4))
 
 # Receive the transmit notification
 txntf1 = modem.receive(TxFrameNtf, 5000)
@@ -30,8 +30,8 @@ if txntf1 is not None:
 else:
     print('Transmission not successfull, try again!')
 
-# Transmit a DATA packet
-phy << TxFrameReq(type=phy.DATA, data=np.arange(10))
+# Transmit a DATA packet (phy.DATA)
+phy << TxFrameReq(type=2, data=np.arange(10))
 # Receive the transmit notification
 txntf2 = modem.receive(TxFrameNtf, 5000)
 if txntf2 is not None:
