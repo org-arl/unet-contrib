@@ -86,7 +86,7 @@ else:
 # Load the baseband signal to be transmitted.
 # signal.txt contains the same signal as csig in previous section
 # Format: array with alternate real and imag values
-tx_signal = np.genfromtxt('signal.txt', delimiter=',')
+tx_signal = np.genfromtxt('signals/signal.txt', delimiter=',')
 
 # Transmit the baseband signal
 bb << TxBasebandSignalReq(preamble=3, signal=tx_signal)
