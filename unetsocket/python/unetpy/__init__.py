@@ -23,6 +23,8 @@ DatagramNtf            = _MessageClass('org.arl.unet.DatagramNtf')
 DatagramProgressNtf    = _MessageClass('org.arl.unet.DatagramProgressNtf')
 DatagramReq            = _MessageClass('org.arl.unet.DatagramReq')
 ParamChangeNtf         = _MessageClass('org.arl.unet.ParamChangeNtf')
+RefuseRsp              = _MessageClass('org.arl.unet.RefuseRsp')
+FailureNtf             = _MessageClass('org.arl.unet.FailureNtf')
 
 # net
 DatagramTraceReq       = _MessageClass('org.arl.unet.net.DatagramTraceReq')
