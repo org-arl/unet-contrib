@@ -391,6 +391,7 @@ class UnetSocket():
     def cancel(self):
         """Cancels an ongoing blocking receive()."""
         if self.waiting:
+            self.gw.cancel = True
             self.gw.cv.acquire()
             self.gw.cv.notify()
             self.gw.cv.release()
