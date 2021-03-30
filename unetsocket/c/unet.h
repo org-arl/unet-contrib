@@ -5,6 +5,14 @@
 
 typedef void *unetsocket_t;        ///< unet socket connection
 
+/// Maximum length of a frame ID string
+
+#define FRAME_ID_LEN        64
+
+/// Transmit sampling rate
+
+#define TXSAMPLINGFREQ           192000 //Hz
+
 /// Timeout
 
 #define TIMEOUT                  1000   //ms
@@ -195,6 +203,7 @@ fjage_msg_t unetsocket_receive(unetsocket_t sock); // returns a DatagramNtf
 /// @param sock             Unet socket
 /// @param to               Address of the node to which range is requested
 /// @param range            Measured range
+
 int unetsocket_get_range(unetsocket_t sock, int to, float* range);
 
 /// Set the transmission power level of frame
@@ -202,7 +211,36 @@ int unetsocket_get_range(unetsocket_t sock, int to, float* range);
 /// @param sock             Unet socket
 /// @param index            Index of the modulation scheme (1 for CONTROL scheme and 2 for DATA scheme)
 /// @param value            Transmission power level
+
 int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value);
+
+/// Transmit a signal.
+///
+/// For a 18-36 KHz modem, set fc to 24000 for baseband signal transmission
+/// TODO: Add recommendations for LF, HF modems
+///
+/// @param modem            Gateway
+/// @param signal           Baseband signal or Passband signal.
+///                         Baseband signal must be an sequence of
+///                         numbers with alternating real and imaginary values.
+///                         Passband signal is a real time series to transmit.
+/// @param nsamples         Number of samples.
+///                         For baseband signal, this is equal to number of
+///                         baseband samples.
+/// @param rate             Baseband/ Passband sampling rate of signal in Hz
+/// @param fc               Signal carrier frequency in Hz for passband transmission.
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, int rate, float fc, char *id);
+
+/// Record a baseband signal.
+///
+/// @param modem            Gateway
+/// @param buf              Buffer to store the recorded signal
+/// @param nsamples         Number of samples
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_record(unetsocket_t sock, float *buf, int nsamples);
 
 /// Cancels an ongoing blocking receive().
 ///

@@ -4,6 +4,7 @@
 #include "pthreadwindows.h"
 #include "fjage.h"
 #include "unet.h"
+#include <string.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -393,6 +394,56 @@ int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value) {
   }
   fjage_msg_destroy(msg);
   fjage_aid_destroy(phy);
+  return -1;
+}
+
+int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, int rate, float fc, char *id) {
+  if (sock == NULL) return -1;
+  if (nsamples < 0) return -1;
+  if (rate != TXSAMPLINGFREQ) return -1;
+  if (nsamples > 0 && signal == NULL) return -1;
+  _unetsocket_t *usock = sock;
+  fjage_msg_t msg;
+  fjage_aid_t bb;
+  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.BASEBAND");
+  msg = fjage_msg_create("org.arl.unet.bb.TxBasebandSignalReq", FJAGE_REQUEST);
+  fjage_msg_set_recipient(msg, bb);
+  if (fc == 0.0) fjage_msg_add_float(msg, "fc", fc);
+  if (signal != NULL) fjage_msg_add_float_array(msg, "signal", signal, ((int)fc ? 2 : 1)*nsamples);
+  if (id != NULL) strcpy(id, fjage_msg_get_id(msg));
+  msg = request(usock, msg, 5 * TIMEOUT);
+  if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE)
+  {
+    fjage_msg_destroy(msg);
+    return 0;
+  }
+  fjage_msg_destroy(msg);
+  return -1;
+}
+
+int unetsocket_record(unetsocket_t sock, float *buf, int nsamples) {
+  if (sock == NULL) return -1;
+  if (nsamples < 0) return -1;
+  _unetsocket_t *usock = sock;
+  fjage_msg_t msg;
+  fjage_aid_t bb;
+  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.BASEBAND");
+  msg = fjage_msg_create("org.arl.unet.bb.RecordBasebandSignalReq", FJAGE_REQUEST);
+  fjage_msg_set_recipient(msg, bb);
+  fjage_msg_add_int(msg, "recLength", nsamples);
+  msg = request(usock, msg, 5 * TIMEOUT);
+  if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE)
+  {
+    fjage_msg_destroy(msg);
+    msg = receive(usock, "org.arl.unet.bb.RxBasebandSignalNtf", NULL, 5 * TIMEOUT);
+    if (msg != NULL)
+    {
+      fjage_msg_get_float_array(msg, "signal", buf, 2 * nsamples);
+      fjage_msg_destroy(msg);
+      return 0;
+    }
+  }
+  fjage_msg_destroy(msg);
   return -1;
 }
 
