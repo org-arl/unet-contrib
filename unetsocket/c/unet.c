@@ -170,7 +170,7 @@ unetsocket_t unetsocket_open(const char* hostname, int port) {
   // check the parameter request class name
   fjage_msg_t msg;
   fjage_aid_t aid;
-  aid = agent_for_service(usock, "org.arl.unet.Services.PHYSICAL");
+  aid = agent_for_service(usock, "org.arl.unet.Services.NODE_INFO");
   msg = fjage_msg_create(NEWPARAMETERREQ, FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, aid);
   fjage_msg_add_int(msg, "index", -1);
