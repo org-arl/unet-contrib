@@ -251,5 +251,111 @@ fjage_aid_t unetsocket_agent(const char* name);
 
 int unetsocket_host(unetsocket_t sock, const char* node_name);
 
+/// Setter for integer parameters.
+///
+/// @param sock             Unet socket
+/// @param index            Set for indexed parameters (e.g parameters
+///                         for CONTROL and DATA frames), For general
+///                         modem parameters index is set to 0
+/// @param target_name      Fully qualified service class name/ agent name
+/// @param param_name       Parameter name
+/// @param value            Value to be set
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_iset(unetsocket_t sock, int index, char *target_name, char *param_name, int value);
+
+/// Setter for float parameters.
+///
+/// @param sock             Unet socket
+/// @param index            Set for indexed parameters (e.g parameters
+///                         for CONTROL and DATA frames), For general
+///                         modem parameters index is set to 0
+/// @param target_name      Fully qualified service class name/ agent name
+/// @param param_name       Parameter name
+/// @param value            Value to be set
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_fset(unetsocket_t sock, int index, char *target_name, char *param_name, float value);
+
+/// Setter for boolean parameters.
+///
+/// @param sock             Unet socket
+/// @param index            Set for indexed parameters (e.g parameters
+///                         for CONTROL and DATA frames), For general
+///                         modem parameters index is set to 0
+/// @param target_name      Fully qualified service class name/ agent name
+/// @param param_name       Parameter name
+/// @param value            Value to be set
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_bset(unetsocket_t sock, int index, char *target_name, char *param_name, bool value);
+
+/// Setter for String parameters.
+///
+/// @param sock             Unet socket
+/// @param index            Set for indexed parameters (e.g parameters
+///                         for CONTROL and DATA frames), For general
+///                         modem parameters index is set to 0
+/// @param target_name      Fully qualified service class name/ agent name
+/// @param param_name       Parameter name
+/// @param value            Value to be set
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_sset(unetsocket_t sock, int index, char *target_name, char *param_name, char *value);
+
+/// Getter for integer parameters.
+///
+/// @param sock             Unet socket
+/// @param index            Set for indexed parameters (e.g parameters
+///                         for CONTROL and DATA frames), For general
+///                         modem parameters index is set to 0
+/// @param target_name      Fully qualified service class name/ agent name
+/// @param param_name       Parameter name
+/// @param value            Value to get
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_iget(unetsocket_t sock, int index, char *target_name, char *param_name, int *value);
+
+/// Getter for float parameters.
+///
+/// @param sock             Unet socket
+/// @param index            Set for indexed parameters (e.g parameters
+///                         for CONTROL and DATA frames), For general
+///                         modem parameters index is set to 0
+/// @param target_name      Fully qualified service class name/ agent name
+/// @param param_name       Parameter name
+/// @param value            Values to get
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_fget(unetsocket_t sock, int index, char *target_name, char *param_name, float *value);
+
+/// Getter for boolean parameters.
+///
+/// @param sock             Unet socket
+/// @param index            Set for indexed parameters (e.g parameters
+///                         for CONTROL and DATA frames), For general
+///                         modem parameters index is set to 0
+/// @param target_name      Fully qualified service class name/ agent name
+/// @param param_name       Parameter name
+/// @param value            Value to get
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_bget(unetsocket_t sock, int index, char *target_name, char *param_name, bool *value);
+
+/// Getter for string parameters.
+///
+/// @param sock             Unet socket
+/// @param index            Set for indexed parameters (e.g parameters
+///                         for CONTROL and DATA frames), For general
+///                         modem parameters index is set to 0
+/// @param target_name      Fully qualified service class name/ agent name
+/// @param param_name       Parameter name
+/// @param buf              String to get
+/// @param buflen           Length of the string
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param_name, char *buf, int buflen);
+
+
 #endif
 

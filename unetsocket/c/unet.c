@@ -4,10 +4,27 @@
 #include "pthreadwindows.h"
 #include "fjage.h"
 #include "unet.h"
+#include <string.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
+
+#define NEWPARAMETERREQ   "org.arl.fjage.param.ParameterReq"
+#define OLDPARAMETERREQ   "org.arl.unet.ParameterReq"
+#define NEWPARAMETERRSP   "org.arl.fjage.param.ParameterRsp"
+#define OLDPARAMETERRSP   "org.arl.unet.ParameterRsp"
+
+#define NEWRANGEREQ       "org.arl.unet.localization.RangeReq"
+#define OLDRANGEREQ       "org.arl.unet.phy.RangeReq"
+#define NEWRANGENTF       "org.arl.unet.localization.RangeNtf"
+#define OLDRANGENTF       "org.arl.unet.phy.RangeNtf"
+
+
+char* parameterreq = OLDPARAMETERREQ;
+char* parameterrsp = OLDPARAMETERRSP;
+char* rangereq = OLDRANGEREQ;
+char* rangentf = OLDRANGENTF;
 
 typedef struct {
   fjage_gw_t gw;
@@ -150,6 +167,23 @@ unetsocket_t unetsocket_open(const char* hostname, int port) {
     fjage_subscribe_agent(usock->gw, agents[i]);
   }
   free(agents);
+  // check the parameter request class name
+  fjage_msg_t msg;
+  fjage_aid_t aid;
+  aid = agent_for_service(usock, "org.arl.unet.Services.NODE_INFO");
+  msg = fjage_msg_create(NEWPARAMETERREQ, FJAGE_REQUEST);
+  fjage_msg_set_recipient(msg, aid);
+  fjage_msg_add_int(msg, "index", -1);
+  fjage_msg_add_string(msg, "param", "version");
+  msg = request(usock, msg, 5 * TIMEOUT);
+  if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM) {
+    parameterreq = NEWPARAMETERREQ;
+    parameterrsp = NEWPARAMETERRSP;
+    rangereq = NEWRANGEREQ;
+    rangentf = NEWRANGENTF;
+  }
+  fjage_msg_destroy(msg);
+  fjage_aid_destroy(aid);
   return usock;
 }
 
@@ -246,7 +280,7 @@ int unetsocket_get_local_address(unetsocket_t sock) {
   int rv;
   node = agent_for_service(usock, "org.arl.unet.Services.NODE_INFO");
   if (node == NULL) return -1;
-  msg = fjage_msg_create("org.arl.unet.ParameterReq", FJAGE_REQUEST);
+  msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, node);
   fjage_msg_add_int(msg, "index", -1);
   fjage_msg_add_string(msg, "param", "address");
@@ -356,13 +390,13 @@ int unetsocket_get_range(unetsocket_t sock, int to, float* range) {
   fjage_msg_t msg;
   ranging = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.RANGING");
   fjage_subscribe_agent(usock->gw, ranging);
-  msg = fjage_msg_create("org.arl.unet.localization.RangeReq", FJAGE_REQUEST);
+  msg = fjage_msg_create(rangereq, FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, ranging);
   fjage_msg_add_int(msg, "to", to);
   msg = request(usock, msg, TIMEOUT);
   if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE) {
     fjage_msg_destroy(msg);
-    msg = receive(usock, "org.arl.unet.localization.RangeNtf", NULL, 10000);
+    msg = receive(usock, rangentf, NULL, 10000);
     if (msg != NULL) {
       *range = fjage_msg_get_float(msg, "range", 0);
       fjage_msg_destroy(msg);
@@ -379,7 +413,7 @@ int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value) {
   fjage_msg_t msg;
   fjage_aid_t phy;
   phy = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.PHYSICAL");
-  msg = fjage_msg_create("org.arl.unet.ParameterReq", FJAGE_REQUEST);
+  msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, phy);
   if (index == 0) index = -1;
   fjage_msg_add_int(msg, "index", index);
@@ -446,4 +480,212 @@ int unetsocket_host(unetsocket_t sock, const char* node_name) {
   }
   fjage_msg_destroy(msg);
   return -1;
+}
+
+int unetsocket_iset(unetsocket_t sock, int index, char *target_name, char *param_name, int value)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t aid;
+    aid = agent_for_service(usock, target_name);
+    if (aid == NULL) aid = fjage_aid_create(target_name);
+    msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
+    fjage_msg_set_recipient(msg, aid);
+    if (index == 0) index = -1;
+    fjage_msg_add_int(msg, "index", index);
+    fjage_msg_add_string(msg, "param", param_name);
+    fjage_msg_add_int(msg, "value", value);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
+    {
+        fjage_msg_destroy(msg);
+        fjage_aid_destroy(aid);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(aid);
+    return -1;
+}
+
+int unetsocket_fset(unetsocket_t sock, int index, char *target_name, char *param_name, float value)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t aid;
+    aid = agent_for_service(usock, target_name);
+    if (aid == NULL) aid = fjage_aid_create(target_name);
+    msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
+    fjage_msg_set_recipient(msg, aid);
+    if (index == 0) index = -1;
+    fjage_msg_add_int(msg, "index", index);
+    fjage_msg_add_string(msg, "param", param_name);
+    fjage_msg_add_float(msg, "value", value);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
+    {
+        fjage_msg_destroy(msg);
+        fjage_aid_destroy(aid);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(aid);
+    return -1;
+}
+
+int unetsocket_bset(unetsocket_t sock, int index, char *target_name, char *param_name, bool value)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t aid;
+    aid = agent_for_service(usock, target_name);
+    if (aid == NULL) aid = fjage_aid_create(target_name);
+    msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
+    fjage_msg_set_recipient(msg, aid);
+    if (index == 0) index = -1;
+    fjage_msg_add_int(msg, "index", index);
+    fjage_msg_add_string(msg, "param", param_name);
+    fjage_msg_add_bool(msg, "value", value);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
+    {
+        fjage_msg_destroy(msg);
+        fjage_aid_destroy(aid);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(aid);
+    return -1;
+}
+
+int unetsocket_sset(unetsocket_t sock, int index, char *target_name, char *param_name, char *value)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t aid;
+    aid = agent_for_service(usock, target_name);
+    if (aid == NULL) aid = fjage_aid_create(target_name);
+    msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
+    fjage_msg_set_recipient(msg, aid);
+    if (index == 0) index = -1;
+    fjage_msg_add_int(msg, "index", index);
+    fjage_msg_add_string(msg, "param", param_name);
+    fjage_msg_add_string(msg, "value", value);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
+    {
+        fjage_msg_destroy(msg);
+        fjage_aid_destroy(aid);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(aid);
+    return -1;
+}
+
+int unetsocket_iget(unetsocket_t sock, int index, char *target_name, char *param_name, int *value)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t aid;
+    aid = agent_for_service(usock, target_name);
+    if (aid == NULL) aid = fjage_aid_create(target_name);
+    msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
+    fjage_msg_set_recipient(msg, aid);
+    if (index == 0) index = -1;
+    fjage_msg_add_int(msg, "index", index);
+    fjage_msg_add_string(msg, "param", param_name);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
+    {
+        *value = fjage_msg_get_int(msg, "value", 0);
+        fjage_msg_destroy(msg);
+        fjage_aid_destroy(aid);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(aid);
+    return -1;
+}
+
+int unetsocket_fget(unetsocket_t sock, int index, char *target_name, char *param_name, float *value)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t aid;
+    aid = agent_for_service(usock, target_name);
+    if (aid == NULL) aid = fjage_aid_create(target_name);
+    msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
+    fjage_msg_set_recipient(msg, aid);
+    if (index == 0) index = -1;
+    fjage_msg_add_int(msg, "index", index);
+    fjage_msg_add_string(msg, "param", param_name);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
+    {
+        *value = fjage_msg_get_float(msg, "value", 0);
+        fjage_msg_destroy(msg);
+        fjage_aid_destroy(aid);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(aid);
+    return -1;
+}
+
+int unetsocket_bget(unetsocket_t sock, int index, char *target_name, char *param_name, bool *value)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t aid;
+    aid = agent_for_service(usock, target_name);
+    if (aid == NULL) aid = fjage_aid_create(target_name);
+    msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
+    fjage_msg_set_recipient(msg, aid);
+    if (index == 0) index = -1;
+    fjage_msg_add_int(msg, "index", index);
+    fjage_msg_add_string(msg, "param", param_name);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
+    {
+        *value = fjage_msg_get_bool(msg, "value", 0);
+        fjage_msg_destroy(msg);
+        fjage_aid_destroy(aid);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(aid);
+    return -1;
+}
+
+int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param_name, char *buf, int buflen)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t aid;
+    aid = agent_for_service(usock, target_name);
+    if (aid == NULL) aid = fjage_aid_create(target_name);
+    msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
+    fjage_msg_set_recipient(msg, aid);
+    if (index == 0) index = -1;
+    fjage_msg_add_int(msg, "index", index);
+    fjage_msg_add_string(msg, "param", param_name);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
+    {
+        if (buf != NULL) strncpy(buf, fjage_msg_get_string(msg, "value"), buflen);
+        fjage_msg_destroy(msg);
+        fjage_aid_destroy(aid);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(aid);
+    return -1;
 }
