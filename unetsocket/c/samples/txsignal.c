@@ -29,8 +29,6 @@ int main(int argc, char *argv[]) {
 	unetsocket_t sock;
 	char id[FRAME_ID_LEN];
   int port = 1100;
-  // float signal[SIGLEN];
-  // file to store tx signal
   FILE *sigfile;
   char *filename = NULL;
   int ch, txbufsize = 0;
