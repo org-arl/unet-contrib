@@ -5,7 +5,7 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./txsignal <ip_address> [port]
+// $ ./txsignal <ip_address> <signal_filename> [port]
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -20,9 +20,6 @@
 #include <sys/time.h>
 #endif
 
-#define FREQ    5000 // change this as per the need
-#define SIGLEN  192000 // change this as per the need
-
 static int error(const char *msg) {
   printf("\n*** ERROR: %s\n\n", msg);
   return -1;
@@ -32,18 +29,23 @@ int main(int argc, char *argv[]) {
 	unetsocket_t sock;
 	char id[FRAME_ID_LEN];
   int port = 1100;
-  float signal[SIGLEN];
+  // float signal[SIGLEN];
+  // file to store tx signal
+  FILE *sigfile;
+  char *filename = NULL;
+  int ch, txbufsize = 0;
   int rv;
-  if (argc <= 1) {
-    error("Usage : txsignal <ip_address> [port] \n"
+  if (argc <= 2) {
+    error("Usage : txsignal <ip_address> <signal_filename> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
       "txsignal 192.168.1.20 1100\n");
     return -1;
   } else {
-    if (argc > 2) port = (int)strtol(argv[2], NULL, 10);
+    if (argc > 3) port = (int)strtol(argv[2], NULL, 10);
   }
+  if (argc < 3) filename = "sample-tx-signal.txt";
 #ifndef _WIN32
 // Check valid ip address
   struct hostent *server = gethostbyname(argv[1]);
@@ -52,9 +54,43 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 #endif
-  for(int i = 0; i < SIGLEN; i++) {
-    signal[i] = (float)sin(FREQ * (2 * M_PI) * (i / (float)TXSAMPLINGFREQ));
+
+  // read the signal to be transmitted into an array
+  filename = argv[2];
+  sigfile = fopen(filename, "r");
+  if (!sigfile)
+  {
+    error("Couldn't find signal file.\n");
+    fclose(sigfile);
+    return -1;
   }
+
+  while(!feof(sigfile))
+  {
+    ch = fgetc(sigfile);
+    if(ch == '\n')
+    {
+      txbufsize++;
+    }
+  }
+
+  rewind(sigfile);
+  float *txbuf = malloc((unsigned long)txbufsize * sizeof(float));
+  if (txbuf == NULL)
+  {
+    error("Out of memory.\n");
+    return -1;
+  }
+  for (int i = 0; i < txbufsize; i++)
+  {
+    int rv = fscanf(sigfile, "%f", txbuf + i);
+    if (rv < 1) {
+      error("Signal file format error.\n");
+      return -1;
+    }
+  }
+  fclose(sigfile);
+
   // Open a unet socket connection to modem
   printf("Connecting to %s:%d\n",argv[1],port);
 
@@ -63,7 +99,7 @@ int main(int argc, char *argv[]) {
 
   // Transmit data
   printf("Transmitting a CW\n");
-  rv = unetsocket_tx_signal(sock, signal, SIGLEN, TXSAMPLINGFREQ, 0, id);
+  rv = unetsocket_tx_signal(sock, txbuf, txbufsize, TXSAMPLINGFREQ, 0, id);
   if (rv == 0) printf("TX: %s\n", id);
   if (rv != 0) return error("Error transmitting signal");
 

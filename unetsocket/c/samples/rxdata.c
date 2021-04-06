@@ -27,7 +27,7 @@ static int error(const char *msg) {
 int main(int argc, char *argv[]) {
     unetsocket_t sock;
     fjage_msg_t ntf;
-    uint8_t data[7];
+    uint8_t data[9];
     int port = 1100;
     int rv;
 	if (argc <= 2) {
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     if (rv != 0) return error("Error binding socket");
 
     // Set a timeout of 10 seconds
-    unetsocket_set_timeout(sock, 10000);
+    unetsocket_set_timeout(sock, 20000);
 
     // Receive and display data
     printf("Waiting for a Datagram\n");
@@ -69,8 +69,9 @@ int main(int argc, char *argv[]) {
     ntf = unetsocket_receive(sock);
     if (fjage_msg_get_clazz(ntf) != NULL) {
         printf("Received a %s : [", fjage_msg_get_clazz(ntf));
-        fjage_msg_get_byte_array(ntf, "data", data, 7);
-        for (int i = 0; i<7; i++) {
+        int x = fjage_msg_get_byte_array(ntf, "data", data, 9);
+        printf(" DEBUG : %d\n", x);
+        for (int i = 0; i<9; i++) {
             printf("%d,", data[i]);
         }
         printf("]\n");
