@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS += -std=c99 -Wall -Wextra -Werror -Wfloat-equal -Wconversion -Wparentheses -pedantic -Wunused-parameter -Wunused-variable -Wreturn-type -Wno-unused-function -Wredundant-decls -Wreturn-type -Wunused-value -Wswitch-default -Wuninitialized -Winit-self -O2
-FJAGE_VER=92e45c1e4005fa8bd6369fd18ae5a6a55d62cf88
+FJAGE_VER=88be0c504f98579ab947e7ec6a63debeb18961cf
 #FJAGE_VER=master
 FJAGE_DIR=fjage-$(FJAGE_VER)
 
