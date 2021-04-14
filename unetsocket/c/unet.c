@@ -880,3 +880,23 @@ int unetsocket_ethernet_wakeup(unsigned char *macaddr)
   sendto(udpSocket, &toSend, sizeof(unsigned char) * 102, 0, (struct sockaddr *)&udpServer, sizeof(udpServer));
   return 0;
 }
+
+//FIXME: Only supported on Subnero modems
+int unetsocket_sleep(unetsocket_t sock)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t scheduler;
+    msg = fjage_msg_create("org.arl.unet.scheduler.AddScheduledSleepReq", FJAGE_REQUEST);
+    scheduler = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.SCHEDULER");
+    fjage_msg_set_recipient(msg, scheduler);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE)
+    {
+        fjage_msg_destroy(msg);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    return -1;
+}

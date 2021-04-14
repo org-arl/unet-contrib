@@ -69,8 +69,7 @@ int main(int argc, char *argv[]) {
     ntf = unetsocket_receive(sock);
     if (fjage_msg_get_clazz(ntf) != NULL) {
         printf("Received a %s : [", fjage_msg_get_clazz(ntf));
-        int x = fjage_msg_get_byte_array(ntf, "data", data, 9);
-        printf(" DEBUG : %d\n", x);
+        fjage_msg_get_byte_array(ntf, "data", data, 9);
         for (int i = 0; i<9; i++) {
             printf("%d,", data[i]);
         }

@@ -21,6 +21,18 @@ typedef void *unetsocket_t;        ///< unet socket connection
 
 #define TIMEOUT                  1000   //ms
 
+/// Parmeter messages
+
+#define NEWPARAMETERREQ   "org.arl.fjage.param.ParameterReq"
+#define OLDPARAMETERREQ   "org.arl.unet.ParameterReq"
+#define NEWPARAMETERRSP   "org.arl.fjage.param.ParameterRsp"
+#define OLDPARAMETERRSP   "org.arl.unet.ParameterRsp"
+
+#define NEWRANGEREQ       "org.arl.unet.localization.RangeReq"
+#define OLDRANGEREQ       "org.arl.unet.phy.RangeReq"
+#define NEWRANGENTF       "org.arl.unet.localization.RangeNtf"
+#define OLDRANGENTF       "org.arl.unet.phy.RangeNtf"
+
 /// Well-known protocol number assignments.
 
 #define	DATA                     0      // Protocol number for user application data.
@@ -432,6 +444,13 @@ int unetsocket_ethernet_wakeup(unsigned char *macaddr);
 /// @return               0 on success, -1 otherwise
 
 int unetsocket_rs232_wakeup(char *devname, int baud, const char *settings);
+
+
+/// Put modem to sleep immediately.
+///
+/// @param sock             Unet socket
+/// @return                 0 on success, -1 otherwise
+int unetsocket_sleep(unetsocket_t sock);
 
 
 #endif
