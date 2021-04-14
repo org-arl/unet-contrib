@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../unet.h"
+#include "../unet_ext.h"
 #include "../fjage.h"
 
 #ifndef _WIN32

@@ -18,6 +18,7 @@
 #include <math.h>
 #include <inttypes.h>
 #include "../unet.h"
+#include "../unet_ext.h"
 
 static int error(const char *msg)
 {

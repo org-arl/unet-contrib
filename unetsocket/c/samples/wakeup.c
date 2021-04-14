@@ -16,6 +16,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "../unet.h"
+#include "../unet_ext.h"
 
 #define MAC_ADDR_MAX       6
 #define CONVERT_BASE       16

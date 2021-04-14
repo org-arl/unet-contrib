@@ -21,18 +21,6 @@ typedef void *unetsocket_t;        ///< unet socket connection
 
 #define TIMEOUT                  1000   //ms
 
-/// Parmeter messages
-
-#define NEWPARAMETERREQ   "org.arl.fjage.param.ParameterReq"
-#define OLDPARAMETERREQ   "org.arl.unet.ParameterReq"
-#define NEWPARAMETERRSP   "org.arl.fjage.param.ParameterRsp"
-#define OLDPARAMETERRSP   "org.arl.unet.ParameterRsp"
-
-#define NEWRANGEREQ       "org.arl.unet.localization.RangeReq"
-#define OLDRANGEREQ       "org.arl.unet.phy.RangeReq"
-#define NEWRANGENTF       "org.arl.unet.localization.RangeNtf"
-#define OLDRANGENTF       "org.arl.unet.phy.RangeNtf"
-
 /// Well-known protocol number assignments.
 
 #define	DATA                     0      // Protocol number for user application data.
@@ -46,6 +34,25 @@ typedef void *unetsocket_t;        ///< unet socket connection
 #define LINK2 					 8      // Protocol number for use by secondary link agents.
 #define USER 					32      // Lowest protocol number allowable for user protocols.
 #define MAX 					63      // Largest protocol number allowable.
+
+
+/// Parameter messages
+
+#define NEWPARAMETERREQ   "org.arl.fjage.param.ParameterReq"
+#define OLDPARAMETERREQ   "org.arl.unet.ParameterReq"
+#define NEWPARAMETERRSP   "org.arl.fjage.param.ParameterRsp"
+#define OLDPARAMETERRSP   "org.arl.unet.ParameterRsp"
+
+#define NEWRANGEREQ       "org.arl.unet.localization.RangeReq"
+#define OLDRANGEREQ       "org.arl.unet.phy.RangeReq"
+#define NEWRANGENTF       "org.arl.unet.localization.RangeNtf"
+#define OLDRANGENTF       "org.arl.unet.phy.RangeNtf"
+
+extern char* parameterreq;
+extern char* parameterrsp;
+extern char* rangereq;
+extern char* rangentf;
+
 
 /// Open a unet socket connection to the modem.
 ///
@@ -214,20 +221,6 @@ int unetsocket_send_request(unetsocket_t sock, fjage_msg_t req); // req must be 
 
 fjage_msg_t unetsocket_receive(unetsocket_t sock); // returns a DatagramNtf
 
-/// Get the range information
-///
-/// @param sock             Unet socket
-/// @param to               Address of the node to which range is requested
-/// @param range            Measured range
-int unetsocket_get_range(unetsocket_t sock, int to, float* range);
-
-/// Set the transmission power level of frame
-///
-/// @param sock             Unet socket
-/// @param index            Index of the modulation scheme (1 for CONTROL scheme and 2 for DATA scheme)
-/// @param value            Transmission power level
-int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value);
-
 /// Cancels an ongoing blocking receive().
 ///
 /// @param sock             Unet socket
@@ -275,111 +268,6 @@ fjage_aid_t unetsocket_agent(const char* name);
 
 int unetsocket_host(unetsocket_t sock, const char* node_name);
 
-/// Setter for integer parameters.
-///
-/// @param sock             Unet socket
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to be set
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_iset(unetsocket_t sock, int index, char *target_name, char *param_name, int value);
-
-/// Setter for float parameters.
-///
-/// @param sock             Unet socket
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to be set
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_fset(unetsocket_t sock, int index, char *target_name, char *param_name, float value);
-
-/// Setter for boolean parameters.
-///
-/// @param sock             Unet socket
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to be set
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_bset(unetsocket_t sock, int index, char *target_name, char *param_name, bool value);
-
-/// Setter for String parameters.
-///
-/// @param sock             Unet socket
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to be set
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_sset(unetsocket_t sock, int index, char *target_name, char *param_name, char *value);
-
-/// Getter for integer parameters.
-///
-/// @param sock             Unet socket
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to get
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_iget(unetsocket_t sock, int index, char *target_name, char *param_name, int *value);
-
-/// Getter for float parameters.
-///
-/// @param sock             Unet socket
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Values to get
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_fget(unetsocket_t sock, int index, char *target_name, char *param_name, float *value);
-
-/// Getter for boolean parameters.
-///
-/// @param sock             Unet socket
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param value            Value to get
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_bget(unetsocket_t sock, int index, char *target_name, char *param_name, bool *value);
-
-/// Getter for string parameters.
-///
-/// @param sock             Unet socket
-/// @param index            Set for indexed parameters (e.g parameters
-///                         for CONTROL and DATA frames), For general
-///                         modem parameters index is set to 0
-/// @param target_name      Fully qualified service class name/ agent name
-/// @param param_name       Parameter name
-/// @param buf              String to get
-/// @param buflen           Length of the string
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param_name, char *buf, int buflen);
-
 /// Transmit a signal.
 ///
 /// For a 18-36 kHz modem, set fc to 24000 for baseband signal transmission
@@ -400,14 +288,6 @@ int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param
 
 int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, int rate, float fc, char *id);
 
-/// Record a passband signal.
-///
-/// @param sock             Unet socket
-/// @param buf              Buffer to store the recorded signal
-/// @param nsamples         Number of samples
-/// @return                 0 on success, -1 otherwise
-int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples);
-
 /// Record a baseband signal.
 ///
 /// @param sock             Unet socket
@@ -416,17 +296,6 @@ int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples);
 /// @return                 0 on success, -1 otherwise
 
 int unetsocket_bbrecord(unetsocket_t sock, float *buf, int nsamples);
-
-/// Transmit npulses
-
-///
-/// @param sock             Unet socket
-/// @param signal           Signal to transmit
-/// @param nsamples         Number of samples
-/// @param npulses          Number of times the signal needs to be transmitted
-/// @param pri              Pulse repetition interval (ms)
-
-int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int npulses, int pri);
 
 /// Ethernet wakeup
 ///
