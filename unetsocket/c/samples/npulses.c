@@ -34,11 +34,11 @@ int main(int argc, char *argv[]) {
   float signal[SIGLEN];
   int rv;
   if (argc <= 1) {
-    error("Usage : txsignal <ip_address> [port] \n"
+    error("Usage : npulses <ip_address> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
-      "txsignal 192.168.1.20 1100\n");
+      "npulses 192.168.1.20 1100\n");
     return -1;
   } else {
     if (argc > 2) port = (int)strtol(argv[2], NULL, 10);
