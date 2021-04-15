@@ -268,59 +268,6 @@ fjage_aid_t unetsocket_agent(const char* name);
 
 int unetsocket_host(unetsocket_t sock, const char* node_name);
 
-/// Transmit a signal.
-///
-/// For a 18-36 kHz modem, set fc to 24000 for baseband signal transmission
-/// For a 4-6 kHz modem, set fc to 6000 for baseband signal transmission
-/// FIXME: Add recommendations for other modems
-///
-/// @param sock             Unet socket
-/// @param signal           Baseband signal or Passband signal
-///                         Baseband signal must be an sequence of
-///                         numbers with alternating real and imaginary values
-///                         Passband signal is a real time series to transmit
-/// @param nsamples         Number of samples
-///                         For baseband signal, this is equal to number of
-///                         baseband samples
-/// @param rate             Baseband/ Passband sampling rate of signal in Hz
-/// @param fc               Signal carrier frequency in Hz
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, int rate, float fc, char *id);
-
-/// Record a baseband signal.
-///
-/// @param sock             Unet socket
-/// @param buf              Buffer to store the recorded signal
-/// @param nsamples         Number of samples
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_bbrecord(unetsocket_t sock, float *buf, int nsamples);
-
-/// Ethernet wakeup
-///
-/// @param macaddr          6 bytes hex array mac address of the device to wake up
-/// @return                 0 on success, -1 otherwise
-
-int unetsocket_ethernet_wakeup(unsigned char *macaddr);
-
-
-/// RS232 wakeup
-///
-/// @param devname        Device name
-/// @param baud           Baud rate
-/// @param settings       RS232 settings (NULL or "N81")
-/// @return               0 on success, -1 otherwise
-
-int unetsocket_rs232_wakeup(char *devname, int baud, const char *settings);
-
-
-/// Put modem to sleep immediately.
-///
-/// @param sock             Unet socket
-/// @return                 0 on success, -1 otherwise
-int unetsocket_sleep(unetsocket_t sock);
-
 
 #endif
 
