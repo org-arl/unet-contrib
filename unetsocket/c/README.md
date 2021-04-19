@@ -73,6 +73,16 @@ To clean all the built files and the depencencies, run
 del *.obj *.dll unet.lib test\*.obj test\*.exe samples\*.obj samples\*.exe 2>nul
 ```
 
+## Instructions for creating API package for distribution
+
+To create a package for distribution of these APIs, simply type
+
+```bash
+make package
+```
+
+This will create a `c-api.zip` inside the `build` folder which can be used for distribution.
+
 ## Test Unet C API library
 
 To compile and run the tests, the following steps need to be performed:
