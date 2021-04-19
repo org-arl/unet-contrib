@@ -119,6 +119,7 @@ $(CONTRIB_DIR): $(BUILD_API)
 	cp -r $(CONTRIB_DIR)/unetsocket/c/* $(BUILD_API)
 	rm -rf $(BUILD_API)/test
 	cp Makefile.package $(BUILD_API)/Makefile
+	rm $(BUILD_API)/Makefile.package
 	rm -rf $(CONTRIB_DIR)
 	rm -rf $(CONTRIB_DIR).zip
 	cd $(BUILD_API) && zip -r ../c-api.zip .
