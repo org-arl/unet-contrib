@@ -147,7 +147,6 @@ int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value) {
   return -1;
 }
 
-//FIXME: Only supported on Subnero modems
 int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int npulses, int pri) {
   if (sock == NULL) return -1;
   if (nsamples < 0) return -1;
@@ -404,7 +403,6 @@ int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param
     return -1;
 }
 
-//NOTE: Passband recording block is set to PBSBLK (65536) by default which is supported on Subnero modem
 int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples) {
   if (sock == NULL) return -1;
   if (nsamples <= 0 || buf == NULL) return -1;
@@ -424,7 +422,6 @@ int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples) {
   return 0;
 }
 
-//NOTE: Transmit sampling frequency is set to TXSAMPLINGFREQ (192000) by default which is supported on Subnero modem
 int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, int rate, float fc, char *id) {
   if (sock == NULL) return -1;
   if (nsamples < 0) return -1;
@@ -514,7 +511,6 @@ int unetsocket_ethernet_wakeup(unsigned char *macaddr)
   return 0;
 }
 
-//FIXME: Only supported on Subnero modems
 int unetsocket_sleep(unetsocket_t sock)
 {
     if (sock == NULL) return -1;
