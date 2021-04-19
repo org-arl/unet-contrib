@@ -3,7 +3,7 @@ CFLAGS += -std=c99 -Wall -Wextra -Werror -Wfloat-equal -Wconversion -Wparenthese
 FJAGE_VER=master
 FJAGE_DIR=fjage-$(FJAGE_VER)
 
-CONTRIB_VER = e91c0e81397d8df3e588a535306e78a78f2e7a48
+CONTRIB_VER = 7acda8cef6d1dbd8d50b1f826e8fe945eb0ef883
 BUILD = build
 BUILD_API = $(BUILD)/api
 CONTRIB_DIR = $(BUILD)/unet-contrib-$(CONTRIB_VER)
