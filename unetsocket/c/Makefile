@@ -1,8 +1,12 @@
 CC = gcc
 CFLAGS += -std=c99 -Wall -Wextra -Werror -Wfloat-equal -Wconversion -Wparentheses -pedantic -Wunused-parameter -Wunused-variable -Wreturn-type -Wno-unused-function -Wredundant-decls -Wreturn-type -Wunused-value -Wswitch-default -Wuninitialized -Winit-self -O2
-# FJAGE_VER=c8e62495f2283d1b57a559112ccce3ccd608bb2a
 FJAGE_VER=master
 FJAGE_DIR=fjage-$(FJAGE_VER)
+
+CONTRIB_VER = e91c0e81397d8df3e588a535306e78a78f2e7a48
+BUILD = build
+BUILD_API = $(BUILD)/api
+CONTRIB_DIR = $(BUILD)/unet-contrib-$(CONTRIB_VER)
 
 all: libs
 	rm -rf *.zip
@@ -108,3 +112,19 @@ test_unet: test_unet.o
 clean:
 	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/rxdata samples/range samples/setpowerlevel samples/txsignal samples/pbrecord samples/recordedsignal.txt samples/bbrecord samples/npulses samples/gpio
 	rm -rf "$(FJAGE_DIR)" "$(FJAGE_VER).zip" fjage.h libfjage.a kissfft kiss_fft.h fjage
+	rm -rf $(BUILD)
+
+$(CONTRIB_DIR): $(BUILD_API)
+	curl -s -L https://github.com/org-arl/unet-contrib/archive/$(CONTRIB_VER).zip --output $(BUILD)/unet-contrib-$(CONTRIB_VER).zip
+	unzip -q -o -a $(BUILD)/unet-contrib-$(CONTRIB_VER).zip -d $(BUILD)
+	cp -r $(CONTRIB_DIR)/unetsocket/c/* $(BUILD_API)
+	rm -rf $(BUILD_API)/test
+	rm -rf $(CONTRIB_DIR)
+	rm -rf $(CONTRIB_DIR).zip
+	cd $(BUILD_API) && zip -r ../c-api.zip .
+	rm -rf $(BUILD_API)
+
+$(BUILD_API):
+	mkdir -p $(BUILD_API)
+
+package: $(CONTRIB_DIR)

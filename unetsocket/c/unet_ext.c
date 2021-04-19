@@ -394,7 +394,7 @@ int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param
     msg = request(usock, msg, 5 * TIMEOUT);
     if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
     {
-        if (buf != NULL) strncpy(buf, fjage_msg_get_string(msg, "value"), buflen);
+        if (buf != NULL) strncpy(buf, fjage_msg_get_string(msg, "value"), (unsigned int)buflen);
         fjage_msg_destroy(msg);
         fjage_aid_destroy(aid);
         return 0;
