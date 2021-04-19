@@ -21,6 +21,10 @@
 #include <sys/time.h>
 #endif
 
+#ifndef M_PI
+  #define M_PI 3.14159265358979323846
+#endif
+
 #define FREQ    5000 // change this as per the need
 #define SIGLEN  1920*5 // change this as per the need
 
@@ -53,7 +57,7 @@ int main(int argc, char *argv[]) {
   }
 #endif
   for(int i = 0; i < SIGLEN; i++) {
-    signal[i] = (float)sin(FREQ * (2 * M_PI) * (i / (float)TXSAMPLINGFREQ));
+    signal[i] = (float)sin(FREQ * (2 * M_PI * i) / TXSAMPLINGFREQ);
   }
   // Open a unet socket connection to modem
   printf("Connecting to %s:%d\n",argv[1],port);

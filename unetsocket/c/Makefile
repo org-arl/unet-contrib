@@ -12,7 +12,7 @@ all: libs
 	rm -rf *.zip
 	rm -rf fjage-*
 
-samples: txdata rxdata range setpowerlevel txsignal pbrecord bbrecord npulses wakeup rs232_wakeup gpio
+samples: txdata rxdata range setpowerlevel txsignal pbrecord bbrecord npulses wakeup rs232_wakeup
 	rm -rf *.zip
 	rm -rf fjage-*
 
@@ -92,12 +92,6 @@ rs232_wakeup.o: samples/rs232_wakeup.c unet.h fjage.h unet_ext.o
 
 rs232_wakeup: rs232_wakeup.o unet_ext.o
 	$(CC) -o samples/rs232_wakeup unet_ext.o samples/rs232_wakeup.o libunet.a libfjage.a -lpthread -lm
-
-gpio.o: samples/gpio.c unet.h fjage.h unet_ext.o
-	$(CC) $(CFLAGS) -c samples/gpio.c -o samples/gpio.o
-
-gpio: gpio.o unet_ext.o
-	$(CC) -o samples/gpio unet_ext.o samples/gpio.o libunet.a libfjage.a -lpthread -lm
 
 test: test_unet unet_ext.o
 	rm -rf *.zip

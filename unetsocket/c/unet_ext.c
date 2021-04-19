@@ -156,8 +156,8 @@ int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int npuls
   fjage_aid_t bb;
   int pulsedelay_cache = 0;
   int npulses_cache = 0;
-  float signalduration = ((float)1000 / TXSAMPLINGFREQ) * nsamples;
-  int pulsedelay = (int)round((pri - signalduration));
+  float signalduration = (1000 / TXSAMPLINGFREQ) * (float)nsamples;
+  int pulsedelay = (int)round(((float)pri - signalduration));
   if (pri < signalduration + 5)
   {
     error("Pulse delay is less than 5 ms...");
@@ -433,7 +433,7 @@ int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, int rat
   bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.BASEBAND");
   msg = fjage_msg_create("org.arl.unet.bb.TxBasebandSignalReq", FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, bb);
-  if (fc == 0.0) fjage_msg_add_float(msg, "fc", fc);
+  if ((int)fc == 0) fjage_msg_add_float(msg, "fc", fc);
   if (signal != NULL) fjage_msg_add_float_array(msg, "signal", signal, ((int)fc ? 2 : 1)*nsamples);
   if (id != NULL) strcpy(id, fjage_msg_get_id(msg));
   msg = request(usock, msg, 5 * TIMEOUT);
