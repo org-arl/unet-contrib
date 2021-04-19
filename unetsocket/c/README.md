@@ -2,7 +2,7 @@
 
 This folder contains the files `unet.h`, `unet_ext.h` and `unet.c`, `unet_ext.c`. The header files includes the definition and documentation of the C APIs and the source code is provided in the `unet.c` and `unet_ext.c` file. 
 
->NOTE: The APIs defined in `unet.h` are standard UnetSocket APIs. These APIs have similar functionalities as the UnetSocket APIs provided in other languages such as [Python](https://github.com/org-arl/unet-contrib/tree/stp/unetsocket/python) and (Julia)[https://github.com/org-arl/UnetSockets.jl]. The APIs defined in `unet_ext.h` are extra functionalities that are implemented using the standard UnetSocket APIs. Some of these APIs in `unet_ext.h` are only supported on [Unet SDOAMs](https://unetstack.net/handbook/unet-handbook_introduction.html).
+The APIs defined in `unet.h` are standard UnetSocket APIs. These APIs have similar functionalities as the UnetSocket APIs provided in other languages such as [Python](https://github.com/org-arl/unet-contrib/tree/stp/unetsocket/python) and [Julia](https://github.com/org-arl/UnetSockets.jl). The APIs defined in `unet_ext.h` are extra functionalities that are implemented using the standard UnetSocket APIs. Some of these APIs in `unet_ext.h` are only supported on [Unet SDOAMs](https://unetstack.net/handbook/unet-handbook_introduction.html).
 
 ## Instructions for building and using Unet C API library on Linux / macOS
 
