@@ -21,7 +21,7 @@
 #include <sys/time.h>
 #endif
 
-#define SIGLEN  48000 // change this as per the need
+#define SIGLEN  48000*6 // change this as per the need
 
 static int error(const char *msg) {
   printf("\n*** ERROR: %s\n\n", msg);
@@ -29,16 +29,19 @@ static int error(const char *msg) {
 }
 
 int main(int argc, char *argv[]) {
-	unetsocket_t sock;
+  FILE *fptr;
+  fptr = (fopen("samples/bbrecordedsignal.txt", "w"));
+  if(fptr == NULL) return -1;
+  unetsocket_t sock;
   int port = 1100;
   float buf[SIGLEN];
   int rv;
   if (argc <= 1) {
-    error("Usage : record <ip_address> [port] \n"
+    error("Usage : bbrecord <ip_address> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
-      "record 192.168.1.20 1100\n");
+      "bbrecord 192.168.1.20 1100\n");
     return -1;
   } else {
     if (argc > 2) port = (int)strtol(argv[2], NULL, 10);
@@ -62,15 +65,16 @@ int main(int argc, char *argv[]) {
   rv = unetsocket_bbrecord(sock, buf, SIGLEN);
   if (rv == 0) {
     for(int i = 0; i < SIGLEN; i++) {
-      printf("%f", buf[i]);
+      fprintf(fptr,"%f\n", buf[i]);
     }
   }
   if (rv != 0) return error("Error recording signal");
 
-	// Close the unet socket
+  // Close the unet socket
   unetsocket_close(sock);
 
   printf("\nRecording Complete\n");
 
+  fclose(fptr);
   return 0;
 }

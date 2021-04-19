@@ -37,11 +37,11 @@ int main(int argc, char *argv[]) {
   float buf[SIGLEN];
   int rv;
   if (argc <= 1) {
-    error("Usage : record <ip_address> [port] \n"
+    error("Usage : pbrecord <ip_address> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
-      "record 192.168.1.20 1100\n");
+      "pbrecord 192.168.1.20 1100\n");
     return -1;
   } else {
     if (argc > 2) port = (int)strtol(argv[2], NULL, 10);
@@ -65,7 +65,6 @@ int main(int argc, char *argv[]) {
   rv = unetsocket_pbrecord(sock, buf, SIGLEN);
   if (rv == 0) {
     for(int i = 0; i < SIGLEN; i++) {
-      // printf("%f", buf[i]);
       fprintf(fptr,"%f\n", buf[i]);
     }
   }

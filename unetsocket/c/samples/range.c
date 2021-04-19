@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
   // ranging
   rv = unetsocket_get_range(sock, address, range);
   if (rv == 0) printf("Range measured is : %f \n", *range);
+  if (rv != 0) printf("Raging not successful.");
 
   // Close the unet socket
   unetsocket_close(sock);
