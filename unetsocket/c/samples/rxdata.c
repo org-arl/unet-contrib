@@ -19,6 +19,8 @@
 #include <sys/time.h>
 #endif
 
+#define NBYTES 9
+
 static int error(const char *msg) {
     printf("\n*** ERROR: %s\n\n", msg);
     return -1;
@@ -27,7 +29,7 @@ static int error(const char *msg) {
 int main(int argc, char *argv[]) {
     unetsocket_t sock;
     fjage_msg_t ntf;
-    uint8_t data[9];
+    uint8_t data[NBYTES];
     int port = 1100;
     int rv;
 	if (argc <= 2) {
@@ -69,7 +71,7 @@ int main(int argc, char *argv[]) {
     ntf = unetsocket_receive(sock);
     if (fjage_msg_get_clazz(ntf) != NULL) {
         printf("Received a %s : [", fjage_msg_get_clazz(ntf));
-        fjage_msg_get_byte_array(ntf, "data", data, 9);
+        fjage_msg_get_byte_array(ntf, "data", data, NBYTES);
         for (int i = 0; i<9; i++) {
             printf("%d,", data[i]);
         }

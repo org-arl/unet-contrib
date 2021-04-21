@@ -19,6 +19,8 @@
 #include <sys/time.h>
 #endif
 
+#define NBYTES 9
+
 static int error(const char *msg) {
   printf("\n*** ERROR: %s\n\n", msg);
   return -1;
@@ -28,7 +30,7 @@ int main(int argc, char *argv[]) {
   unetsocket_t sock;
   int address = 0;
   int port = 1100;
-  uint8_t data[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  uint8_t data[NBYTES] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   int rv;
   if (argc <= 2) {
     error("Usage : txdata <ip_address> <rx_node_address> <port> \n"
@@ -59,8 +61,8 @@ int main(int argc, char *argv[]) {
   if (sock == NULL) return error("Couldn't open unet socket");
 
 // Transmit data
-  printf("Transmitting %d bytes of data to %d\n", 9, address);
-  rv = unetsocket_send(sock, data, 9, address, DATA);
+  printf("Transmitting %d bytes of data to %d\n", NBYTES, address);
+  rv = unetsocket_send(sock, data, NBYTES, address, DATA);
 
   if (rv != 0) return error("Error transmitting data");
 
