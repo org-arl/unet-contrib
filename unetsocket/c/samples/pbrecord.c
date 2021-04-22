@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
   if (argc <= 2) {
     error("Usage : pbrecord <ip_address> <siglen> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
-      "siglen: number of baseband samples to record. \n"
+      "siglen: number of passband samples to record. \n"
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
       "pbrecord 192.168.1.20 48000 1100\n");
