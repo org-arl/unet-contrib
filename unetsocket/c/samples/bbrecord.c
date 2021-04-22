@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
       "siglen: number of baseband samples to record. \n"
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
-      "bbrecord 192.168.1.20 1100\n");
+      "bbrecord 192.168.1.20 48000 1100\n");
     return -1;
   }
   else if (argc >= 3) {

@@ -114,14 +114,10 @@ $(CONTRIB_DIR): $(BUILD_API)
 	cd $(BUILD) && unzip -a $(FJAGE_VER).zip
 	mkdir -p $(BUILD_API)/libs/fjage/gateways
 	cp -r $(BUILD)/$(FJAGE_DIR)/gateways/c $(BUILD_API)/libs/fjage/gateways/c
-	curl -s -L https://github.com/org-arl/unet-contrib/archive/$(CONTRIB_VER).zip --output $(BUILD)/unet-contrib-$(CONTRIB_VER).zip
-	unzip -q -o -a $(BUILD)/unet-contrib-$(CONTRIB_VER).zip -d $(BUILD)
-	cp -r $(CONTRIB_DIR)/unetsocket/c/* $(BUILD_API)
+	rsync -av --exclude '$(BUILD)' . $(BUILD_API)
 	rm -rf $(BUILD_API)/test
 	cp Makefile.package $(BUILD_API)/Makefile
 	rm $(BUILD_API)/Makefile.package
-	rm -rf $(CONTRIB_DIR)
-	rm -rf $(CONTRIB_DIR).zip
 	cd $(BUILD_API) && zip -r ../c-api.zip .
 	rm -rf $(BUILD_API)
 	rm -rf $(BUILD)/$(FJAGE_DIR)
