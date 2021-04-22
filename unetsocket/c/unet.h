@@ -9,10 +9,6 @@ typedef void *unetsocket_t;        ///< unet socket connection
 
 #define FRAME_ID_LEN        64
 
-/// Transmit sampling rate
-
-#define TXSAMPLINGFREQ           192000
-
 /// Passband block
 
 #define PBSBLK                   65536

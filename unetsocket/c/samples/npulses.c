@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
   int frequency = 5000;
   int n = 8;
   int pri = 1000;
+  float txsamplingfreq = 192000;
   int rv;
   if (argc <= 3) {
     error("Usage : npulses <ip_address> <n> <pri> [siglen] [frequency] [port] \n"
@@ -67,18 +68,28 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 #endif
-  for(int i = 0; i < siglen; i++) {
-    signal[i] = (float)sin(frequency * (2 * M_PI * i) / TXSAMPLINGFREQ);
-  }
+
   // Open a unet socket connection to modem
   printf("Connecting to %s:%d\n",argv[1],port);
 
   sock = unetsocket_open(argv[1], port);
   if (sock == NULL) return error("Couldn't open unet socket");
 
-  // Transmit data
+  // read dac rate
+  if (unetsocket_fget(sock, -1, "org.arl.unet.Services.PHYSICAL", "dacrate", &txsamplingfreq) < 0) {
+    return error("Failed to get dacrate parameter \n");
+  } else {
+    printf("Using %1.1f samples/s\n", txsamplingfreq);
+  }
+
+  // create the signal
+  for(int i = 0; i < siglen; i++) {
+    signal[i] = (float)sin(frequency * (2 * M_PI * i) / txsamplingfreq);
+  }
+
+  // Transmit signal
   printf("Transmitting a CW\n");
-  rv = unetsocket_npulses(sock, signal, siglen, n, pri);
+  rv = unetsocket_npulses(sock, signal, siglen, (int)txsamplingfreq, n, pri);
   if (rv != 0) return error("Error transmitting signal");
 
 	// Close the unet socket

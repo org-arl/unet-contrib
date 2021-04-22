@@ -26,7 +26,7 @@ int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value);
 /// @param npulses          Number of times the signal needs to be transmitted
 /// @param pri              Pulse repetition interval (ms)
 
-int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int npulses, int pri);
+int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate, int npulses, int pri);
 
 /// Setter for integer parameters.
 ///
@@ -155,11 +155,10 @@ int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples);
 /// @param nsamples         Number of samples
 ///                         For baseband signal, this is equal to number of
 ///                         baseband samples
-/// @param rate             Baseband/ Passband sampling rate of signal in Hz
 /// @param fc               Signal carrier frequency in Hz
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, int rate, float fc, char *id);
+int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, float fc, char *id);
 
 /// Record a baseband signal.
 ///

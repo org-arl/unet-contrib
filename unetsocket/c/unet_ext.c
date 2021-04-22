@@ -147,7 +147,7 @@ int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value) {
   return -1;
 }
 
-int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int npulses, int pri) {
+int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate, int npulses, int pri) {
   if (sock == NULL) return -1;
   if (nsamples < 0) return -1;
   if (nsamples > 0 && signal == NULL) return -1;
@@ -156,7 +156,7 @@ int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int npuls
   fjage_aid_t bb;
   int pulsedelay_cache = 0;
   int npulses_cache = 0;
-  float signalduration = (1000 / TXSAMPLINGFREQ) * (float)nsamples;
+  float signalduration = (1000 / rate) * (float)nsamples;
   int pulsedelay = (int)round(((float)pri - signalduration));
   if (pri < signalduration + 5)
   {
@@ -422,10 +422,9 @@ int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples) {
   return 0;
 }
 
-int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, int rate, float fc, char *id) {
+int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, float fc, char *id) {
   if (sock == NULL) return -1;
   if (nsamples < 0) return -1;
-  if (rate != TXSAMPLINGFREQ) return -1;
   if (nsamples > 0 && signal == NULL) return -1;
   _unetsocket_t *usock = sock;
   fjage_msg_t msg;

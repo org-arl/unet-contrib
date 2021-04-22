@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
   FILE *sigfile;
   char *filename = NULL;
   int ch, txbufsize = 0;
+  float txsamplingfreq = 192000;
   int rv;
   if (argc <= 2) {
     error("Usage : txsignal <ip_address> <signal_filename> [port] \n"
@@ -97,11 +98,18 @@ int main(int argc, char *argv[]) {
   sock = unetsocket_open(argv[1], port);
   if (sock == NULL) return error("Couldn't open unet socket");
 
-  // Transmit data
+  // read dac rate
+  if (unetsocket_fget(sock, -1, "org.arl.unet.Services.PHYSICAL", "dacrate", &txsamplingfreq) < 0) {
+    return error("Failed to get dacrate parameter \n");
+  } else {
+    printf("Using %1.1f samples/s\n", txsamplingfreq);
+  }
+
+  // Transmit signal
   printf("Transmitting a CW\n");
   printf("Using signal from %s file \n", filename);
-  rv = unetsocket_tx_signal(sock, txbuf, txbufsize, TXSAMPLINGFREQ, 0, id);
-  if (rv != 0) error("Error transmitting signal");
+  rv = unetsocket_tx_signal(sock, txbuf, txbufsize, 0, id);
+  if (rv != 0) return error("Error transmitting signal");
 
 	// Close the unet socket
   unetsocket_close(sock);
