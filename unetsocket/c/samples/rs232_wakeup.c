@@ -20,6 +20,8 @@
 #include "../unet.h"
 #include "../unet_ext.h"
 
+#define ACTIVITYONSERIAL  3
+
 static int error(const char *msg)
 {
   printf("\n*** ERROR: %s\n\n", msg);
@@ -37,10 +39,9 @@ int main(int argc, char *argv[])
           "rs232_wakeup /dev/tty.usbserial \n");
     return -1;
   }
-  ret = unetsocket_rs232_wakeup(argv[1], 115200, "N81");
-  if (ret < 0) {
-    error("Wakeup failed. Enter a valid device name.");
-    return ret;
+  for (int i = 0; i < ACTIVITYONSERIAL; i++) {
+    ret = unetsocket_rs232_wakeup(argv[1], 115200, "N81");
+    if (ret == 0) printf("Started activity on RS232 port..\n");
   }
   printf("Wakeup packet sent.\n");
   return 0;

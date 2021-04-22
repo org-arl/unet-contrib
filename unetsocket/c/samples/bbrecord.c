@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Script to record a signal.
+// Record a baseband signal.
 //
 // In terminal window (an example):
 //
@@ -21,7 +21,7 @@
 #include <sys/time.h>
 #endif
 
-#define SIGLEN  48000*6 // change this as per the need
+#define SIGLEN  288000    // change this as per the need
 
 static int error(const char *msg) {
   printf("\n*** ERROR: %s\n\n", msg);
@@ -67,8 +67,9 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < SIGLEN; i++) {
       fprintf(fptr,"%f\n", buf[i]);
     }
+  } else {
+    error("Error recording signal");
   }
-  if (rv != 0) return error("Error recording signal");
 
   // Close the unet socket
   unetsocket_close(sock);

@@ -99,8 +99,11 @@ int main(int argc, char *argv[]) {
   // Transmit data
   printf("Transmitting a CW\n");
   rv = unetsocket_tx_signal(sock, txbuf, txbufsize, TXSAMPLINGFREQ, 0, id);
-  if (rv == 0) printf("TX: %s\n", id);
-  if (rv != 0) return error("Error transmitting signal");
+  if (rv == 0) {
+    printf("TX: %s\n", id);
+  } else {
+    error("Error transmitting signal");
+  }
 
 	// Close the unet socket
   unetsocket_close(sock);
