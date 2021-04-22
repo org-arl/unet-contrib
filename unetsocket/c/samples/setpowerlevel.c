@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Script to set the transmission power level.
+// Set the transmission power level.
 //
 // In terminal window (an example):
 //

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Script to measure distance to another node.
+// Measure distance to another node.
 //
 // In terminal window (an example):
 //

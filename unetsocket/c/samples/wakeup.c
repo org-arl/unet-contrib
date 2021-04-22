@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Script to wakeup a modem over ethernet (WOL).
+// Wakeup a modem over ethernet (WOL).
 //
 // In terminal window (an example):
 //
