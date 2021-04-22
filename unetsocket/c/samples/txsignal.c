@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   float *txbuf = malloc((unsigned long)txbufsize * sizeof(float));
   if (txbuf == NULL)
   {
-    error("Out of memory.\n");
+    error("Unable to allocate required memory.\n");
     return -1;
   }
   for (int i = 0; i < txbufsize; i++)
