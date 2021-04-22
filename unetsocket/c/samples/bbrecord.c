@@ -5,7 +5,7 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./bbrecord <ip_address> [port]
+// $ ./bbrecord <ip_address> <siglen> [port]
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -21,8 +21,6 @@
 #include <sys/time.h>
 #endif
 
-#define SIGLEN  288000    // change this as per the need
-
 static int error(const char *msg) {
   printf("\n*** ERROR: %s\n\n", msg);
   return -1;
@@ -34,18 +32,24 @@ int main(int argc, char *argv[]) {
   if(fptr == NULL) return -1;
   unetsocket_t sock;
   int port = 1100;
-  float buf[SIGLEN];
+  int siglen = -1;
   int rv;
-  if (argc <= 1) {
-    error("Usage : bbrecord <ip_address> [port] \n"
+  if (argc <= 2) {
+    error("Usage : bbrecord <ip_address> <siglen> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
+      "siglen: number of baseband samples to record."
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
       "bbrecord 192.168.1.20 1100\n");
     return -1;
-  } else {
-    if (argc > 2) port = (int)strtol(argv[2], NULL, 10);
   }
+  else if (argc >= 3) {
+    siglen = (int)strtol(argv[2], NULL, 10);
+    if (argc > 3) port = (int)strtol(argv[3], NULL, 10);
+  }
+
+  float buf[siglen];
+
 #ifndef _WIN32
 // Check valid ip address
   struct hostent *server = gethostbyname(argv[1]);
@@ -62,9 +66,9 @@ int main(int argc, char *argv[]) {
 
   // Record
   printf("Starting a record\n");
-  rv = unetsocket_bbrecord(sock, buf, SIGLEN);
+  rv = unetsocket_bbrecord(sock, buf, siglen);
   if (rv == 0) {
-    for(int i = 0; i < SIGLEN; i++) {
+    for(int i = 0; i < siglen; i++) {
       fprintf(fptr,"%f\n", buf[i]);
     }
   } else {

@@ -30,7 +30,7 @@ static int error(const char *msg) {
 
 int main(int argc, char *argv[]) {
   FILE *fptr;
-  fptr = (fopen("samples/recordedsignal.txt", "w"));
+  fptr = (fopen("samples/pbrecordedsignal.txt", "w"));
   if(fptr == NULL) return -1;
   unetsocket_t sock;
   int port = 1100;
