@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
   if (argc <= 2) {
     error("Usage : txsignal <ip_address> <signal_filename> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
+      "signal_filename: path to the file containing the signal to transmit. \n"
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
       "txsignal 192.168.1.20 1100\n");
@@ -98,12 +99,9 @@ int main(int argc, char *argv[]) {
 
   // Transmit data
   printf("Transmitting a CW\n");
+  printf("Using signal from %s file \n", filename);
   rv = unetsocket_tx_signal(sock, txbuf, txbufsize, TXSAMPLINGFREQ, 0, id);
-  if (rv == 0) {
-    printf("TX: %s\n", id);
-  } else {
-    error("Error transmitting signal");
-  }
+  if (rv != 0) error("Error transmitting signal");
 
 	// Close the unet socket
   unetsocket_close(sock);
