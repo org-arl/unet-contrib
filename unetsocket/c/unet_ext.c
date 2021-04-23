@@ -156,7 +156,7 @@ int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate,
   fjage_aid_t bb;
   int pulsedelay_cache = 0;
   int npulses_cache = 0;
-  float signalduration = (float)((1000 / rate) * nsamples);
+  float signalduration = (float)((1000.0 / rate) * nsamples);
   int pulsedelay = (int)round(((float)pri - signalduration));
   if (pri < signalduration + 5)
   {
@@ -174,7 +174,7 @@ int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate,
     error("Unable to get/set pulse delay...");
     return -1;
   }
-  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.BASEBAND");
+  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.PHYSICAL");
   msg = fjage_msg_create("org.arl.unet.bb.TxBasebandSignalReq", FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, bb);
   fjage_msg_add_float(msg, "fc", 0);
@@ -429,7 +429,7 @@ int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, float f
   _unetsocket_t *usock = sock;
   fjage_msg_t msg;
   fjage_aid_t bb;
-  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.BASEBAND");
+  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.PHYSICAL");
   msg = fjage_msg_create("org.arl.unet.bb.TxBasebandSignalReq", FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, bb);
   if ((int)fc == 0) fjage_msg_add_float(msg, "fc", fc);
@@ -449,19 +449,24 @@ int unetsocket_bbrecord(unetsocket_t sock, float *buf, int nsamples) {
   if (sock == NULL) return -1;
   if (nsamples <= 0 || buf == NULL) return -1;
   _unetsocket_t *usock = sock;
-  int bbscnt = 0;
-  float tempbuf[PBSBLK];
-  bbscnt = (int)ceil((float)nsamples / PBSBLK);
-  if (unetsocket_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "bbscnt", bbscnt) < 0) return -1;
-  for (int i = 0; i < bbscnt; i++)
-  {
-    fjage_msg_t rxsigntf = receive(usock, "org.arl.unet.bb.RxBasebandSignalNtf", NULL, 5 * TIMEOUT);
-    fjage_msg_get_float_array(rxsigntf, "signal", tempbuf, PBSBLK);
-    fjage_msg_destroy(rxsigntf);
-    unsigned long remaining = (unsigned long) (nsamples - (i * PBSBLK));
-    memcpy(buf + (i * PBSBLK), tempbuf, remaining > PBSBLK ? (sizeof(float)*PBSBLK) : (sizeof(float)*remaining));
+  fjage_msg_t msg;
+  fjage_aid_t bb;
+  msg = fjage_msg_create("org.arl.unet.bb.RecordBasebandSignalReq", FJAGE_REQUEST);
+  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.PHYSICAL");
+  fjage_msg_set_recipient(msg, bb);
+  fjage_msg_add_int(msg, "recLength", nsamples);
+  msg = request(usock, msg, 5 * TIMEOUT);
+  if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE) {
+    fjage_msg_destroy(msg);
+    msg = receive(usock, "org.arl.unet.bb.RxBasebandSignalNtf", NULL, 20 * TIMEOUT);
+    if (msg != NULL) {
+      fjage_msg_get_float_array(msg, "signal", buf, 2 * nsamples);
+      fjage_msg_destroy(msg);
+      return 0;
+    }
   }
-  return 0;
+  fjage_msg_destroy(msg);
+  return -1;
 }
 
 int unetsocket_rs232_wakeup(char *devname, int baud, const char *settings)

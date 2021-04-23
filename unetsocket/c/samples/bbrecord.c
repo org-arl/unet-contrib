@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     if (argc > 3) port = (int)strtol(argv[3], NULL, 10);
   }
 
-  float buf[siglen];
+  float buf[2*siglen];
 
 #ifndef _WIN32
 // Check valid ip address
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   printf("Starting a record\n");
   rv = unetsocket_bbrecord(sock, buf, siglen);
   if (rv == 0) {
-    for(int i = 0; i < siglen; i++) {
+    for(int i = 0; i < 2*siglen; i++) {
       fprintf(fptr,"%f\n", buf[i]);
     }
   } else {
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
   // Close the unet socket
   unetsocket_close(sock);
 
-  printf("\nRecording Complete\n");
+  printf("\nRecording Complete (samples/bbrecordedsignal.txt saved with alternating real and imaginary values)\n");
 
   fclose(fptr);
   return 0;

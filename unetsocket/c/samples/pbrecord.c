@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   // Close the unet socket
   unetsocket_close(sock);
 
-  printf("\nRecording Complete\n");
+  printf("\nRecording Complete (samples/pbrecordedsignal.txt saved) \n");
 
   fclose(fptr);
   return 0;
