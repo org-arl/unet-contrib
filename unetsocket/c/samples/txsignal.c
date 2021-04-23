@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
       "signal_filename: path to the file containing the signal to transmit. \n"
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
-      "txsignal 192.168.1.20 1100\n");
+      "txsignal 192.168.1.20 sample-tx-signal.txt 1100\n");
     return -1;
   } else {
     if (argc > 3) port = (int)strtol(argv[2], NULL, 10);
