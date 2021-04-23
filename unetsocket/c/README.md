@@ -1,6 +1,8 @@
 # Unet C APIs
 
-This folder contains the files `unet.h` and `unet.c`. The header file includes the definition and documentation of the C APIs and the source code is provided in the `unet.c` file. 
+This folder contains the files `unet.h`, `unet_ext.h` and `unet.c`, `unet_ext.c`. The header files includes the definition and documentation of the C APIs and the source code is provided in the `unet.c` and `unet_ext.c` file. 
+
+The APIs defined in `unet.h` are standard UnetSocket APIs. These APIs have similar functionalities as the UnetSocket APIs provided in other languages such as [Python](https://github.com/org-arl/unet-contrib/tree/stp/unetsocket/python) and [Julia](https://github.com/org-arl/UnetSockets.jl). The APIs defined in `unet_ext.h` are extra functionalities that are implemented using the standard UnetSocket APIs. Some of these APIs in `unet_ext.h` are only supported on [Unet SDOAMs](https://unetstack.net/handbook/unet-handbook_introduction.html).
 
 ## Instructions for building and using Unet C API library on Linux / macOS
 
@@ -70,6 +72,16 @@ To clean all the built files and the depencencies, run
 ```bash
 del *.obj *.dll unet.lib test\*.obj test\*.exe samples\*.obj samples\*.exe 2>nul
 ```
+
+## Instructions for creating API package for distribution
+
+To create a package for distribution of these APIs, simply type
+
+```bash
+make package
+```
+
+This will create a `c-api.zip` inside the `build` folder which can be used for distribution.
 
 ## Test Unet C API library
 

@@ -31,6 +31,7 @@
 #include <string.h>
 #include <math.h>
 #include "../unet.h"
+#include "../unet_ext.h"
 #ifndef _WIN32
 #include <netdb.h>
 #include <sys/time.h>

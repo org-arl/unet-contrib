@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Script to set the transmission power level.
+// Set the transmission power level.
 //
 // In terminal window (an example):
 //
@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../unet.h"
+#include "../unet_ext.h"
 #include "../fjage.h"
 
 #ifndef _WIN32
@@ -58,11 +59,11 @@ int main(int argc, char *argv[]) {
   if (sock == NULL) return error("Couldn't open unet socket");
 
   // set power level of the CONTROL frame
-  rv = unetsocket_set_powerlevel(sock, 1, power_value);
+  rv = unetsocket_ext_set_powerlevel(sock, 1, power_value);
   if (rv == 0) printf("Transmission power level of CONTROL frame set to : %f \n", power_value);
 
   // set power level of the DATA frame
-  rv = unetsocket_set_powerlevel(sock, 2, power_value);
+  rv = unetsocket_ext_set_powerlevel(sock, 2, power_value);
   if (rv == 0) printf("Transmission power level of DATA frame set to : %f \n", power_value);
 
   // Close the unet socket

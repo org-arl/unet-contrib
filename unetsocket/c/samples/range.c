@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Script to measure distance to another node.
+// Measure distance to another node.
 //
 // In terminal window (an example):
 //
@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../unet.h"
+#include "../unet_ext.h"
 #include "../fjage.h"
 
 #ifndef _WIN32
@@ -59,8 +60,12 @@ int main(int argc, char *argv[]) {
   if (sock == NULL) return error("Couldn't open unet socket");
 
   // ranging
-  rv = unetsocket_get_range(sock, address, range);
-  if (rv == 0) printf("Range measured is : %f \n", *range);
+  rv = unetsocket_ext_get_range(sock, address, range);
+  if (rv == 0) {
+    printf("Range measured is : %f \n", *range);
+  } else {
+    error("Raging not successful");
+  }
 
   // Close the unet socket
   unetsocket_close(sock);

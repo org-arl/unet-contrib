@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Script to transmit data.
+// Transmit data.
 //
 // In terminal window (an example):
 //
@@ -19,6 +19,8 @@
 #include <sys/time.h>
 #endif
 
+#define NBYTES 9
+
 static int error(const char *msg) {
   printf("\n*** ERROR: %s\n\n", msg);
   return -1;
@@ -28,10 +30,10 @@ int main(int argc, char *argv[]) {
   unetsocket_t sock;
   int address = 0;
   int port = 1100;
-  uint8_t data[7] = {1, 2, 3, 4, 5, 6, 7};
+  uint8_t data[NBYTES] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   int rv;
   if (argc <= 2) {
-    error("Usage : txdata <ip_address> <rx_node_address> <port> \n"
+    error("Usage : txdata <ip_address> <rx_node_address> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
       "rx_node_address: Node address of the receiver modem. \n"
       "port: port number of transmitter modem. \n"
@@ -59,8 +61,8 @@ int main(int argc, char *argv[]) {
   if (sock == NULL) return error("Couldn't open unet socket");
 
 // Transmit data
-  printf("Transmitting %d bytes of data to %d\n", 7, address);
-  rv = unetsocket_send(sock, data, 7, address, DATA);
+  printf("Transmitting %d bytes of data to %d\n", NBYTES, address);
+  rv = unetsocket_send(sock, data, NBYTES, address, DATA);
 
   if (rv != 0) return error("Error transmitting data");
 
