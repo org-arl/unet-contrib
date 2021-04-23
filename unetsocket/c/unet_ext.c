@@ -156,7 +156,7 @@ int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate,
   fjage_aid_t bb;
   int pulsedelay_cache = 0;
   int npulses_cache = 0;
-  float signalduration = (1000 / rate) * (float)nsamples;
+  float signalduration = (float)((1000 / rate) * nsamples);
   int pulsedelay = (int)round(((float)pri - signalduration));
   if (pri < signalduration + 5)
   {
