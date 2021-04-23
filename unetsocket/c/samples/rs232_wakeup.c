@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     return -1;
   }
   for (int i = 0; i < ACTIVITYONSERIAL; i++) {
-    ret = unetsocket_rs232_wakeup(argv[1], 115200, "N81");
+    ret = unetsocket_ext_rs232_wakeup(argv[1], 115200, "N81");
     if (ret == 0) printf("Started activity on RS232 port..\n");
   }
   printf("Wakeup packet sent.\n");

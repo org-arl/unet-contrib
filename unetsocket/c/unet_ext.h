@@ -9,14 +9,14 @@
 /// @param sock             Unet socket
 /// @param to               Address of the node to which range is requested
 /// @param range            Measured range
-int unetsocket_get_range(unetsocket_t sock, int to, float* range);
+int unetsocket_ext_get_range(unetsocket_t sock, int to, float* range);
 
 /// Set the transmission power level of frame
 ///
 /// @param sock             Unet socket
 /// @param index            Index of the modulation scheme (1 for CONTROL scheme and 2 for DATA scheme)
 /// @param value            Transmission power level
-int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value);
+int unetsocket_ext_set_powerlevel(unetsocket_t sock, int index, float value);
 
 /// Transmit npulses
 ///
@@ -26,7 +26,7 @@ int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value);
 /// @param npulses          Number of times the signal needs to be transmitted
 /// @param pri              Pulse repetition interval (ms)
 
-int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate, int npulses, int pri);
+int unetsocket_ext_npulses(unetsocket_t sock, float *signal, int nsamples, int rate, int npulses, int pri);
 
 /// Setter for integer parameters.
 ///
@@ -39,7 +39,7 @@ int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate,
 /// @param value            Value to be set
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_iset(unetsocket_t sock, int index, char *target_name, char *param_name, int value);
+int unetsocket_ext_iset(unetsocket_t sock, int index, char *target_name, char *param_name, int value);
 
 /// Setter for float parameters.
 ///
@@ -52,7 +52,7 @@ int unetsocket_iset(unetsocket_t sock, int index, char *target_name, char *param
 /// @param value            Value to be set
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_fset(unetsocket_t sock, int index, char *target_name, char *param_name, float value);
+int unetsocket_ext_fset(unetsocket_t sock, int index, char *target_name, char *param_name, float value);
 
 /// Setter for boolean parameters.
 ///
@@ -65,7 +65,7 @@ int unetsocket_fset(unetsocket_t sock, int index, char *target_name, char *param
 /// @param value            Value to be set
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_bset(unetsocket_t sock, int index, char *target_name, char *param_name, bool value);
+int unetsocket_ext_bset(unetsocket_t sock, int index, char *target_name, char *param_name, bool value);
 
 /// Setter for String parameters.
 ///
@@ -78,7 +78,7 @@ int unetsocket_bset(unetsocket_t sock, int index, char *target_name, char *param
 /// @param value            Value to be set
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_sset(unetsocket_t sock, int index, char *target_name, char *param_name, char *value);
+int unetsocket_ext_sset(unetsocket_t sock, int index, char *target_name, char *param_name, char *value);
 
 /// Getter for integer parameters.
 ///
@@ -91,7 +91,7 @@ int unetsocket_sset(unetsocket_t sock, int index, char *target_name, char *param
 /// @param value            Value to get
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_iget(unetsocket_t sock, int index, char *target_name, char *param_name, int *value);
+int unetsocket_ext_iget(unetsocket_t sock, int index, char *target_name, char *param_name, int *value);
 
 /// Getter for float parameters.
 ///
@@ -104,7 +104,7 @@ int unetsocket_iget(unetsocket_t sock, int index, char *target_name, char *param
 /// @param value            Values to get
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_fget(unetsocket_t sock, int index, char *target_name, char *param_name, float *value);
+int unetsocket_ext_fget(unetsocket_t sock, int index, char *target_name, char *param_name, float *value);
 
 /// Getter for boolean parameters.
 ///
@@ -117,7 +117,7 @@ int unetsocket_fget(unetsocket_t sock, int index, char *target_name, char *param
 /// @param value            Value to get
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_bget(unetsocket_t sock, int index, char *target_name, char *param_name, bool *value);
+int unetsocket_ext_bget(unetsocket_t sock, int index, char *target_name, char *param_name, bool *value);
 
 /// Getter for string parameters.
 ///
@@ -131,7 +131,7 @@ int unetsocket_bget(unetsocket_t sock, int index, char *target_name, char *param
 /// @param buflen           Length of the string
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param_name, char *buf, int buflen);
+int unetsocket_ext_sget(unetsocket_t sock, int index, char *target_name, char *param_name, char *buf, int buflen);
 
 /// Record a passband signal.
 ///
@@ -139,7 +139,7 @@ int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param
 /// @param buf              Buffer to store the recorded signal
 /// @param nsamples         Number of samples
 /// @return                 0 on success, -1 otherwise
-int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples);
+int unetsocket_ext_pbrecord(unetsocket_t sock, float *buf, int nsamples);
 
 /// Transmit a signal.
 ///
@@ -158,7 +158,7 @@ int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples);
 /// @param fc               Signal carrier frequency in Hz
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, float fc, char *id);
+int unetsocket_ext_tx_signal(unetsocket_t sock, float *signal, int nsamples, float fc, char *id);
 
 /// Record a baseband signal.
 ///
@@ -167,14 +167,14 @@ int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, float f
 /// @param nsamples         Number of samples
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_bbrecord(unetsocket_t sock, float *buf, int nsamples);
+int unetsocket_ext_bbrecord(unetsocket_t sock, float *buf, int nsamples);
 
 /// Ethernet wakeup
 ///
 /// @param macaddr          6 bytes hex array mac address of the device to wake up
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_ethernet_wakeup(unsigned char *macaddr);
+int unetsocket_ext_ethernet_wakeup(unsigned char *macaddr);
 
 
 /// RS232 wakeup
@@ -184,13 +184,13 @@ int unetsocket_ethernet_wakeup(unsigned char *macaddr);
 /// @param settings       RS232 settings (NULL or "N81")
 /// @return               0 on success, -1 otherwise
 
-int unetsocket_rs232_wakeup(char *devname, int baud, const char *settings);
+int unetsocket_ext_rs232_wakeup(char *devname, int baud, const char *settings);
 
 
 /// Put modem to sleep immediately.
 ///
 /// @param sock             Unet socket
 /// @return                 0 on success, -1 otherwise
-int unetsocket_sleep(unetsocket_t sock);
+int unetsocket_ext_sleep(unetsocket_t sock);
 
 #endif

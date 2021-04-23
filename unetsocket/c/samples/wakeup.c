@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
   char *addr = argv[1];
   ret = packMacAddr(addr, mac_addr);
   if (ret < 0) return ret;
-  ret = unetsocket_ethernet_wakeup(mac_addr);
+  ret = unetsocket_ext_ethernet_wakeup(mac_addr);
   if (ret < 0) return ret;
   printf("Wakeup packet sent.\n");
   return 0;

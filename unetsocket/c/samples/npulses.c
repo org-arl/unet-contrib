@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
   if (sock == NULL) return error("Couldn't open unet socket");
 
   // read dac rate
-  if (unetsocket_fget(sock, -1, "org.arl.unet.Services.PHYSICAL", "dacrate", &txsamplingfreq) < 0) {
+  if (unetsocket_ext_fget(sock, -1, "org.arl.unet.Services.PHYSICAL", "dacrate", &txsamplingfreq) < 0) {
     return error("Failed to get dacrate parameter \n");
   } else {
     printf("Using %1.1f samples/s\n", txsamplingfreq);
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
 
   // Transmit signal
   printf("Transmitting a CW\n");
-  rv = unetsocket_npulses(sock, signal, siglen, (int)txsamplingfreq, n, pri);
+  rv = unetsocket_ext_npulses(sock, signal, siglen, (int)txsamplingfreq, n, pri);
   if (rv != 0) return error("Error transmitting signal");
 
 	// Close the unet socket

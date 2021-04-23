@@ -100,7 +100,7 @@ static int agents_for_service(_unetsocket_t *usock, const char *service, fjage_a
   return as;
 }
 
-int unetsocket_get_range(unetsocket_t sock, int to, float* range) {
+int unetsocket_ext_get_range(unetsocket_t sock, int to, float* range) {
   if (sock == NULL) return -1;
   _unetsocket_t *usock = sock;
   fjage_aid_t ranging;
@@ -124,7 +124,7 @@ int unetsocket_get_range(unetsocket_t sock, int to, float* range) {
   return -1;
 }
 
-int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value) {
+int unetsocket_ext_set_powerlevel(unetsocket_t sock, int index, float value) {
   if (sock == NULL) return -1;
   _unetsocket_t *usock = sock;
   fjage_msg_t msg;
@@ -147,7 +147,7 @@ int unetsocket_set_powerlevel(unetsocket_t sock, int index, float value) {
   return -1;
 }
 
-int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate, int npulses, int pri) {
+int unetsocket_ext_npulses(unetsocket_t sock, float *signal, int nsamples, int rate, int npulses, int pri) {
   if (sock == NULL) return -1;
   if (nsamples < 0) return -1;
   if (nsamples > 0 && signal == NULL) return -1;
@@ -163,14 +163,14 @@ int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate,
     error("Pulse delay is less than 5 ms...");
     return -1;
   }
-  if ((unetsocket_iget(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", &npulses_cache) < 0) || (unetsocket_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses) < 0))
+  if ((unetsocket_ext_iget(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", &npulses_cache) < 0) || (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses) < 0))
   {
     error("Unable to get/set npulses...");
     return -1;
   }
-  if ((unetsocket_iget(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", &pulsedelay_cache) < 0) || (unetsocket_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", pulsedelay) < 0))
+  if ((unetsocket_ext_iget(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", &pulsedelay_cache) < 0) || (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", pulsedelay) < 0))
   {
-    unetsocket_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses_cache);
+    unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses_cache);
     error("Unable to get/set pulse delay...");
     return -1;
   }
@@ -184,18 +184,18 @@ int unetsocket_npulses(unetsocket_t sock, float *signal, int nsamples, int rate,
   {
     fjage_msg_destroy(msg);
     msg = receive(usock, "org.arl.unet.phy.TxFrameNtf", NULL, (pri*npulses)+(2*TIMEOUT));
-    unetsocket_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses_cache);
-    unetsocket_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", pulsedelay_cache);
+    unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses_cache);
+    unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", pulsedelay_cache);
     fjage_msg_destroy(msg);
     return 0;
   }
   fjage_msg_destroy(msg);
-  unetsocket_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses_cache);
-  unetsocket_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", pulsedelay_cache);
+  unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses_cache);
+  unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", pulsedelay_cache);
   return -1;
 }
 
-int unetsocket_iset(unetsocket_t sock, int index, char *target_name, char *param_name, int value)
+int unetsocket_ext_iset(unetsocket_t sock, int index, char *target_name, char *param_name, int value)
 {
     if (sock == NULL) return -1;
     _unetsocket_t *usock = sock;
@@ -221,7 +221,7 @@ int unetsocket_iset(unetsocket_t sock, int index, char *target_name, char *param
     return -1;
 }
 
-int unetsocket_fset(unetsocket_t sock, int index, char *target_name, char *param_name, float value)
+int unetsocket_ext_fset(unetsocket_t sock, int index, char *target_name, char *param_name, float value)
 {
     if (sock == NULL) return -1;
     _unetsocket_t *usock = sock;
@@ -247,7 +247,7 @@ int unetsocket_fset(unetsocket_t sock, int index, char *target_name, char *param
     return -1;
 }
 
-int unetsocket_bset(unetsocket_t sock, int index, char *target_name, char *param_name, bool value)
+int unetsocket_ext_bset(unetsocket_t sock, int index, char *target_name, char *param_name, bool value)
 {
     if (sock == NULL) return -1;
     _unetsocket_t *usock = sock;
@@ -273,7 +273,7 @@ int unetsocket_bset(unetsocket_t sock, int index, char *target_name, char *param
     return -1;
 }
 
-int unetsocket_sset(unetsocket_t sock, int index, char *target_name, char *param_name, char *value)
+int unetsocket_ext_sset(unetsocket_t sock, int index, char *target_name, char *param_name, char *value)
 {
     if (sock == NULL) return -1;
     _unetsocket_t *usock = sock;
@@ -299,7 +299,7 @@ int unetsocket_sset(unetsocket_t sock, int index, char *target_name, char *param
     return -1;
 }
 
-int unetsocket_iget(unetsocket_t sock, int index, char *target_name, char *param_name, int *value)
+int unetsocket_ext_iget(unetsocket_t sock, int index, char *target_name, char *param_name, int *value)
 {
     if (sock == NULL) return -1;
     _unetsocket_t *usock = sock;
@@ -325,7 +325,7 @@ int unetsocket_iget(unetsocket_t sock, int index, char *target_name, char *param
     return -1;
 }
 
-int unetsocket_fget(unetsocket_t sock, int index, char *target_name, char *param_name, float *value)
+int unetsocket_ext_fget(unetsocket_t sock, int index, char *target_name, char *param_name, float *value)
 {
     if (sock == NULL) return -1;
     _unetsocket_t *usock = sock;
@@ -351,7 +351,7 @@ int unetsocket_fget(unetsocket_t sock, int index, char *target_name, char *param
     return -1;
 }
 
-int unetsocket_bget(unetsocket_t sock, int index, char *target_name, char *param_name, bool *value)
+int unetsocket_ext_bget(unetsocket_t sock, int index, char *target_name, char *param_name, bool *value)
 {
     if (sock == NULL) return -1;
     _unetsocket_t *usock = sock;
@@ -377,7 +377,7 @@ int unetsocket_bget(unetsocket_t sock, int index, char *target_name, char *param
     return -1;
 }
 
-int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param_name, char *buf, int buflen)
+int unetsocket_ext_sget(unetsocket_t sock, int index, char *target_name, char *param_name, char *buf, int buflen)
 {
     if (sock == NULL) return -1;
     _unetsocket_t *usock = sock;
@@ -403,14 +403,14 @@ int unetsocket_sget(unetsocket_t sock, int index, char *target_name, char *param
     return -1;
 }
 
-int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples) {
+int unetsocket_ext_pbrecord(unetsocket_t sock, float *buf, int nsamples) {
   if (sock == NULL) return -1;
   if (nsamples <= 0 || buf == NULL) return -1;
   _unetsocket_t *usock = sock;
   int pbscnt = 0;
   float tempbuf[PBSBLK];
   pbscnt = (int)ceil((float)nsamples / PBSBLK);
-  if (unetsocket_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pbscnt", pbscnt) < 0) return -1;
+  if (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pbscnt", pbscnt) < 0) return -1;
   for (int i = 0; i < pbscnt; i++)
   {
     fjage_msg_t rxsigntf = receive(usock, "org.arl.unet.bb.RxBasebandSignalNtf", NULL, 5 * TIMEOUT);
@@ -422,7 +422,7 @@ int unetsocket_pbrecord(unetsocket_t sock, float *buf, int nsamples) {
   return 0;
 }
 
-int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, float fc, char *id) {
+int unetsocket_ext_tx_signal(unetsocket_t sock, float *signal, int nsamples, float fc, char *id) {
   if (sock == NULL) return -1;
   if (nsamples < 0) return -1;
   if (nsamples > 0 && signal == NULL) return -1;
@@ -445,7 +445,7 @@ int unetsocket_tx_signal(unetsocket_t sock, float *signal, int nsamples, float f
   return -1;
 }
 
-int unetsocket_bbrecord(unetsocket_t sock, float *buf, int nsamples) {
+int unetsocket_ext_bbrecord(unetsocket_t sock, float *buf, int nsamples) {
   if (sock == NULL) return -1;
   if (nsamples <= 0 || buf == NULL) return -1;
   _unetsocket_t *usock = sock;
@@ -469,7 +469,7 @@ int unetsocket_bbrecord(unetsocket_t sock, float *buf, int nsamples) {
   return -1;
 }
 
-int unetsocket_rs232_wakeup(char *devname, int baud, const char *settings)
+int unetsocket_ext_rs232_wakeup(char *devname, int baud, const char *settings)
 {
   if (fjage_rs232_wakeup(devname, baud, settings) == -1)
   {
@@ -478,7 +478,7 @@ int unetsocket_rs232_wakeup(char *devname, int baud, const char *settings)
   return 0;
 }
 
-int unetsocket_ethernet_wakeup(unsigned char *macaddr)
+int unetsocket_ext_ethernet_wakeup(unsigned char *macaddr)
 {
   int i;
   unsigned char toSend[102];
@@ -508,7 +508,7 @@ int unetsocket_ethernet_wakeup(unsigned char *macaddr)
   return 0;
 }
 
-int unetsocket_sleep(unetsocket_t sock)
+int unetsocket_ext_sleep(unetsocket_t sock)
 {
     if (sock == NULL) return -1;
     _unetsocket_t *usock = sock;

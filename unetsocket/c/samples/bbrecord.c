@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 
   // Record
   printf("Starting a record\n");
-  rv = unetsocket_bbrecord(sock, buf, siglen);
+  rv = unetsocket_ext_bbrecord(sock, buf, siglen);
   if (rv == 0) {
     for(int i = 0; i < 2*siglen; i++) {
       fprintf(fptr,"%f\n", buf[i]);

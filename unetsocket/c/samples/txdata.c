@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
   uint8_t data[NBYTES] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   int rv;
   if (argc <= 2) {
-    error("Usage : txdata <ip_address> <rx_node_address> <port> \n"
+    error("Usage : txdata <ip_address> <rx_node_address> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
       "rx_node_address: Node address of the receiver modem. \n"
       "port: port number of transmitter modem. \n"

@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
   if (sock == NULL) return error("Couldn't open unet socket");
 
   // ranging
-  rv = unetsocket_get_range(sock, address, range);
+  rv = unetsocket_ext_get_range(sock, address, range);
   if (rv == 0) {
     printf("Range measured is : %f \n", *range);
   } else {
