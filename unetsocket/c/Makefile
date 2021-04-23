@@ -1,9 +1,9 @@
 CC = gcc
 CFLAGS += -std=c99 -Wall -Wextra -Werror -Wfloat-equal -Wconversion -Wparentheses -pedantic -Wunused-parameter -Wunused-variable -Wreturn-type -Wno-unused-function -Wredundant-decls -Wreturn-type -Wunused-value -Wswitch-default -Wuninitialized -Winit-self -O2
-FJAGE_VER=master
+FJAGE_VER=7275142c2bc846d2f07400d7d628f213cb5b56ab
 FJAGE_DIR=fjage-$(FJAGE_VER)
 
-CONTRIB_VER = b5b4932498ae4bffee5cfe195d3770642a7fe9d2
+CONTRIB_VER = bd95ed77ef7c90edbba04dd67f8fb235262e08c8
 BUILD = build
 BUILD_API = $(BUILD)/api
 CONTRIB_DIR = $(BUILD)/unet-contrib-$(CONTRIB_VER)
