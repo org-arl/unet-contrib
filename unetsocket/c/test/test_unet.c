@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
   // ranging
-  rv = unetsocket_get_range(sock_tx, 31, &range);
+  rv = unetsocket_ext_get_range(sock_tx, 31, &range);
   if (rv == 0) printf("Range measured is : %f \n", range);
   test_assert("Ranging", rv == 0);
   // send data
@@ -165,39 +165,39 @@ int main(int argc, char* argv[]) {
   test_assert("unetsocket_receive", strcmp("org.arl.unet.DatagramNtf", fjage_msg_get_clazz(ntf))==0);
   fjage_msg_destroy(ntf);
   // power level
-  rv = unetsocket_set_powerlevel(sock_tx, 1, -6);
+  rv = unetsocket_ext_set_powerlevel(sock_tx, 1, -6);
   test_assert("Power level", rv == 0);
   // set and get integer parameters
-  rv = unetsocket_iget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "frameLength", &framelength);
+  rv = unetsocket_ext_iget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "frameLength", &framelength);
   int itemp = framelength;
   test_assert("Get integer parameter", rv == 0);
-  rv = unetsocket_iset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "frameLength", 30);
-  rv = unetsocket_iget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "frameLength", &framelength);
+  rv = unetsocket_ext_iset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "frameLength", 30);
+  rv = unetsocket_ext_iget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "frameLength", &framelength);
   test_assert("Set integer parameter", ((rv == 0) && (framelength == 30)));
-  unetsocket_iset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "frameLength", itemp);
+  unetsocket_ext_iset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "frameLength", itemp);
   // set and get float parameters
-  rv = unetsocket_fget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", &powerlevel);
+  rv = unetsocket_ext_fget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", &powerlevel);
   float ftemp = powerlevel;
   test_assert("Get float parameter", rv == 0);
-  rv = unetsocket_fset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", -10.0);
-  rv = unetsocket_fget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", &powerlevel);
+  rv = unetsocket_ext_fset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", -10.0);
+  rv = unetsocket_ext_fget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", &powerlevel);
   test_assert("Set float parameter", ((rv == 0) && ((int)(powerlevel) == -10)));
-  unetsocket_fset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", ftemp);
+  unetsocket_ext_fset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "powerLevel", ftemp);
   // set and get boolean parameters
-  rv = unetsocket_bget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "rxEnable", &status);
+  rv = unetsocket_ext_bget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "rxEnable", &status);
   bool btemp = status;
   test_assert("Get bool parameter", rv == 0);
-  rv = unetsocket_bset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "rxEnable", false);
-  rv = unetsocket_bget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "rxEnable", &status);
+  rv = unetsocket_ext_bset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "rxEnable", false);
+  rv = unetsocket_ext_bget(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "rxEnable", &status);
   test_assert("Set bool parameter", ((rv == 0) && (status == 0)));
-  unetsocket_bset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "rxEnable", btemp);
+  unetsocket_ext_bset(sock_tx, 1, "org.arl.unet.Services.PHYSICAL", "rxEnable", btemp);
   // set and get string parameters
   char s1[10];
-  rv = unetsocket_sget(sock_tx, 0, "org.arl.unet.Services.TRANSPORT", "dsp", s1, 10);
+  rv = unetsocket_ext_sget(sock_tx, 0, "org.arl.unet.Services.TRANSPORT", "dsp", s1, 10);
   test_assert("Get string parameter", rv == 0);
-  rv = unetsocket_sset(sock_tx, 1, "org.arl.unet.Services.TRANSPORT", "dsp", "mac");
+  rv = unetsocket_ext_sset(sock_tx, 1, "org.arl.unet.Services.TRANSPORT", "dsp", "mac");
   test_assert("Set string parameter", rv == 0);
-  unetsocket_sset(sock_tx, 1, "org.arl.unet.Services.TRANSPORT", "dsp", s1);
+  unetsocket_ext_sset(sock_tx, 1, "org.arl.unet.Services.TRANSPORT", "dsp", s1);
   // // close the unet socket connection
   rv = unetsocket_close(sock_tx);
   test_assert("unetsocket_close_tx", rv == 0);
