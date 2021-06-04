@@ -113,7 +113,7 @@ int unetsocket_ext_get_range(unetsocket_t sock, int to, float* range) {
   msg = request(usock, msg, TIMEOUT);
   if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_AGREE) {
     fjage_msg_destroy(msg);
-    msg = receive(usock, rangentf, NULL, 10000);
+    msg = receive(usock, rangentf, NULL, 30000);
     if (msg != NULL) {
       *range = fjage_msg_get_float(msg, "range", 0);
       fjage_msg_destroy(msg);
