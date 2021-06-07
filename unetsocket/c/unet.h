@@ -194,7 +194,7 @@ long unetsocket_get_timeout(unetsocket_t sock);
 /// @param protocol         Protocol number
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int protocol);
+int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int protocol, bool reliability);
 
 /// Transmits a datagram to the specified node address using the specified protocol.
 /// Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,

@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../unet.h"
 
 #ifndef _WIN32
@@ -28,6 +29,7 @@ static int error(const char *msg) {
 
 int main(int argc, char *argv[]) {
   unetsocket_t sock;
+  fjage_gw_t gw;
   int address = 0;
   int port = 1100;
   uint8_t data[NBYTES] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -56,15 +58,20 @@ int main(int argc, char *argv[]) {
 
 // Open a unet socket connection to modem
   printf("Connecting to %s:%d\n",argv[1],port);
-
   sock = unetsocket_open(argv[1], port);
   if (sock == NULL) return error("Couldn't open unet socket");
 
 // Transmit data
   printf("Transmitting %d bytes of data to %d\n", NBYTES, address);
-  rv = unetsocket_send(sock, data, NBYTES, address, DATA, false);
-
+  rv = unetsocket_send(sock, data, NBYTES, address, DATA, true);
   if (rv != 0) return error("Error transmitting data");
+
+// Wait for DatagramDeliveryNtf (or) DatagramFailureNtf message
+  const char *list[] = {"org.arl.unet.DatagramDeliveryNtf", "org.arl.unet.DatagramFailureNtf"};
+  gw = unetsocket_get_gateway(sock);
+  fjage_msg_t msg = fjage_receive_any(gw, list, 2, 60000);
+  if (strcmp(fjage_msg_get_clazz(msg), "org.arl.unet.DatagramDeliveryNtf") == 0) printf("Datagram delivered succesfully at the received node! \n");
+  if (strcmp(fjage_msg_get_clazz(msg), "org.arl.unet.DatagramFailureNtf") == 0) printf("Datagram delivery failed! \n");
 
 // Close the unet socket
   unetsocket_close(sock);
