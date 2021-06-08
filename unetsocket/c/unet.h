@@ -194,7 +194,20 @@ long unetsocket_get_timeout(unetsocket_t sock);
 /// @param protocol         Protocol number
 /// @return                 0 on success, -1 otherwise
 
-int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int protocol, bool reliability);
+int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int protocol);
+
+/// Transmits a datagram to the specified node address using the specified protocol with reliability enabled.
+/// Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,
+/// and cannot be used for sending datagrams using the socket.
+///
+/// @param sock             Unet socket
+/// @param data             Data to send across
+/// @param len              Number of bytes in the data
+/// @param to               Destination node address
+/// @param protocol         Protocol number
+/// @return                 0 on success, -1 otherwise
+
+int unetsocket_send_reliable(unetsocket_t sock, uint8_t* data, int len, int to, int protocol);
 
 /// Transmits a datagram to the specified node address using the specified protocol.
 /// Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,

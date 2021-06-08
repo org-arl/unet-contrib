@@ -351,9 +351,8 @@ long unetsocket_get_timeout(unetsocket_t sock) {
 }
 
 // NOTE: changed const uint8_t* to uint8_t*
-int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int protocol, bool reliability) {
+int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int protocol) {
   if (sock == NULL) return -1;
-  if ((to == 0) && (reliability == true)) return -1;
   _unetsocket_t *usock = sock;
   fjage_msg_t msg;
   int rv;
@@ -361,7 +360,21 @@ int unetsocket_send(unetsocket_t sock, uint8_t* data, int len, int to, int proto
   if (data != NULL) fjage_msg_add_byte_array(msg, "data", data, len);
   fjage_msg_add_int(msg, "to", to);
   fjage_msg_add_int(msg, "protocol", protocol);
-  fjage_msg_add_bool(msg, "reliability", reliability);
+  rv = unetsocket_send_request(usock, msg);
+  return rv;
+}
+
+int unetsocket_send_reliable(unetsocket_t sock, uint8_t* data, int len, int to, int protocol) {
+  if (sock == NULL) return -1;
+  if (to == 0) return -1; // broadcast with reliability is not allowed
+  _unetsocket_t *usock = sock;
+  fjage_msg_t msg;
+  int rv;
+  msg = fjage_msg_create("org.arl.unet.DatagramReq", FJAGE_REQUEST);
+  if (data != NULL) fjage_msg_add_byte_array(msg, "data", data, len);
+  fjage_msg_add_int(msg, "to", to);
+  fjage_msg_add_int(msg, "protocol", protocol);
+  fjage_msg_add_bool(msg, "reliability", true);
   rv = unetsocket_send_request(usock, msg);
   return rv;
 }

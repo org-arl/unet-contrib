@@ -5,7 +5,7 @@
 // In terminal window (an example):
 //
 // $ make samples
-// $ ./txdata <ip_address> <rx_node_address> [port]
+// $ ./txdata-reliable <ip_address> <rx_node_address> [port]
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,12 +35,12 @@ int main(int argc, char *argv[]) {
   uint8_t data[NBYTES] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   int rv;
   if (argc <= 2) {
-    error("Usage : txdata <ip_address> <rx_node_address> [port] \n"
+    error("Usage : txdata-reliable <ip_address> <rx_node_address> [port] \n"
       "ip_address: IP address of the transmitter modem. \n"
       "rx_node_address: Node address of the receiver modem. \n"
       "port: port number of transmitter modem. \n"
       "A usage example: \n"
-      "txdata 192.168.1.20 5 1100\n");
+      "txdata-reliable 192.168.1.20 5 1100\n");
     return -1;
   } else {
     address = (int)strtol(argv[2], NULL, 10);
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 
 // Transmit data
   printf("Transmitting %d bytes of data to %d\n", NBYTES, address);
-  rv = unetsocket_send(sock, data, NBYTES, address, DATA, true);
+  rv = unetsocket_send_reliable(sock, data, NBYTES, address, DATA);
   if (rv != 0) return error("Error transmitting data");
 
 // Wait for DatagramDeliveryNtf (or) DatagramFailureNtf message

@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 
 // Transmit data
   printf("Transmitting %d bytes of data to %d\n", NBYTES, address);
-  rv = unetsocket_send(sock, data, NBYTES, address, DATA, false);
+  rv = unetsocket_send(sock, data, NBYTES, address, DATA);
 
   if (rv != 0) return error("Error transmitting data");
 
