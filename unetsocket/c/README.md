@@ -50,7 +50,7 @@ To build unet library, run
 
 ```bash
 $ cl /LD fjage.lib *.c
-$ lib unet.obj pthreadwindows.obj /out:unet.lib
+$ lib unet.obj unet_ext.obj pthreadwindows.obj /out:unet.lib
 ```
 
 This will generate a library (`unet.lib`) which can be used to link.
