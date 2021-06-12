@@ -158,7 +158,7 @@ unetsocket_t unetsocket_open(const char* hostname, int port) {
   usock->local_protocol = -1;
   usock->remote_address = -1;
   usock->remote_protocol = 0;
-  usock->timeout = -1
+  usock->timeout = -1;
   usock->provider = NULL;
   usock->quit = true;
   usock->ntf = NULL;
@@ -208,7 +208,7 @@ unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* se
   usock->local_protocol = -1;
   usock->remote_address = -1;
   usock->remote_protocol = 0;
-  usock->timeout = -1
+  usock->timeout = -1;
   usock->provider = NULL;
   usock->quit = true;
   usock->ntf = NULL;
