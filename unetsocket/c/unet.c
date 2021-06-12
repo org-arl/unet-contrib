@@ -155,11 +155,18 @@ unetsocket_t unetsocket_open(const char* hostname, int port) {
     free(usock);
     return NULL;
   }
+  usock->local_protocol = -1;
+  usock->remote_address = -1;
+  usock->remote_protocol = 0;
+  usock->timeout = -1
+  usock->provider = NULL;
+  usock->quit = true;
+  usock->ntf = NULL;
   pthread_mutex_init(&usock->rxlock, NULL);
   pthread_mutex_init(&usock->txlock, NULL);
   int nagents = agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", NULL, 0);
-  // fjage_aid_t agents[nagents];
   fjage_aid_t* agents = malloc((unsigned long)nagents*sizeof(fjage_aid_t));
+  for (int i=0; i< nagents; i++) agents[i] = NULL;
   if (agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
     free(usock);
     free(agents);
@@ -198,11 +205,19 @@ unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* se
     free(usock);
     return NULL;
   }
+  usock->local_protocol = -1;
+  usock->remote_address = -1;
+  usock->remote_protocol = 0;
+  usock->timeout = -1
+  usock->provider = NULL;
+  usock->quit = true;
+  usock->ntf = NULL;
   pthread_mutex_init(&usock->rxlock, NULL);
   pthread_mutex_init(&usock->txlock, NULL);
   int nagents = agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", NULL, 0);
   // fjage_aid_t agents[nagents];
   fjage_aid_t* agents = malloc((unsigned long)nagents*sizeof(fjage_aid_t));
+  for (int i=0; i< nagents; i++) agents[i] = NULL;
   if (agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
     free(usock);
     free(agents);
