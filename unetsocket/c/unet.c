@@ -215,7 +215,6 @@ unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* se
   pthread_mutex_init(&usock->rxlock, NULL);
   pthread_mutex_init(&usock->txlock, NULL);
   int nagents = agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", NULL, 0);
-  // fjage_aid_t agents[nagents];
   fjage_aid_t* agents = malloc((unsigned long)nagents*sizeof(fjage_aid_t));
   for (int i=0; i< nagents; i++) agents[i] = NULL;
   if (agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
