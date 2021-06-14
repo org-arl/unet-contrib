@@ -47,8 +47,6 @@ int main(int argc, char *argv[]) {
     if (argc > 3) port = (int)strtol(argv[3], NULL, 10);
   }
 
-  float buf[siglen];
-
 #ifndef _WIN32
 // Check valid ip address
   struct hostent *server = gethostbyname(argv[1]);
@@ -57,11 +55,17 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 #endif
+
+  float* buf = malloc((unsigned long)siglen*sizeof(float));
+
   // Open a unet socket connection to modem
   printf("Connecting to %s:%d\n",argv[1],port);
 
   sock = unetsocket_open(argv[1], port);
-  if (sock == NULL) return error("Couldn't open unet socket");
+  if (sock == NULL) {
+    free(buf);
+    return error("Couldn't open unet socket");
+  }
 
   // Record
   printf("Starting a record\n");
@@ -71,11 +75,14 @@ int main(int argc, char *argv[]) {
       fprintf(fptr,"%f\n", buf[i]);
     }
   } else {
-    error("Error recording signal");
+    free(buf);
+    return error("Error recording signal");
   }
 
   // Close the unet socket
   unetsocket_close(sock);
+
+  free(buf);
 
   printf("\nRecording Complete (samples/pbrecordedsignal.txt saved) \n");
 
