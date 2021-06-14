@@ -58,8 +58,6 @@ int main(int argc, char *argv[]) {
     if (argc > 6) port = (int)strtol(argv[6], NULL, 10);
   }
 
-  float signal[siglen];
-
 #ifndef _WIN32
 // Check valid ip address
   struct hostent *server = gethostbyname(argv[1]);
@@ -69,14 +67,20 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
+  float* signal = malloc((unsigned long)siglen*sizeof(float));
+
   // Open a unet socket connection to modem
   printf("Connecting to %s:%d\n",argv[1],port);
 
   sock = unetsocket_open(argv[1], port);
-  if (sock == NULL) return error("Couldn't open unet socket");
+  if (sock == NULL) {
+    free(signal);
+    return error("Couldn't open unet socket");
+  }
 
   // read dac rate
   if (unetsocket_ext_fget(sock, -1, "org.arl.unet.Services.PHYSICAL", "dacrate", &txsamplingfreq) < 0) {
+    free(signal);
     return error("Failed to get dacrate parameter \n");
   } else {
     printf("Using %1.1f samples/s\n", txsamplingfreq);
@@ -90,10 +94,15 @@ int main(int argc, char *argv[]) {
   // Transmit signal
   printf("Transmitting a CW\n");
   rv = unetsocket_ext_npulses(sock, signal, siglen, (int)txsamplingfreq, n, pri);
-  if (rv != 0) return error("Error transmitting signal");
+  if (rv != 0) {
+    free(signal);
+    return error("Error transmitting signal");
+  }
 
 	// Close the unet socket
   unetsocket_close(sock);
+
+  free(signal);
 
   printf("Transmission Complete\n");
 

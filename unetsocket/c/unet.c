@@ -9,12 +9,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 #endif
 
 typedef struct {

@@ -9,12 +9,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 #endif
 
 typedef struct {
@@ -469,6 +469,8 @@ int unetsocket_ext_bbrecord(unetsocket_t sock, float *buf, int nsamples) {
   return -1;
 }
 
+#ifndef _WIN32
+
 int unetsocket_ext_rs232_wakeup(char *devname, int baud, const char *settings)
 {
   if (fjage_rs232_wakeup(devname, baud, settings) == -1)
@@ -507,6 +509,8 @@ int unetsocket_ext_ethernet_wakeup(unsigned char *macaddr)
   sendto(udpSocket, &toSend, sizeof(unsigned char) * 102, 0, (struct sockaddr *)&udpServer, sizeof(udpServer));
   return 0;
 }
+
+#endif
 
 int unetsocket_ext_sleep(unetsocket_t sock)
 {
