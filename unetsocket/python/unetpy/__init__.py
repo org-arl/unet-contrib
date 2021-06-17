@@ -249,7 +249,7 @@ class UnetSocket():
             return True
         return False
 
-    def disconnnect(self):
+    def disconnect(self):
         """Resets the default destination address to undefined, and the default protocol
         number to Protocol.DATA.
         """
