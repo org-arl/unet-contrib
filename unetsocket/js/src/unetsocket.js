@@ -9,36 +9,13 @@ const DatagramNtf = UnetMessages.DatagramNtf;
 const RxFrameNtf = UnetMessages.RxFrameNtf;
 
 /**
- * A message which requests the transmission of the datagram from the Unet
- * 
- * @typedef {Object} DatagramReq
- * @property {number[]} data - data as an Array of bytes
- * @property {number} from - from/source node address
- * @property {number} to - to/destination node address
- * @property {number} protocol - protocol number to be used to send this Datagram
- * @property {boolean} reliability - true if Datagram should be reliable, false if unreliable
- * @property {number} ttl - time-to-live for the datagram. Time-to-live is advisory, and an agent may choose it ignore it
- */
-
-/**
- * Notification of received datagram message received by the Unet node.
- * 
- * @typedef {Object} DatagramNtf
- * @property {number[]} data - data as an Array of bytes
- * @property {number} from - from/source node address
- * @property {number} to - to/destination node address
- * @property {number} protocol - protocol number to be used to send this Datagram
- * @property {number} ttl - time-to-live for the datagram. Time-to-live is advisory, and an agent may choose it ignore it
- */
-
-/**
  * Creates a new UnetSocket to connect to a running Unet instance. This consuctor returns a 
  * Promise instead of the constructed UnetSocket object. Use `await` or `.then()` to get 
  * a reference to the UnetSocket object. Based on if this is run in a Browser or Node.js, 
  * it will internally connect over WebSockets or TCP respectively.
  *
  * 
- * @class
+ * @class UnetSocket
  * @param {string} [hostname] - hostname/ip address of the master container to connect to
  * @param {number} [port] - port number of the master container to connect to
  * @param {string} [path='']  - path of the master container to connect to (for WebSockets)

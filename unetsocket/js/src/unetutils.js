@@ -129,7 +129,7 @@ Object.assign(Services, UnetServices);
 
 /**
  * Well-known protocol number assignments used in UnetStack
- * @typedef {Object} Protocol
+ * @typedef {Map<string, number>} Protocol
  */
 let Protocol = {
   'DATA' : 0,               // Protocol number for user application data.
@@ -147,7 +147,7 @@ let Protocol = {
 
 /**
  * Well-known protocol Messages used in UnetStack
- * @typedef {Object} UnetMessages
+ * @typedef {Map<string, Message>} UnetMessages
  */
 let UnetMessages = {
   // unet
@@ -244,5 +244,57 @@ let UnetMessages = {
   'ClearStateReq'          : MessageClass('org.arl.unet.state.ClearStateReq'), 
   'SaveStateReq'           : MessageClass('org.arl.unet.state.SaveStateReq')
 };
+
+/**
+ * A message which requests the transmission of the datagram from the Unet
+ * 
+ * @typedef {Message} DatagramReq
+ * @property {number[]} data - data as an Array of bytes
+ * @property {number} from - from/source node address
+ * @property {number} to - to/destination node address
+ * @property {number} protocol - protocol number to be used to send this Datagram
+ * @property {boolean} reliability - true if Datagram should be reliable, false if unreliable
+ * @property {number} ttl - time-to-live for the datagram. Time-to-live is advisory, and an agent may choose it ignore it
+ */
+
+/**
+ * Notification of received datagram message received by the Unet node.
+ * 
+ * @typedef {Message} DatagramNtf
+ * @property {number[]} data - data as an Array of bytes
+ * @property {number} from - from/source node address
+ * @property {number} to - to/destination node address
+ * @property {number} protocol - protocol number to be used to send this Datagram
+ * @property {number} ttl - time-to-live for the datagram. Time-to-live is advisory, and an agent may choose it ignore it
+ */
+
+/**
+ * An identifier for an agent or a topic.
+ * @external AgentID
+ * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
+ */
+
+/**
+ * Services supported by fjage agents.
+ * @external Services
+ * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
+ */
+
+/**
+ *  An action represented by a message.
+ * @external Performative
+ * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
+ */
+
+/**
+ * Function to creates a unqualified message class based on a fully qualified name.
+ * @external MessageClass
+ * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
+ */
+
+/**
+ * @external Gateway
+ * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
+ */
 
 export {AgentID, Services, UnetMessages, Protocol};
