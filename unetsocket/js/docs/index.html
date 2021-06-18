@@ -285,15 +285,15 @@
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L27-L283'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L27-L284'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
   </div>
   
 
-  <p>Creates a new UnetSocket to connect to a running Unet instance. This consuctor returns a
-Promise instead of the constructed UnetSocket object. Use <code>await</code> or <code>.then()</code> to get
+  <p>Creates a new UnetSocket to connect to a running Unet instance. This constructor returns a
+<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a> instead of the constructed UnetSocket object. Use <code>await</code> or <code>.then()</code> to get
 a reference to the UnetSocket object. Based on if this is run in a Browser or Node.js,
 it will internally connect over WebSockets or TCP respectively.</p>
 
@@ -349,7 +349,7 @@ it will internally connect over WebSockets or TCP respectively.</p>
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="#unetsocket">UnetSocket</a>></code>:
-        Promise
+        Promise which resolves to the UnetSocket object being constructed
 
       
     
@@ -363,7 +363,7 @@ it will internally connect over WebSockets or TCP respectively.</p>
     <div class='py1 quiet mt1 prose-big'>Example</div>
     
       
-      <pre class='p1 overflow-auto round fill-light'><span class="hljs-keyword">let</span> socket = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> UnetSocket(<span class="hljs-string">&#x27;localhost&#x27;</span>, <span class="hljs-number">8081</span>, <span class="hljs-string">&#x27;/ws/&#x27;</span>)</pre>
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-keyword">let</span> socket = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> UnetSocket(<span class="hljs-string">&#x27;localhost&#x27;</span>, <span class="hljs-number">8081</span>, <span class="hljs-string">&#x27;/ws/&#x27;</span>);</pre>
     
   
 
@@ -387,7 +387,7 @@ it will internally connect over WebSockets or TCP respectively.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L51-L54'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L51-L54'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -452,7 +452,7 @@ it will internally connect over WebSockets or TCP respectively.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L60-L62'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L60-L62'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -518,7 +518,7 @@ it will internally connect over WebSockets or TCP respectively.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L71-L77'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L71-L77'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -600,7 +600,7 @@ and cannot be bound. Unbound sockets listen to all unreserved</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L84-L84'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L84-L84'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -666,7 +666,7 @@ Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reser
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L90-L90'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L90-L90'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -732,7 +732,7 @@ Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reser
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L104-L111'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L104-L111'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -826,7 +826,7 @@ and cannot be used for sending datagrams using the socket.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L118-L121'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L118-L121'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -892,7 +892,7 @@ to Protocol.DATA.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L127-L127'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L127-L127'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -958,7 +958,7 @@ to Protocol.DATA.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L133-L139'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L133-L139'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1024,7 +1024,7 @@ to Protocol.DATA.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L145-L145'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L145-L145'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1090,7 +1090,7 @@ to Protocol.DATA.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L151-L151'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L151-L151'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1156,7 +1156,7 @@ to Protocol.DATA.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L157-L157'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L157-L157'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1222,7 +1222,7 @@ to Protocol.DATA.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L167-L170'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L167-L170'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1303,7 +1303,7 @@ Datagram has already been received (and is cached) else return immediately.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L176-L176'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L176-L176'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1369,7 +1369,7 @@ Datagram has already been received (and is cached) else return immediately.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L187-L213'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L187-L213'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1471,7 +1471,7 @@ and cannot be used for sending datagrams using the socket.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L221-L231'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L221-L231'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1538,7 +1538,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L237-L237'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L237-L237'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1604,15 +1604,16 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L243-L246'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L244-L247'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
   </div>
   
 
-  
-    <div class='pre p1 fill-light mt0'>agentForService(svc: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</div>
+  <p>Gets an AgentID providing a specified service for low-level access to UnetStack</p>
+
+    <div class='pre p1 fill-light mt0'>agentForService(svc: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="#agentid">AgentID</a>?></div>
   
   
 
@@ -1641,6 +1642,16 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
 
   
 
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="#agentid">AgentID</a>?></code>:
+        a promise which returns an 
+<a href="#agentid">AgentID</a>
+ that provides the service when resolved
+
+      
+    
   
 
   
@@ -1675,7 +1686,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L253-L256'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L254-L257'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1716,7 +1727,9 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="#agentid">AgentID</a>>></code>:
-        a promise which returns an array of all agent ids that provides the service when resolved
+        a promise which returns an array of 
+<a href="#agentid">AgentIDs</a>
+ that provides the service when resolved
 
       
     
@@ -1754,7 +1767,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L263-L266'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L264-L267'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1834,7 +1847,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetsocket.js#L273-L282'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetsocket.js#L274-L283'>
       <span>unetsocket/js/src/unetsocket.js</span>
       </a>
     
@@ -1922,7 +1935,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetutils.js#L130-L133'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetutils.js#L130-L133'>
       <span>unetsocket/js/src/unetutils.js</span>
       </a>
     
@@ -1935,7 +1948,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
   
     <p>
       Type:
-      <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>>
+      <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>>
     </p>
   
   
@@ -1981,7 +1994,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetutils.js#L148-L151'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetutils.js#L148-L151'>
       <span>unetsocket/js/src/unetutils.js</span>
       </a>
     
@@ -1994,7 +2007,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
   
     <p>
       Type:
-      <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, Message>
+      <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="#messageclass">MessageClass</a>>
     </p>
   
   
@@ -2040,7 +2053,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetutils.js#L248-L258'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetutils.js#L248-L258'>
       <span>unetsocket/js/src/unetutils.js</span>
       </a>
     
@@ -2146,7 +2159,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetutils.js#L260-L269'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetutils.js#L260-L269'>
       <span>unetsocket/js/src/unetutils.js</span>
       </a>
     
@@ -2245,7 +2258,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetutils.js#L300-L300'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetutils.js#L300-L300'>
       <span>unetsocket/js/src/unetutils.js</span>
       </a>
     
@@ -2307,7 +2320,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetutils.js#L300-L300'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetutils.js#L300-L300'>
       <span>unetsocket/js/src/unetutils.js</span>
       </a>
     
@@ -2369,7 +2382,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetutils.js#L300-L300'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetutils.js#L300-L300'>
       <span>unetsocket/js/src/unetutils.js</span>
       </a>
     
@@ -2431,7 +2444,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetutils.js#L300-L300'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetutils.js#L300-L300'>
       <span>unetsocket/js/src/unetutils.js</span>
       </a>
     
@@ -2493,7 +2506,7 @@ then datagrams with all unreserved protocols are received. Any broadcast datagra
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/b01af9adce600f5a5235f087bda34e729a1387d4/unetsocket/js/src/unetutils.js#L300-L300'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/org-arl/unet-contrib/blob/f840bc763a349c05afb1cdf3e54bd4d2cceccd70/unetsocket/js/src/unetutils.js#L300-L300'>
       <span>unetsocket/js/src/unetutils.js</span>
       </a>
     

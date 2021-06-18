@@ -9,8 +9,8 @@ const DatagramNtf = UnetMessages.DatagramNtf;
 const RxFrameNtf = UnetMessages.RxFrameNtf;
 
 /**
- * Creates a new UnetSocket to connect to a running Unet instance. This consuctor returns a 
- * Promise instead of the constructed UnetSocket object. Use `await` or `.then()` to get 
+ * Creates a new UnetSocket to connect to a running Unet instance. This constructor returns a 
+ * {@link Promise} instead of the constructed UnetSocket object. Use `await` or `.then()` to get 
  * a reference to the UnetSocket object. Based on if this is run in a Browser or Node.js, 
  * it will internally connect over WebSockets or TCP respectively.
  *
@@ -19,10 +19,10 @@ const RxFrameNtf = UnetMessages.RxFrameNtf;
  * @param {string} [hostname] - hostname/ip address of the master container to connect to
  * @param {number} [port] - port number of the master container to connect to
  * @param {string} [path='']  - path of the master container to connect to (for WebSockets)
- * @returns {Promise<UnetSocket>} - Promise
+ * @returns {Promise<UnetSocket>} - Promise which resolves to the UnetSocket object being constructed
  * 
  * @example
- * let socket = await new UnetSocket('localhost', 8081, '/ws/')
+ * let socket = await new UnetSocket('localhost', 8081, '/ws/');
  */
 export default class UnetSocket {
 
@@ -237,8 +237,9 @@ export default class UnetSocket {
   getGateway() { return this.gw; }
 
   /**
-   * 
+   * Gets an AgentID providing a specified service for low-level access to UnetStack
    * @param {string} svc - the named service of interest
+   * @returns {Promise<?AgentID>} - a promise which returns an {@link AgentID} that provides the service when resolved
    */
   async agentForService(svc) {
     if (this.gw == null) return null;
@@ -248,7 +249,7 @@ export default class UnetSocket {
   /**
    * 
    * @param {string} svc - the named service of interest
-   * @returns {Promise<AgentID[]>} - a promise which returns an array of all agent ids that provides the service when resolved
+   * @returns {Promise<AgentID[]>} - a promise which returns an array of {@link AgentID|AgentIDs} that provides the service when resolved
    */
   async agentsForService(svc) {
     if (this.gw == null) return null;

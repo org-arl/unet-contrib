@@ -129,7 +129,7 @@ Object.assign(Services, UnetServices);
 
 /**
  * Well-known protocol number assignments used in UnetStack
- * @typedef {Map<string, number>} Protocol
+ * @typedef {Object.<string, number>} Protocol
  */
 let Protocol = {
   'DATA' : 0,               // Protocol number for user application data.
@@ -147,7 +147,7 @@ let Protocol = {
 
 /**
  * Well-known protocol Messages used in UnetStack
- * @typedef {Map<string, Message>} UnetMessages
+ * @typedef {Object.<string, MessageClass>} UnetMessages
  */
 let UnetMessages = {
   // unet
