@@ -1,4 +1,4 @@
-import {AgentID, MessageClass, Performative, Services} from '../node_modules/fjage/dist/esm/fjage.js';
+import {AgentID, MessageClass, Performative, Services} from 'fjage/dist/esm/fjage';
 
 const ParameterReq = MessageClass('org.arl.unet.ParameterReq');
 const DatagramReq = MessageClass('org.arl.unet.DatagramReq');
@@ -127,6 +127,10 @@ let UnetServices = {
 
 Object.assign(Services, UnetServices);
 
+/**
+ * Well-known protocol number assignments used in UnetStack
+ * @typedef {Object} Protocol
+ */
 let Protocol = {
   'DATA' : 0,               // Protocol number for user application data.
   'RANGING' : 1,            // Protocol number for use by ranging agents.
@@ -141,7 +145,10 @@ let Protocol = {
   'MAX' : 63,               // Largest protocol number allowable.
 };
 
-
+/**
+ * Well-known protocol Messages used in UnetStack
+ * @typedef {Object} UnetMessages
+ */
 let UnetMessages = {
   // unet
   'TestReportNtf'          : MessageClass('org.arl.unet.TestReportNtf'), 

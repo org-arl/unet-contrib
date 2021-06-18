@@ -1,5 +1,5 @@
-import {Gateway, MessageClass, Message, Performative} from '../node_modules/fjage/dist/esm/fjage.js';
-import {AgentID, Services, UnetMessages, Protocol} from './unet-utils.js';
+import {Gateway, MessageClass, Message, Performative} from 'fjage/dist/esm/fjage.js';
+import {AgentID, Services, UnetMessages, Protocol} from './unetutils.js';
 import UnetSocket from './unetsocket.js';
 
 
