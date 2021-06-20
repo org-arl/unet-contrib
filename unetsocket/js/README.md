@@ -1,9 +1,9 @@
 JavaScript Helper Library for UnetStack
 ==========================
 
-The JavaScript Helper Library for UnetStack is a JavaScript library which enables controlling of a UnetStack Node from JavaScript , both Browser based (over WebSockets) and Node.JS (TCP).
+The JavaScript Helper Library for UnetStack is a JavaScript library that enables controlling of a UnetStack Node from JavaScript, both Browser-based (over WebSockets) and Node.JS (TCP).
 
-The library contains helper methods, commonly used [Messages](https://fjage.readthedocs.io/en/latest/messages.html) and [Services](https://fjage.readthedocs.io/en/latest/services.html) in Unet, and a implementation of the [UnetSocket API](https://unetstack.net/handbook/unet-handbook_unetsocket_api.html), which is a high-level [Socket-like](https://en.wikipedia.org/wiki/Network_socket) API for communicating over a Unet.
+The library contains helper methods, commonly used [Messages](https://fjage.readthedocs.io/en/latest/messages.html) and [Services](https://fjage.readthedocs.io/en/latest/services.html) in Unet, and an implementation of the [UnetSocket API](https://unetstack.net/handbook/unet-handbook_unetsocket_api.html), which is a high-level [Socket-like](https://en.wikipedia.org/wiki/Network_socket) API for communicating over an Unet.
 
 
 ## Installation
@@ -46,7 +46,7 @@ req.recipient = await gw.agentForService(Services.DATAGRAM)
 let rsp = await gw.send(req);
 ```
 
-The pre-defined `Message` also follow the class hierarchy that is implemented in UnetStack, so syntax like `instanceof` will yield the same results as in UnetStack.
+The pre-defined `Message` also follows the class hierarchy that is implemented in UnetStack, so syntax like `instanceof` will yield the same results as in UnetStack.
 
 ```js
 // RxFrameNtf is a subclass of DatagramNtf
@@ -57,15 +57,15 @@ rxNtf instanceof UnetMessages.DatagramReq; // returns true;
 
 ### UnetSocket
 
-The UnetSocket API is a high-level API exposed by UnetStack to allow users to communicate over a Unet. It is a socket style API, which allows a user to send [Datagrams]() to specific nodes, or as a broadcast, and similarly listen to Datagrams from specific nodes, etc. Detailed explanation of UnetSocket API can be found in the [Unet Handbook](https://unetstack.net/handbook/unet-handbook_unetsocket_api.html)
+The UnetSocket API is a high-level API exposed by UnetStack to allow users to communicate over an Unet. It is a socket-style API, which allows a user to send [Datagrams]() to specific nodes, or as a broadcast, and similarly listen to Datagrams from specific nodes, etc. A detailed explanation of UnetSocket API can be found in the [Unet Handbook](https://unetstack.net/handbook/unet-handbook_unetsocket_api.html)
 
-The JavaScript version of the UnetSocket API allows a user to connect to a node in a Unet from a browser/Node.JS based application and communicate with other nodes in the Unet. The Datagrams received on those nodes could be consumed by other instances of the UnetSocket, either directly on the node, or on a remote [Gateway](https://fjage.readthedocs.io/en/latest/remote.html#interacting-with-agents-using-a-gateway) connected to that node.
+The JavaScript version of the UnetSocket API allows a user to connect to a node in an Unet from a browser/Node.JS-based application and communicate with other nodes in the Unet. The Datagrams received on those nodes could be consumed by other instances of the UnetSocket, either directly on the node, or on a remote [Gateway](https://fjage.readthedocs.io/en/latest/remote.html#interacting-with-agents-using-a-gateway) connected to that node.
 
 ### Importing/Modules
 
 A distribution-ready bundle is available for types of module systems commonly used in the JS world. Examples of how to use it for the different module systems are available in the [examples](/examples) directory.
 
-At runtime, fjage.js (the underlying library used to connect to a Unet node) will check its context (browser or Node.js) and accordingly use the appropriate `Connector` (WebSocket or TCP) for connecting to the Unet node.
+At runtime, fjage.js (the underlying library used to connect to an Unet node) will check its context (browser or Node.js) and accordingly use the appropriate `Connector` (WebSocket or TCP) for connecting to the Unet node.
 
 Here are some code snippets of how you can start using unet.js in the various module systems.
 
