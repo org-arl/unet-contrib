@@ -14,7 +14,7 @@
   "scripts": {
     "build": "rm -rf dist/ && eslint src/*.js && rollup --silent -c rollup.config.js",
     "test": "node test/spec/create-spec.cjs && test/get-unet.sh && test/sim.sh start && sleep 5 && jasmine test/spec/unetSpec.cjs; node test/browser-test.cjs; test/sim.sh stop",
-    "docs": "documentation build src/unetsocket.js src/unetutils.js -f html --github -o docs/",
+    "docs": "rm -rf docs/*; documentation build src/unetsocket.js src/unetutils.js -f md --github -o docs/readme.md",
     "clean": "rm -rf dist/"
   },
   "repository": {
