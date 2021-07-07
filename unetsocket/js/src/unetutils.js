@@ -1,4 +1,4 @@
-import {AgentID, MessageClass, Services} from 'fjage/dist/esm/fjage';
+import {AgentID, MessageClass, Services} from 'fjage';
 
 const DatagramReq = MessageClass('org.arl.unet.DatagramReq');
 const DatagramNtf = MessageClass('org.arl.unet.DatagramNtf');
