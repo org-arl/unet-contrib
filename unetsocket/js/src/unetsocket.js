@@ -1,5 +1,5 @@
 import {Gateway, Performative} from 'fjage/dist/esm/fjage.js';
-import {AgentID, Services, UnetMessages, Protocol} from './unetutils.js';
+import {Services, UnetMessages, Protocol} from './unetutils.js';
 
 const REQUEST_TIMEOUT = 1000;
 
