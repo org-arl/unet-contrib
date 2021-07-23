@@ -193,4 +193,6 @@ int unetsocket_ext_rs232_wakeup(char *devname, int baud, const char *settings);
 /// @return                 0 on success, -1 otherwise
 int unetsocket_ext_sleep(unetsocket_t sock);
 
+int unetsocket_ext_fset_array(unetsocket_t sock, int index, char *target_name, char *param_name, float* value, int len);
+
 #endif

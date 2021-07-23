@@ -1,6 +1,7 @@
 CC = gcc
 CFLAGS += -std=c99 -Wall -Wextra -Werror -Wfloat-equal -Wconversion -Wparentheses -pedantic -Wunused-parameter -Wunused-variable -Wreturn-type -Wno-unused-function -Wredundant-decls -Wreturn-type -Wunused-value -Wswitch-default -Wuninitialized -Winit-self -O2
-FJAGE_VER=b49c7ac1b071ded3dbd2a58db39818da54a202ba
+# FJAGE_VER=b49c7ac1b071ded3dbd2a58db39818da54a202ba
+FJAGE_VER=c6a3b8d3171ef1c86f558d842b26985ab7c1678a
 FJAGE_DIR=fjage-$(FJAGE_VER)
 BUILD = build
 BUILD_API = $(BUILD)/api
@@ -10,7 +11,7 @@ all: libs
 	rm -rf *.zip
 	rm -rf fjage-*
 
-samples: txdata txdata-reliable rxdata range setpowerlevel txsignal pbrecord bbrecord npulses wakeup rs232_wakeup
+samples: txdata txdata-reliable rxdata range setpowerlevel txsignal pbrecord bbrecord npulses setfloatarray wakeup rs232_wakeup
 	rm -rf *.zip
 	rm -rf fjage-*
 
@@ -85,6 +86,12 @@ npulses.o: samples/npulses.c unet.h fjage.h unet_ext.o
 npulses: npulses.o unet_ext.o
 	$(CC) -o samples/npulses unet_ext.o samples/npulses.o libunet.a libfjage.a -lpthread -lm
 
+setfloatarray.o: samples/setfloatarray.c unet.h fjage.h unet_ext.o
+	$(CC) $(CFLAGS) -c samples/setfloatarray.c -o samples/setfloatarray.o
+
+setfloatarray: setfloatarray.o unet_ext.o
+	$(CC) -o samples/setfloatarray unet_ext.o samples/setfloatarray.o libunet.a libfjage.a -lpthread -lm
+
 wakeup.o: samples/wakeup.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/wakeup.c -o samples/wakeup.o
 
@@ -108,7 +115,7 @@ test_unet: test_unet.o
 	$(CC) -o test/test_unet unet_ext.o test/test_unet.o libunet.a libfjage.a -lpthread -lm
 
 clean:
-	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/txdata-reliable samples/rxdata samples/range samples/setpowerlevel samples/txsignal samples/pbrecord samples/bbrecordedsignal.txt samples/pbrecordedsignal.txt samples/bbrecord samples/npulses samples/gpio
+	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/txdata-reliable samples/rxdata samples/range samples/setpowerlevel samples/txsignal samples/pbrecord samples/bbrecordedsignal.txt samples/pbrecordedsignal.txt samples/bbrecord samples/npulses samples/gpio samples/setfloatarray
 	rm -rf "$(FJAGE_DIR)" "$(FJAGE_VER).zip" fjage.h libfjage.a kissfft kiss_fft.h fjage
 	rm -rf $(BUILD)
 

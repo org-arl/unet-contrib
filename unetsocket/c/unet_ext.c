@@ -530,3 +530,30 @@ int unetsocket_ext_sleep(unetsocket_t sock)
     fjage_msg_destroy(msg);
     return -1;
 }
+
+int unetsocket_ext_fset_array(unetsocket_t sock, int index, char *target_name, char *param_name, float* value, int len)
+{
+    if (sock == NULL) return -1;
+    _unetsocket_t *usock = sock;
+    fjage_msg_t msg;
+    fjage_aid_t aid;
+    aid = agent_for_service(usock, target_name);
+    if (aid == NULL) aid = fjage_aid_create(target_name);
+    msg = fjage_msg_create(parameterreq, FJAGE_REQUEST);
+    fjage_msg_set_recipient(msg, aid);
+    if (index == 0) index = -1;
+    fjage_msg_add_int(msg, "index", index);
+    fjage_msg_add_string(msg, "param", param_name);
+    fjage_msg_add_float_array(msg, "value", value, len);
+    msg = request(usock, msg, 5 * TIMEOUT);
+    if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM)
+    {
+        fjage_msg_destroy(msg);
+        fjage_aid_destroy(aid);
+        return 0;
+    }
+    fjage_msg_destroy(msg);
+    fjage_aid_destroy(aid);
+    return -1;
+}
+
