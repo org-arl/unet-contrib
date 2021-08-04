@@ -10,7 +10,7 @@ all: libs
 	rm -rf *.zip
 	rm -rf fjage-*
 
-samples: txdata txdata-reliable rxdata range setpowerlevel txsignal pbrecord bbrecord npulses wakeup rs232_wakeup
+samples: txdata txdata-reliable rxdata range setpowerlevel txsignal pbrecord bbrecord npulses execcmd wakeup rs232_wakeup
 	rm -rf *.zip
 	rm -rf fjage-*
 
@@ -85,6 +85,12 @@ npulses.o: samples/npulses.c unet.h fjage.h unet_ext.o
 npulses: npulses.o unet_ext.o
 	$(CC) -o samples/npulses unet_ext.o samples/npulses.o libunet.a libfjage.a -lpthread -lm
 
+execcmd.o: samples/execcmd.c unet.h fjage.h unet_ext.o
+	$(CC) $(CFLAGS) -c samples/execcmd.c -o samples/execcmd.o
+
+execcmd: execcmd.o unet_ext.o
+	$(CC) -o samples/execcmd unet_ext.o samples/execcmd.o libunet.a libfjage.a -lpthread -lm
+
 wakeup.o: samples/wakeup.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/wakeup.c -o samples/wakeup.o
 
@@ -108,7 +114,7 @@ test_unet: test_unet.o
 	$(CC) -o test/test_unet unet_ext.o test/test_unet.o libunet.a libfjage.a -lpthread -lm
 
 clean:
-	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/txdata-reliable samples/rxdata samples/range samples/setpowerlevel samples/txsignal samples/pbrecord samples/bbrecordedsignal.txt samples/pbrecordedsignal.txt samples/bbrecord samples/npulses samples/gpio
+	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/txdata-reliable samples/rxdata samples/range samples/setpowerlevel samples/txsignal samples/pbrecord samples/bbrecordedsignal.txt samples/pbrecordedsignal.txt samples/bbrecord samples/npulses samples/gpio samples/execcmd
 	rm -rf "$(FJAGE_DIR)" "$(FJAGE_VER).zip" fjage.h libfjage.a kissfft kiss_fft.h fjage
 	rm -rf $(BUILD)
 
