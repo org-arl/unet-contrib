@@ -1,0 +1,15 @@
+# UnetSocket
+
+UnetSocket is a socket style API exposed by UnetStack that allows you to send and receive data over the underwater network. This API is implemented in various programming languages. Most of the implementations are open source and are available here.
+
+| Language   | Status | Support   | Documentation                                                                                           | Package                                                         | Source                                                                                     |
+|------------|--------|-----------|---------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| Java       | Stable | UnetStack | [UnetGateway](https://unetstack.net/javadoc/3.0/org/arl/unet/api/UnetGateway.html)                      | unet-basic.jar*                                                 | -                                                                                          |
+| Groovy     | Stable | UnetStack | [UnetGateway](https://unetstack.net/javadoc/3.0/org/arl/unet/api/UnetGateway.html)                      | unet-basic.jar*                                                 | -                                                                                          |
+| Python 3   | Stable | Community | [UnetPy](https://github.com/org-arl/unet-contrib/blob/master/unetsocket/python/unetpy/__init__.py)      | [PiPy](https://pypi.org/project/unetpy/)                        | [unetsocket/python](https://github.com/org-arl/unet-contrib/tree/master/unetsocket/python) |
+| Javascript | Stable | Community | [unetjs](https://github.com/org-arl/unet-contrib/tree/master/unetsocket/js/docs)                        | [npm](https://www.npmjs.com/package/unetjs)                     | [unetsocket/js](https://github.com/org-arl/unet-contrib/tree/master/unetsocket/js)         |
+| Julia      | Stable | Community | [UnetSockets.jl](https://github.com/org-arl/UnetSockets.jl/blob/master/src/UnetSockets.jl)              | [Julia Package](https://juliapackages.com/packages/unetsockets) | [UnetSockets.jl](https://github.com/org-arl/UnetSockets.jl)                                |
+| C          | Stable | Community | [unet.c](https://github.com/org-arl/unet-contrib/blob/master/unetsocket/c/unet.h)                       | -                                                               | [unetsocket/c](https://github.com/org-arl/unet-contrib/tree/master/unetsocket/c)           |
+| MATLAB     | Stable | Community | [Using Unet in MATLAB](https://github.com/org-arl/unet-contrib/tree/master/unetsocket/matlab) | -                                                               | -                                                                                          |
+
+* Available in the [UnetStack Community Editon](https://unetstack.net/#downloads) download
