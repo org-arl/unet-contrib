@@ -1,4 +1,4 @@
-Unet Examples
+Basic Operations
 =============
 
 Examples of how to use various Unet APIs (Python, Groovy/Java, C) to connect to a modem or simulator running Unet.
