@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
   // ranging
-  rv = unetsocket_ext_get_range(sock_tx, 31, &range);
+  rv = unetsocket_ext_get_range(sock_tx, rx_node_address, &range);
   if (rv == 0) printf("Range measured is : %f \n", range);
   test_assert("Ranging", rv == 0);
   // send data
