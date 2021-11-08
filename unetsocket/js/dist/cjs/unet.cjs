@@ -1,4 +1,4 @@
-/* unet.js v1.0.0 2021-07-07T04:11:04.914Z */
+/* unet.js v1.0.1 2021-11-08T05:30:51.735Z */
 
 'use strict';
 
@@ -13,18 +13,16 @@ function _interopNamespace(e) {
         var d = Object.getOwnPropertyDescriptor(e, k);
         Object.defineProperty(n, k, d.get ? d : {
           enumerable: true,
-          get: function () {
-            return e[k];
-          }
+          get: function () { return e[k]; }
         });
       }
     });
   }
-  n['default'] = e;
+  n["default"] = e;
   return Object.freeze(n);
 }
 
-/* fjage.js v1.9.1-rc5 2021-07-07T04:07:53.061Z */
+/* fjage.js v1.9.1-rc6 */
 
 /* global window self */
 

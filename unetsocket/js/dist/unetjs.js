@@ -2,9 +2,9 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.unet = {}));
-}(this, (function (exports) { 'use strict';
+})(this, (function (exports) { 'use strict';
 
-  /* fjage.js v1.9.1-rc5 2021-07-07T04:07:53.061Z */
+  /* fjage.js v1.9.1-rc6 */
 
   /* global window self */
 
@@ -1689,5 +1689,5 @@
   exports.UnetMessages = UnetMessages;
   exports.UnetSocket = UnetSocket;
 
-})));
+}));
 //# sourceMappingURL=unetjs.js.map
