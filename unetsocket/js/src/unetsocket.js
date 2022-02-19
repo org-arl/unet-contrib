@@ -9,24 +9,24 @@ const DatagramNtf = UnetMessages.DatagramNtf;
 const RxFrameNtf = UnetMessages.RxFrameNtf;
 
 /**
- * Creates a new UnetSocket to connect to a running Unet instance. This constructor returns a 
- * {@link Promise} instead of the constructed UnetSocket object. Use `await` or `.then()` to get 
- * a reference to the UnetSocket object. Based on if this is run in a Browser or Node.js, 
+ * Creates a new UnetSocket to connect to a running Unet instance. This constructor returns a
+ * {@link Promise} instead of the constructed UnetSocket object. Use `await` or `.then()` to get
+ * a reference to the UnetSocket object. Based on if this is run in a Browser or Node.js,
  * it will internally connect over WebSockets or TCP respectively.
  *
- * 
+ *
  * @class UnetSocket
  * @param {string} [hostname] - hostname/ip address of the master container to connect to
  * @param {number} [port] - port number of the master container to connect to
  * @param {string} [path='']  - path of the master container to connect to (for WebSockets)
  * @returns {Promise<UnetSocket>} - Promise which resolves to the UnetSocket object being constructed
- * 
+ *
  * @example
  * let socket = await new UnetSocket('localhost', 8081, '/ws/');
  */
 export default class UnetSocket {
 
-  constructor(hostname, port, path='') { 
+  constructor(hostname, port, path='') {
     return (async () => {
       this.gw = new Gateway({
         hostname : hostname,
@@ -57,13 +57,13 @@ export default class UnetSocket {
    * Checks if a socket is closed.
    * @returns {boolean} - true if closed, false if open
    */
-  isClosed() { 
+  isClosed() {
     return this.gw == null;
   }
 
   /**
    * Binds a socket to listen to a specific protocol datagrams.
-   * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are reserved protocols 
+   * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are reserved protocols
    * and cannot be bound. Unbound sockets listen to all unreserved
    * @param {Protocol} protocol - protocol number to listen for
    * @returns {boolean} - true on success, false on failure
@@ -75,9 +75,9 @@ export default class UnetSocket {
     }
     return false;
   }
-  
+
   /**
-   * Unbinds a socket so that it listens to all unreserved protocols. 
+   * Unbinds a socket so that it listens to all unreserved protocols.
    * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved.
    * @returns {void}
    */
@@ -90,13 +90,13 @@ export default class UnetSocket {
   isBound() { return this.localProtocol >= 0;}
 
   /**
-   * Sets the default destination address and destination protocol number for datagrams sent 
-   * using this socket. The defaults can be overridden for specific send() calls. 
-   * The default protcol number when a socket is opened is Protcol.DATA. 
-   * The default node address is undefined. 
-   * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved, 
+   * Sets the default destination address and destination protocol number for datagrams sent
+   * using this socket. The defaults can be overridden for specific send() calls.
+   * The default protcol number when a socket is opened is Protcol.DATA.
+   * The default node address is undefined.
+   * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,
    * and cannot be used for sending datagrams using the socket.
-   * 
+   *
    * @param {number} to - default destination node address
    * @param {Protocol} protocol - default protocol number
    * @returns {boolean} - true on success, false on failure
@@ -111,11 +111,11 @@ export default class UnetSocket {
   }
 
   /**
-   * Resets the default destination address to undefined, and the default protocol number 
+   * Resets the default destination address to undefined, and the default protocol number
    * to Protocol.DATA.
    * @returns {void}
    */
-  disconnect() { 
+  disconnect() {
     this.remoteAddress = -1;
     this.remoteProtocol = 0;
   }
@@ -130,7 +130,7 @@ export default class UnetSocket {
    * Gets the local node address of the Unet node connected to.
    * @returns {Promise<int>} - local node address, or -1 on error
    */
-  async getLocalAddress() { 
+  async getLocalAddress() {
     if (this.gw == null) return -1;
     const nodeinfo = await this.gw.agentForService(Services.NODE_INFO);
     if (nodeinfo == null) return -1;
@@ -157,14 +157,14 @@ export default class UnetSocket {
   getRemoteProtocol() { return this.remoteProtocol; }
 
   /**
-   * Sets the timeout for datagram reception. A timeout of 0 means the 
-   * {@link UnetSocket#receive|receive method} will check any appropriate 
+   * Sets the timeout for datagram reception. A timeout of 0 means the
+   * {@link UnetSocket#receive|receive method} will check any appropriate
    * Datagram has already been received (and is cached) else return immediately.
-   * 
+   *
    * @param {number} ms - timeout in milliseconds
    * @returns {void}
    */
-  setTimeout(ms) { 
+  setTimeout(ms) {
     if (ms < 0) ms = 0;
     this.timeout = ms;
   }
@@ -213,12 +213,12 @@ export default class UnetSocket {
   }
 
   /**
-   * Receives a datagram sent to the local node and the bound protocol number. If the socket is unbound, 
+   * Receives a datagram sent to the local node and the bound protocol number. If the socket is unbound,
    * then datagrams with all unreserved protocols are received. Any broadcast datagrams are also received.
-   * 
+   *
    * @returns {Promise<?DatagramNtf>} - datagram received by the socket
    */
-  async receive() { 
+  async receive() {
     if (this.gw == null) return null;
     return await this.gw.receive(msg => {
       if (msg.__clazz__ != DatagramNtf.__clazz__ && msg.__clazz__ != RxFrameNtf.__clazz__ ) return false;
@@ -247,7 +247,7 @@ export default class UnetSocket {
   }
 
   /**
-   * 
+   *
    * @param {string} svc - the named service of interest
    * @returns {Promise<AgentID[]>} - a promise which returns an array of {@link AgentID|AgentIDs} that provides the service when resolved
    */
@@ -271,7 +271,7 @@ export default class UnetSocket {
    * @param {string} nodeName - name of the node to resolve
    * @returns {Promise<?number>} - address of the node, or null if unable to resolve
    */
-  async host(nodeName) { 
+  async host(nodeName) {
     const arp = await this.agentForService(Services.ADDRESS_RESOLUTION);
     if (arp == null) return null;
     const req = new AddressResolutionReq(nodeName);

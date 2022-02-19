@@ -1275,6 +1275,8 @@
     'TRANSPORT': 'org.arl.unet.Services.TRANSPORT',
     'REMOTE': 'org.arl.unet.Services.REMOTE',
     'STATE_MANAGER': 'org.arl.unet.Services.STATE_MANAGER',
+    'DEVICE_INFO': 'org.arl.unet.Services.DEVICE_INFO',
+    'DOA': 'org.arl.unet.Services.DOA'
   };
 
   Object.assign(Services, UnetServices);
@@ -1303,97 +1305,97 @@
    */
   let UnetMessages = {
     // unet
-    'TestReportNtf'          : MessageClass('org.arl.unet.TestReportNtf'), 
-    'AbnormalTerminationNtf' : MessageClass('org.arl.unet.AbnormalTerminationNtf'), 
-    'CapabilityListRsp'      : MessageClass('org.arl.unet.CapabilityListRsp'), 
-    'CapabilityReq'          : MessageClass('org.arl.unet.CapabilityReq'), 
-    'ClearReq'               : MessageClass('org.arl.unet.ClearReq'), 
-    'DatagramCancelReq'      : MessageClass('org.arl.unet.DatagramCancelReq'), 
-    'DatagramDeliveryNtf'    : MessageClass('org.arl.unet.DatagramDeliveryNtf'), 
-    'DatagramFailureNtf'     : MessageClass('org.arl.unet.DatagramFailureNtf'), 
-    'DatagramNtf'            : MessageClass('org.arl.unet.DatagramNtf'), 
-    'DatagramProgressNtf'    : MessageClass('org.arl.unet.DatagramProgressNtf'), 
-    'DatagramReq'            : MessageClass('org.arl.unet.DatagramReq'), 
-    'ParamChangeNtf'         : MessageClass('org.arl.unet.ParamChangeNtf'), 
-    'RefuseRsp'              : MessageClass('org.arl.unet.RefuseRsp'), 
-    'FailureNtf'             : MessageClass('org.arl.unet.FailureNtf'), 
+    'TestReportNtf'          : MessageClass('org.arl.unet.TestReportNtf'),
+    'AbnormalTerminationNtf' : MessageClass('org.arl.unet.AbnormalTerminationNtf'),
+    'CapabilityListRsp'      : MessageClass('org.arl.unet.CapabilityListRsp'),
+    'CapabilityReq'          : MessageClass('org.arl.unet.CapabilityReq'),
+    'ClearReq'               : MessageClass('org.arl.unet.ClearReq'),
+    'DatagramCancelReq'      : MessageClass('org.arl.unet.DatagramCancelReq'),
+    'DatagramDeliveryNtf'    : MessageClass('org.arl.unet.DatagramDeliveryNtf'),
+    'DatagramFailureNtf'     : MessageClass('org.arl.unet.DatagramFailureNtf'),
+    'DatagramNtf'            : MessageClass('org.arl.unet.DatagramNtf'),
+    'DatagramProgressNtf'    : MessageClass('org.arl.unet.DatagramProgressNtf'),
+    'DatagramReq'            : MessageClass('org.arl.unet.DatagramReq'),
+    'ParamChangeNtf'         : MessageClass('org.arl.unet.ParamChangeNtf'),
+    'RefuseRsp'              : MessageClass('org.arl.unet.RefuseRsp'),
+    'FailureNtf'             : MessageClass('org.arl.unet.FailureNtf'),
 
     // net
-    'DatagramTraceReq'       : MessageClass('org.arl.unet.net.DatagramTraceReq'), 
-    'RouteDiscoveryReq'      : MessageClass('org.arl.unet.net.RouteDiscoveryReq'), 
-    'RouteTraceReq'          : MessageClass('org.arl.unet.net.RouteTraceReq'), 
-    'RouteDiscoveryNtf'      : MessageClass('org.arl.unet.net.RouteDiscoveryNtf'), 
-    'RouteTraceNtf'          : MessageClass('org.arl.unet.net.RouteTraceNtf'), 
+    'DatagramTraceReq'       : MessageClass('org.arl.unet.net.DatagramTraceReq'),
+    'RouteDiscoveryReq'      : MessageClass('org.arl.unet.net.RouteDiscoveryReq'),
+    'RouteTraceReq'          : MessageClass('org.arl.unet.net.RouteTraceReq'),
+    'RouteDiscoveryNtf'      : MessageClass('org.arl.unet.net.RouteDiscoveryNtf'),
+    'RouteTraceNtf'          : MessageClass('org.arl.unet.net.RouteTraceNtf'),
 
     // phy
-    'FecDecodeReq'           : MessageClass('org.arl.unet.phy.FecDecodeReq'), 
-    'RxJanusFrameNtf'        : MessageClass('org.arl.unet.phy.RxJanusFrameNtf'), 
-    'TxJanusFrameReq'        : MessageClass('org.arl.unet.phy.TxJanusFrameReq'), 
-    'BadFrameNtf'            : MessageClass('org.arl.unet.phy.BadFrameNtf'), 
+    'FecDecodeReq'           : MessageClass('org.arl.unet.phy.FecDecodeReq'),
+    'RxJanusFrameNtf'        : MessageClass('org.arl.unet.phy.RxJanusFrameNtf'),
+    'TxJanusFrameReq'        : MessageClass('org.arl.unet.phy.TxJanusFrameReq'),
+    'BadFrameNtf'            : MessageClass('org.arl.unet.phy.BadFrameNtf'),
     'BadRangeNtf'            : MessageClass('org.arl.unet.phy.BadRangeNtf'),
-    'ClearSyncReq'           : MessageClass('org.arl.unet.phy.ClearSyncReq'), 
-    'CollisionNtf'           : MessageClass('org.arl.unet.phy.CollisionNtf'), 
-    'RxFrameNtf'             : MessageClass('org.arl.unet.phy.RxFrameNtf', DatagramNtf$1), 
-    'RxFrameStartNtf'        : MessageClass('org.arl.unet.phy.RxFrameStartNtf'), 
-    'SyncInfoReq'            : MessageClass('org.arl.unet.phy.SyncInfoReq'), 
-    'SyncInfoRsp'            : MessageClass('org.arl.unet.phy.SyncInfoRsp'), 
-    'TxFrameNtf'             : MessageClass('org.arl.unet.phy.TxFrameNtf'), 
-    'TxFrameReq'             : MessageClass('org.arl.unet.phy.TxFrameReq', DatagramReq$1), 
-    'TxFrameStartNtf'        : MessageClass('org.arl.unet.phy.TxFrameStartNtf'), 
-    'TxRawFrameReq'          : MessageClass('org.arl.unet.phy.TxRawFrameReq'), 
+    'ClearSyncReq'           : MessageClass('org.arl.unet.phy.ClearSyncReq'),
+    'CollisionNtf'           : MessageClass('org.arl.unet.phy.CollisionNtf'),
+    'RxFrameNtf'             : MessageClass('org.arl.unet.phy.RxFrameNtf', DatagramNtf$1),
+    'RxFrameStartNtf'        : MessageClass('org.arl.unet.phy.RxFrameStartNtf'),
+    'SyncInfoReq'            : MessageClass('org.arl.unet.phy.SyncInfoReq'),
+    'SyncInfoRsp'            : MessageClass('org.arl.unet.phy.SyncInfoRsp'),
+    'TxFrameNtf'             : MessageClass('org.arl.unet.phy.TxFrameNtf'),
+    'TxFrameReq'             : MessageClass('org.arl.unet.phy.TxFrameReq', DatagramReq$1),
+    'TxFrameStartNtf'        : MessageClass('org.arl.unet.phy.TxFrameStartNtf'),
+    'TxRawFrameReq'          : MessageClass('org.arl.unet.phy.TxRawFrameReq'),
 
     // addr
-    'AddressAllocReq'        : MessageClass('org.arl.unet.addr.AddressAllocReq'), 
-    'AddressAllocRsp'        : MessageClass('org.arl.unet.addr.AddressAllocRsp'), 
-    'AddressResolutionReq'   : MessageClass('org.arl.unet.addr.AddressResolutionReq'), 
-    'AddressResolutionRsp'   : MessageClass('org.arl.unet.addr.AddressResolutionRsp'), 
+    'AddressAllocReq'        : MessageClass('org.arl.unet.addr.AddressAllocReq'),
+    'AddressAllocRsp'        : MessageClass('org.arl.unet.addr.AddressAllocRsp'),
+    'AddressResolutionReq'   : MessageClass('org.arl.unet.addr.AddressResolutionReq'),
+    'AddressResolutionRsp'   : MessageClass('org.arl.unet.addr.AddressResolutionRsp'),
 
     // bb
-    'BasebandSignal'         : MessageClass('org.arl.unet.bb.BasebandSignal'), 
-    'RecordBasebandSignalReq' : MessageClass('org.arl.unet.bb.RecordBasebandSignalReq'), 
-    'RxBasebandSignalNtf'    : MessageClass('org.arl.unet.bb.RxBasebandSignalNtf', BasebandSignal), 
-    'TxBasebandSignalReq'    : MessageClass('org.arl.unet.bb.TxBasebandSignalReq', BasebandSignal), 
+    'BasebandSignal'         : MessageClass('org.arl.unet.bb.BasebandSignal'),
+    'RecordBasebandSignalReq' : MessageClass('org.arl.unet.bb.RecordBasebandSignalReq'),
+    'RxBasebandSignalNtf'    : MessageClass('org.arl.unet.bb.RxBasebandSignalNtf', BasebandSignal),
+    'TxBasebandSignalReq'    : MessageClass('org.arl.unet.bb.TxBasebandSignalReq', BasebandSignal),
 
     // link
-    'LinkStatusNtf'          : MessageClass('org.arl.unet.link.LinkStatusNtf'), 
+    'LinkStatusNtf'          : MessageClass('org.arl.unet.link.LinkStatusNtf'),
 
     // localization
-    'RangeNtf'               : MessageClass('org.arl.unet.localization.RangeNtf'), 
-    'RangeReq'               : MessageClass('org.arl.unet.localization.RangeReq'), 
-    'BeaconReq'              : MessageClass('org.arl.unet.localization.BeaconReq'), 
-    'RespondReq'             : MessageClass('org.arl.unet.localization.RespondReq'), 
-    'InterrogationNtf'       : MessageClass('org.arl.unet.localization.InterrogationNtf'), 
+    'RangeNtf'               : MessageClass('org.arl.unet.localization.RangeNtf'),
+    'RangeReq'               : MessageClass('org.arl.unet.localization.RangeReq'),
+    'BeaconReq'              : MessageClass('org.arl.unet.localization.BeaconReq'),
+    'RespondReq'             : MessageClass('org.arl.unet.localization.RespondReq'),
+    'InterrogationNtf'       : MessageClass('org.arl.unet.localization.InterrogationNtf'),
 
 
     // mac
-    'ReservationAcceptReq'   : MessageClass('org.arl.unet.mac.ReservationAcceptReq'), 
-    'ReservationCancelReq'   : MessageClass('org.arl.unet.mac.ReservationCancelReq'), 
-    'ReservationReq'         : MessageClass('org.arl.unet.mac.ReservationReq'), 
-    'ReservationRsp'         : MessageClass('org.arl.unet.mac.ReservationRsp'), 
-    'ReservationStatusNtf'   : MessageClass('org.arl.unet.mac.ReservationStatusNtf'), 
-    'RxAckNtf'               : MessageClass('org.arl.unet.mac.RxAckNtf'), 
-    'TxAckReq'               : MessageClass('org.arl.unet.mac.TxAckReq'), 
+    'ReservationAcceptReq'   : MessageClass('org.arl.unet.mac.ReservationAcceptReq'),
+    'ReservationCancelReq'   : MessageClass('org.arl.unet.mac.ReservationCancelReq'),
+    'ReservationReq'         : MessageClass('org.arl.unet.mac.ReservationReq'),
+    'ReservationRsp'         : MessageClass('org.arl.unet.mac.ReservationRsp'),
+    'ReservationStatusNtf'   : MessageClass('org.arl.unet.mac.ReservationStatusNtf'),
+    'RxAckNtf'               : MessageClass('org.arl.unet.mac.RxAckNtf'),
+    'TxAckReq'               : MessageClass('org.arl.unet.mac.TxAckReq'),
 
 
     // remote
-    'RemoteExecReq'          : MessageClass('org.arl.unet.remote.RemoteExecReq'), 
-    'RemoteFailureNtf'       : MessageClass('org.arl.unet.remote.RemoteFailureNtf'), 
-    'RemoteFileGetReq'       : MessageClass('org.arl.unet.remote.RemoteFileGetReq'), 
-    'RemoteFileNtf'          : MessageClass('org.arl.unet.remote.RemoteFileNtf'), 
-    'RemoteFilePutReq'       : MessageClass('org.arl.unet.remote.RemoteFilePutReq'), 
-    'RemoteSuccessNtf'       : MessageClass('org.arl.unet.remote.RemoteSuccessNtf'), 
-    'RemoteTextNtf'          : MessageClass('org.arl.unet.remote.RemoteTextNtf'), 
-    'RemoteTextReq'          : MessageClass('org.arl.unet.remote.RemoteTextReq'), 
+    'RemoteExecReq'          : MessageClass('org.arl.unet.remote.RemoteExecReq'),
+    'RemoteFailureNtf'       : MessageClass('org.arl.unet.remote.RemoteFailureNtf'),
+    'RemoteFileGetReq'       : MessageClass('org.arl.unet.remote.RemoteFileGetReq'),
+    'RemoteFileNtf'          : MessageClass('org.arl.unet.remote.RemoteFileNtf'),
+    'RemoteFilePutReq'       : MessageClass('org.arl.unet.remote.RemoteFilePutReq'),
+    'RemoteSuccessNtf'       : MessageClass('org.arl.unet.remote.RemoteSuccessNtf'),
+    'RemoteTextNtf'          : MessageClass('org.arl.unet.remote.RemoteTextNtf'),
+    'RemoteTextReq'          : MessageClass('org.arl.unet.remote.RemoteTextReq'),
 
     // scheduler
-    'AddScheduledSleepReq'   : MessageClass('org.arl.unet.scheduler.AddScheduledSleepReq'), 
-    'GetSleepScheduleReq'    : MessageClass('org.arl.unet.scheduler.GetSleepScheduleReq'), 
-    'RemoveScheduledSleepReq' : MessageClass('org.arl.unet.scheduler.RemoveScheduledSleepReq'), 
-    'SleepScheduleRsp'       : MessageClass('org.arl.unet.scheduler.SleepScheduleRsp'), 
-    'WakeFromSleepNtf'       : MessageClass('org.arl.unet.scheduler.WakeFromSleepNtf'), 
+    'AddScheduledSleepReq'   : MessageClass('org.arl.unet.scheduler.AddScheduledSleepReq'),
+    'GetSleepScheduleReq'    : MessageClass('org.arl.unet.scheduler.GetSleepScheduleReq'),
+    'RemoveScheduledSleepReq' : MessageClass('org.arl.unet.scheduler.RemoveScheduledSleepReq'),
+    'SleepScheduleRsp'       : MessageClass('org.arl.unet.scheduler.SleepScheduleRsp'),
+    'WakeFromSleepNtf'       : MessageClass('org.arl.unet.scheduler.WakeFromSleepNtf'),
 
     // state
-    'ClearStateReq'          : MessageClass('org.arl.unet.state.ClearStateReq'), 
+    'ClearStateReq'          : MessageClass('org.arl.unet.state.ClearStateReq'),
     'SaveStateReq'           : MessageClass('org.arl.unet.state.SaveStateReq')
   };
 
@@ -1405,24 +1407,24 @@
   const RxFrameNtf = UnetMessages.RxFrameNtf;
 
   /**
-   * Creates a new UnetSocket to connect to a running Unet instance. This constructor returns a 
-   * {@link Promise} instead of the constructed UnetSocket object. Use `await` or `.then()` to get 
-   * a reference to the UnetSocket object. Based on if this is run in a Browser or Node.js, 
+   * Creates a new UnetSocket to connect to a running Unet instance. This constructor returns a
+   * {@link Promise} instead of the constructed UnetSocket object. Use `await` or `.then()` to get
+   * a reference to the UnetSocket object. Based on if this is run in a Browser or Node.js,
    * it will internally connect over WebSockets or TCP respectively.
    *
-   * 
+   *
    * @class UnetSocket
    * @param {string} [hostname] - hostname/ip address of the master container to connect to
    * @param {number} [port] - port number of the master container to connect to
    * @param {string} [path='']  - path of the master container to connect to (for WebSockets)
    * @returns {Promise<UnetSocket>} - Promise which resolves to the UnetSocket object being constructed
-   * 
+   *
    * @example
    * let socket = await new UnetSocket('localhost', 8081, '/ws/');
    */
   class UnetSocket {
 
-    constructor(hostname, port, path='') { 
+    constructor(hostname, port, path='') {
       return (async () => {
         this.gw = new Gateway({
           hostname : hostname,
@@ -1453,13 +1455,13 @@
      * Checks if a socket is closed.
      * @returns {boolean} - true if closed, false if open
      */
-    isClosed() { 
+    isClosed() {
       return this.gw == null;
     }
 
     /**
      * Binds a socket to listen to a specific protocol datagrams.
-     * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are reserved protocols 
+     * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are reserved protocols
      * and cannot be bound. Unbound sockets listen to all unreserved
      * @param {Protocol} protocol - protocol number to listen for
      * @returns {boolean} - true on success, false on failure
@@ -1471,9 +1473,9 @@
       }
       return false;
     }
-    
+
     /**
-     * Unbinds a socket so that it listens to all unreserved protocols. 
+     * Unbinds a socket so that it listens to all unreserved protocols.
      * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved.
      * @returns {void}
      */
@@ -1486,13 +1488,13 @@
     isBound() { return this.localProtocol >= 0;}
 
     /**
-     * Sets the default destination address and destination protocol number for datagrams sent 
-     * using this socket. The defaults can be overridden for specific send() calls. 
-     * The default protcol number when a socket is opened is Protcol.DATA. 
-     * The default node address is undefined. 
-     * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved, 
+     * Sets the default destination address and destination protocol number for datagrams sent
+     * using this socket. The defaults can be overridden for specific send() calls.
+     * The default protcol number when a socket is opened is Protcol.DATA.
+     * The default node address is undefined.
+     * Protocol numbers between Protocol.DATA+1 to Protocol.USER-1 are considered reserved,
      * and cannot be used for sending datagrams using the socket.
-     * 
+     *
      * @param {number} to - default destination node address
      * @param {Protocol} protocol - default protocol number
      * @returns {boolean} - true on success, false on failure
@@ -1507,11 +1509,11 @@
     }
 
     /**
-     * Resets the default destination address to undefined, and the default protocol number 
+     * Resets the default destination address to undefined, and the default protocol number
      * to Protocol.DATA.
      * @returns {void}
      */
-    disconnect() { 
+    disconnect() {
       this.remoteAddress = -1;
       this.remoteProtocol = 0;
     }
@@ -1526,7 +1528,7 @@
      * Gets the local node address of the Unet node connected to.
      * @returns {Promise<int>} - local node address, or -1 on error
      */
-    async getLocalAddress() { 
+    async getLocalAddress() {
       if (this.gw == null) return -1;
       const nodeinfo = await this.gw.agentForService(Services.NODE_INFO);
       if (nodeinfo == null) return -1;
@@ -1553,14 +1555,14 @@
     getRemoteProtocol() { return this.remoteProtocol; }
 
     /**
-     * Sets the timeout for datagram reception. A timeout of 0 means the 
-     * {@link UnetSocket#receive|receive method} will check any appropriate 
+     * Sets the timeout for datagram reception. A timeout of 0 means the
+     * {@link UnetSocket#receive|receive method} will check any appropriate
      * Datagram has already been received (and is cached) else return immediately.
-     * 
+     *
      * @param {number} ms - timeout in milliseconds
      * @returns {void}
      */
-    setTimeout(ms) { 
+    setTimeout(ms) {
       if (ms < 0) ms = 0;
       this.timeout = ms;
     }
@@ -1609,12 +1611,12 @@
     }
 
     /**
-     * Receives a datagram sent to the local node and the bound protocol number. If the socket is unbound, 
+     * Receives a datagram sent to the local node and the bound protocol number. If the socket is unbound,
      * then datagrams with all unreserved protocols are received. Any broadcast datagrams are also received.
-     * 
+     *
      * @returns {Promise<?DatagramNtf>} - datagram received by the socket
      */
-    async receive() { 
+    async receive() {
       if (this.gw == null) return null;
       return await this.gw.receive(msg => {
         if (msg.__clazz__ != DatagramNtf.__clazz__ && msg.__clazz__ != RxFrameNtf.__clazz__ ) return false;
@@ -1643,7 +1645,7 @@
     }
 
     /**
-     * 
+     *
      * @param {string} svc - the named service of interest
      * @returns {Promise<AgentID[]>} - a promise which returns an array of {@link AgentID|AgentIDs} that provides the service when resolved
      */
@@ -1667,7 +1669,7 @@
      * @param {string} nodeName - name of the node to resolve
      * @returns {Promise<?number>} - address of the node, or null if unable to resolve
      */
-    async host(nodeName) { 
+    async host(nodeName) {
       const arp = await this.agentForService(Services.ADDRESS_RESOLUTION);
       if (arp == null) return null;
       const req = new AddressResolutionReq(nodeName);
