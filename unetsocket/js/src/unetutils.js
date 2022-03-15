@@ -143,7 +143,13 @@ let UnetMessages = {
 };
 
 /*
-* To convert the local coordinates to GPS.
+/**
+   * Convert coordinates from a local coordinates to GPS coordinate
+   * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
+   * @param {Number} x - X coordinate of the local coordinate to be converted
+   * @param {Number} y - Y coordinate of the local coordinate to be converted
+   * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+   */
 */
 export function toGps(origin, x, y) {
   let coords = [] ;
