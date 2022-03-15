@@ -149,7 +149,7 @@ export function toGps(origin, x, y) {
   let coords = [] ;
   let [xScale,yScale] = _initConv(origin[0]);
   coords[1] = x/xScale + origin[1];
-  coords[0] = y/yScale + origin[0]
+  coords[0] = y/yScale + origin[0];
   return coords;
 }
 
