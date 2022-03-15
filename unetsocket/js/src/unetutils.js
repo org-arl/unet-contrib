@@ -142,6 +142,53 @@ let UnetMessages = {
   'SaveStateReq'           : MessageClass('org.arl.unet.state.SaveStateReq')
 };
 
+/*
+* To convert the local coordinates to GPS.
+*/
+export function toGps(origin, location) {
+  let coords = [] ;
+  let [xScale,yScale] = _initConv(origin[0]);
+  coords[1] = location[0]/xScale + origin[1];
+  coords[0] = location[1]/yScale + origin[0]
+  return coords;
+}
+
+/*
+* To convert the GPS coordinates to local coordinates.
+*/
+export function toLocal(origin, location) {
+  let pos = [];
+  let [xScale,yScale] = initConv(origin[0]);
+  pos[0] = (getLong(latlong)-long0) * xScale;
+  pos[1] = (getLat(latlong)-lat0) * yScale;  
+  return pos;
+}
+
+function _initConv(lat){
+  let rlat = lat * Math.PI/180;
+  let yScale = 111132.92 - 559.82*Math.cos(2*rlat) + 1.175*Math.cos(4*rlat) - 0.0023*Math.cos(6*rlat);
+  let xScale = 111412.84*Math.cos(rlat) - 93.5*Math.cos(3*rlat) + 0.118*Math.cos(5*rlat);
+  return [xScale, yScale];
+}
+
+function _getLat(loc) {
+  switch (loc.length) {
+    case 2: return loc[0];
+    case 4: return loc[0] + (loc[0]>=0?1:-1)*loc[1]/60;
+    case 6: return loc[0] + (loc[0]>=0?1:-1)*(loc[1]/60 + loc[2]/3600);
+    default: return loc[0];
+  }
+}
+
+function _getLong(loc) {
+  switch (loc.length) {
+    case 2: return loc[1];
+    case 4: return loc[2] + (loc[2]>=0?1:-1)*loc[3]/60;
+    case 6: return loc[3] + (loc[3]>=0?1:-1)*(loc[4]/60 + loc[5]/3600);
+    default: return loc[1];
+  }
+}
+
 /**
  * A message which requests the transmission of the datagram from the Unet
  *
