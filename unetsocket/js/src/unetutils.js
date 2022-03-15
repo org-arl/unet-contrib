@@ -142,15 +142,14 @@ let UnetMessages = {
   'SaveStateReq'           : MessageClass('org.arl.unet.state.SaveStateReq')
 };
 
-/*
 /**
-   * Convert coordinates from a local coordinates to GPS coordinate
-   * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
-   * @param {Number} x - X coordinate of the local coordinate to be converted
-   * @param {Number} y - Y coordinate of the local coordinate to be converted
-   * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
-   */
-*/
+  * Convert coordinates from a local coordinates to GPS coordinate
+  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {Number} x - X coordinate of the local coordinate to be converted
+  * @param {Number} y - Y coordinate of the local coordinate to be converted
+  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  */
+
 export function toGps(origin, x, y) {
   let coords = [] ;
   let [xScale,yScale] = _initConv(origin[0]);
@@ -159,13 +158,17 @@ export function toGps(origin, x, y) {
   return coords;
 }
 
-/*
-* To convert the GPS coordinates to local coordinates.
-*/
-export function toLocal(origin, lat, lng) {
+/**
+  * Convert coordinates from a GPS coordinates to local coordinate
+  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {Number} lat - Latitude of the GPS coordinate to be converted
+  * @param {Number} lon - Longitude of the GPS coordinate to be converted
+  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  */
+export function toLocal(origin, lat, lon) {
   let pos = [];
   let [xScale,yScale] = _initConv(origin[0]);
-  pos[0] = (lng-origin[1]) * xScale;
+  pos[0] = (lon-origin[1]) * xScale;
   pos[1] = (lat-origin[0]) * yScale;  
   return pos;
 }

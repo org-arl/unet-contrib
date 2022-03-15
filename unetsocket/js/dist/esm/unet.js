@@ -1,4 +1,4 @@
-/* unet.js v1.1.0 2022-03-15T11:59:25.813Z */
+/* unet.js v1.1.0 2022-03-15T15:56:02.508Z */
 
 /* fjage.js v1.9.1-rc6 */
 
@@ -1395,9 +1395,14 @@ let UnetMessages = {
   'SaveStateReq'           : MessageClass('org.arl.unet.state.SaveStateReq')
 };
 
-/*
-* To convert the local coordinates to GPS.
-*/
+/**
+  * Convert coordinates from a local coordinates to GPS coordinate
+  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {Number} x - X coordinate of the local coordinate to be converted
+  * @param {Number} y - Y coordinate of the local coordinate to be converted
+  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  */
+
 function toGps(origin, x, y) {
   let coords = [] ;
   let [xScale,yScale] = _initConv(origin[0]);
@@ -1406,13 +1411,17 @@ function toGps(origin, x, y) {
   return coords;
 }
 
-/*
-* To convert the GPS coordinates to local coordinates.
-*/
-function toLocal(origin, lat, lng) {
+/**
+  * Convert coordinates from a GPS coordinates to local coordinate
+  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {Number} lat - Latitude of the GPS coordinate to be converted
+  * @param {Number} lon - Longitude of the GPS coordinate to be converted
+  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  */
+function toLocal(origin, lat, lon) {
   let pos = [];
   let [xScale,yScale] = _initConv(origin[0]);
-  pos[0] = (lng-origin[1]) * xScale;
+  pos[0] = (lon-origin[1]) * xScale;
   pos[1] = (lat-origin[0]) * yScale;  
   return pos;
 }
