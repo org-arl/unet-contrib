@@ -195,3 +195,54 @@ describe('A UnetSocket', function () {
 
 });
 
+describe('Unet Utils', function () {
+  function coordTester(res, val) {
+    const tolerance = 0.000100;
+    const min = res - tolerance;
+    const max = parseFloat(res) + tolerance;
+    return (val >= min && val <=max);
+  }
+
+  beforeEach(function() {
+    jasmine.addCustomEqualityTester(coordTester);
+  });
+
+  it('should be able to convert local coordinates to GPS coordinates', function () {
+    const origin=[1.34286,103.84109];
+    let x=100, y=100;
+    let loc = toGps(origin,x,y);
+    expect(loc.length).toBe(2);
+    expect(loc[0]).toBeInstanceOf(Number);
+    expect(loc[1]).toBeInstanceOf(Number);
+    expect(loc[0]).toEqual(1.343764);
+    expect(loc[1]).toEqual(103.841988);
+
+    x=0, y=14.5;
+    loc = toGps(origin,x,y);
+    expect(loc.length).toBe(2);
+    expect(loc[0]).toBeInstanceOf(Number);
+    expect(loc[1]).toBeInstanceOf(Number);
+    expect(loc[0]).toEqual(1.342991);
+    expect(loc[1]).toEqual(103.84109);
+  });
+
+  it('should be able to convert GPS coordinates to local coordinates', function () {
+    const origin=[1.34286,103.84109];
+    let lat=1.343764, lon=103.841988;
+    let loc = toLocal(origin,lat,lon);
+    expect(loc.length).toBe(2);
+    expect(loc[0]).toBeInstanceOf(Number);
+    expect(loc[1]).toBeInstanceOf(Number);
+    expect(loc[0]).toEqual(99.937602);
+    expect(loc[1]).toEqual(99.959693);
+
+    lat=1.342991, lon=103.84109;
+    loc = toLocal(origin,lat,lon);
+    expect(loc.length).toBe(2);
+    expect(loc[0]).toBeInstanceOf(Number);
+    expect(loc[1]).toBeInstanceOf(Number);
+    expect(loc[0]).toEqual(0);
+    expect(loc[1]).toEqual(14.485309);
+  });
+
+});

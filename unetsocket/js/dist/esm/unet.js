@@ -1,4 +1,4 @@
-/* unet.js v1.1.0 2022-02-19T07:01:46.580Z */
+/* unet.js v1.1.0 2022-03-15T15:56:02.508Z */
 
 /* fjage.js v1.9.1-rc6 */
 
@@ -1395,6 +1395,44 @@ let UnetMessages = {
   'SaveStateReq'           : MessageClass('org.arl.unet.state.SaveStateReq')
 };
 
+/**
+  * Convert coordinates from a local coordinates to GPS coordinate
+  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {Number} x - X coordinate of the local coordinate to be converted
+  * @param {Number} y - Y coordinate of the local coordinate to be converted
+  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  */
+
+function toGps(origin, x, y) {
+  let coords = [] ;
+  let [xScale,yScale] = _initConv(origin[0]);
+  coords[1] = x/xScale + origin[1];
+  coords[0] = y/yScale + origin[0];
+  return coords;
+}
+
+/**
+  * Convert coordinates from a GPS coordinates to local coordinate
+  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {Number} lat - Latitude of the GPS coordinate to be converted
+  * @param {Number} lon - Longitude of the GPS coordinate to be converted
+  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  */
+function toLocal(origin, lat, lon) {
+  let pos = [];
+  let [xScale,yScale] = _initConv(origin[0]);
+  pos[0] = (lon-origin[1]) * xScale;
+  pos[1] = (lat-origin[0]) * yScale;  
+  return pos;
+}
+
+function _initConv(lat){
+  let rlat = lat * Math.PI/180;
+  let yScale = 111132.92 - 559.82*Math.cos(2*rlat) + 1.175*Math.cos(4*rlat) - 0.0023*Math.cos(6*rlat);
+  let xScale = 111412.84*Math.cos(rlat) - 93.5*Math.cos(3*rlat) + 0.118*Math.cos(5*rlat);
+  return [xScale, yScale];
+}
+
 const REQUEST_TIMEOUT = 1000;
 
 const AddressResolutionReq = UnetMessages.AddressResolutionReq;
@@ -1677,4 +1715,4 @@ class UnetSocket {
   }
 }
 
-export { AgentID, Gateway, Message, MessageClass, Performative, Protocol, Services, UnetMessages, UnetSocket };
+export { AgentID, Gateway, Message, MessageClass, Performative, Protocol, Services, UnetMessages, UnetSocket, toGps, toLocal };

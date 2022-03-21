@@ -143,6 +143,44 @@ let UnetMessages = {
 };
 
 /**
+  * Convert coordinates from a local coordinates to GPS coordinate
+  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {Number} x - X coordinate of the local coordinate to be converted
+  * @param {Number} y - Y coordinate of the local coordinate to be converted
+  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  */
+
+export function toGps(origin, x, y) {
+  let coords = [] ;
+  let [xScale,yScale] = _initConv(origin[0]);
+  coords[1] = x/xScale + origin[1];
+  coords[0] = y/yScale + origin[0];
+  return coords;
+}
+
+/**
+  * Convert coordinates from a GPS coordinates to local coordinate
+  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {Number} lat - Latitude of the GPS coordinate to be converted
+  * @param {Number} lon - Longitude of the GPS coordinate to be converted
+  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  */
+export function toLocal(origin, lat, lon) {
+  let pos = [];
+  let [xScale,yScale] = _initConv(origin[0]);
+  pos[0] = (lon-origin[1]) * xScale;
+  pos[1] = (lat-origin[0]) * yScale;  
+  return pos;
+}
+
+function _initConv(lat){
+  let rlat = lat * Math.PI/180;
+  let yScale = 111132.92 - 559.82*Math.cos(2*rlat) + 1.175*Math.cos(4*rlat) - 0.0023*Math.cos(6*rlat);
+  let xScale = 111412.84*Math.cos(rlat) - 93.5*Math.cos(3*rlat) + 0.118*Math.cos(5*rlat);
+  return [xScale, yScale];
+}
+
+/**
  * A message which requests the transmission of the datagram from the Unet
  *
  * @typedef {Message} DatagramReq
