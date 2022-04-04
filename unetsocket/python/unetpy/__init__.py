@@ -124,6 +124,8 @@ class Services(_Services):
     TRANSPORT = 'org.arl.unet.Services.TRANSPORT'
     REMOTE = 'org.arl.unet.Services.REMOTE'
     STATE_MANAGER = 'org.arl.unet.Services.STATE_MANAGER'
+    DEVICE_INFO = 'org.arl.unet.Services.DEVICE_INFO'
+    DOA = 'org.arl.unet.Services.DOA'
 
 class Topics:
     """Topics that can be subscribed to.
