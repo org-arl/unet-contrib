@@ -4,21 +4,21 @@ const DatagramNtf = UnetMessages.DatagramNtf;
 
 let gwOpts = [];
 if (isBrowser){
-  gwOpts = [{ 
+  gwOpts = [{
     hostname: 'localhost',
     port : '8081',
     pathname: '/ws/'
-  }, { 
+  }, {
     hostname: 'localhost',
     port : '8082',
     pathname: '/ws/'
   }];
 } else if (isJsDom || isNode){
-  gwOpts = [{ 
+  gwOpts = [{
     hostname: 'localhost',
     port : '1101',
     pathname: ''
-  }, { 
+  }, {
     hostname: 'localhost',
     port : '1102',
     pathname: ''
@@ -245,4 +245,10 @@ describe('Unet Utils', function () {
     expect(loc[1]).toEqual(14.485309);
   });
 
+});
+
+describe('A CachingAgentID', function () {
+  it('should be creatable from an AgentID', async function () {});
+  it('should only return cached values for parameters if within maxage', async function () {});
+  it('should return new values for parameters if beyond maxage', async function () {});
 });
