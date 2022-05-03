@@ -1,4 +1,4 @@
-import {AgentID, MessageClass, Services, Gateway as FjageGateway} from 'fjage';
+import {AgentID, MessageClass, Services, Gateway} from 'fjage';
 
 const DatagramReq = MessageClass('org.arl.unet.DatagramReq');
 const DatagramNtf = MessageClass('org.arl.unet.DatagramNtf');
@@ -346,7 +346,7 @@ class CachingAgentID extends AgentID {
 }
 
 
-class Gateway extends FjageGateway{
+class CachingGateway extends Gateway{
 
   /**
    * Get an AgentID for a given agent name.
@@ -399,4 +399,4 @@ class Gateway extends FjageGateway{
   }
 }
 
-export {AgentID, Services, UnetMessages, Protocol, Gateway, CachingAgentID};
+export {AgentID, Services, UnetMessages, Protocol, CachingGateway as Gateway, CachingAgentID};

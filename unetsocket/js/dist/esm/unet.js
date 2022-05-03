@@ -1,4 +1,4 @@
-/* unet.js v1.1.0 2022-05-03T08:37:16.709Z */
+/* unet.js v1.1.0 2022-05-03T08:44:36.670Z */
 
 /* fjage.js v1.9.1-rc6 */
 
@@ -635,7 +635,7 @@ class Message {
  * @param {string} [pathname=="/ws/"]        - <strike>Deprecated : path of the master container to connect to (for WebSockets)</strike>
  * @param {number} [timeout=1000]            - <strike>Deprecated : timeout for fjage level messages in ms</strike>
  */
-class Gateway$1 {
+class Gateway {
 
   constructor(opts = {}, port, pathname='/ws/', timeout=1000) {
     // Support for deprecated constructor
@@ -1599,7 +1599,7 @@ class CachingAgentID extends AgentID {
 }
 
 
-class Gateway extends Gateway$1{
+class CachingGateway extends Gateway{
 
   /**
    * Get an AgentID for a given agent name.
@@ -1679,7 +1679,7 @@ class UnetSocket {
 
   constructor(hostname, port, path='') {
     return (async () => {
-      this.gw = new Gateway({
+      this.gw = new CachingGateway({
         hostname : hostname,
         port : port,
         path : path
@@ -1937,4 +1937,4 @@ class UnetSocket {
   }
 }
 
-export { AgentID, CachingAgentID, Gateway, Message, MessageClass, Performative, Protocol, Services, UnetMessages, UnetSocket, toGps, toLocal };
+export { AgentID, CachingAgentID, CachingGateway as Gateway, Message, MessageClass, Performative, Protocol, Services, UnetMessages, UnetSocket, toGps, toLocal };
