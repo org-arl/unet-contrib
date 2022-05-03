@@ -1,6 +1,6 @@
-#!/bin/bash 
+#!/bin/bash
 
-TEST_SCRIPT=2-node-des.groovy 
+TEST_SCRIPT=2-node-des.groovy
 
 pattern="test/unet/unet-*"
 files=($pattern)
@@ -11,6 +11,5 @@ if [ "$1" == "start" ]; then
 fi
 
 if [ "$1" == "stop" ]; then
-  PID=$(pgrep -f "java.*unet")
-  kill "$PID"
+  for pid in $(pgrep -f "java.*unet"); do kill -9 $pid > /dev/null 2>&1; done
 fi

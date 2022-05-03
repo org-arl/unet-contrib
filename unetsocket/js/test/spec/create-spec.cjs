@@ -9,13 +9,13 @@ const fs = require('fs');
 const { exit } = require('process');
 
 const cjs_includes = [
-  'const { UnetSocket, Services, AgentID, Gateway, Protocol, UnetMessages, toGps, toLocal } = require(\'../../dist/cjs/unet.cjs\');',
+  'const { UnetSocket, Services, AgentID, CachingAgentID, Gateway, Protocol, UnetMessages, toGps, toLocal} = require(\'../../dist/cjs/unet.cjs\');',
   'const { isBrowser, isJsDom, isNode } = require(\'../../node_modules/browser-or-node/lib/index.js\');',
   ''
 ];
 
 const esm_includes = [
-  'import { UnetSocket, Services, AgentID, Gateway, Protocol, UnetMessages, toGps, toLocal } from \'../../dist/esm/unet.js\';',
+  'import { UnetSocket, Services, AgentID, CachingAgentID, Gateway, Protocol, UnetMessages, toGps, toLocal } from \'../../dist/esm/unet.js\';',
   'import { isBrowser, isNode, isJsDom } from \'../../node_modules/browser-or-node/src/index.js\';',
   ''
 ];
@@ -27,7 +27,7 @@ let esm_spec = __dirname+'/unetSpec.mjs';
 
 function copyFile(source, target, cb) {
   var cbCalled = false;
-    
+
   var rd = fs.createReadStream(source);
   rd.on('error', function(err) {
     done(err);
@@ -40,7 +40,7 @@ function copyFile(source, target, cb) {
     done();
   });
   rd.pipe(wr);
-    
+
   function done(err) {
     if (!cbCalled) {
       cb(err);
@@ -58,7 +58,7 @@ fs.writeFile(cjs_spec, cjs_includes.join('\n'), err => {
     if (err) {
       console.error(err);
       exit(1);
-    } 
+    }
   });
 });
 
@@ -72,6 +72,6 @@ fs.writeFile(esm_spec, esm_includes.join('\n'), err => {
     if (err) {
       console.error(err);
       exit(1);
-    } 
+    }
   });
 });

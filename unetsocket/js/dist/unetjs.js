@@ -639,7 +639,7 @@
    * @param {string} [pathname=="/ws/"]        - <strike>Deprecated : path of the master container to connect to (for WebSockets)</strike>
    * @param {number} [timeout=1000]            - <strike>Deprecated : timeout for fjage level messages in ms</strike>
    */
-  class Gateway {
+  class Gateway$1 {
 
     constructor(opts = {}, port, pathname='/ws/', timeout=1000) {
       // Support for deprecated constructor
@@ -1426,7 +1426,7 @@
     let pos = [];
     let [xScale,yScale] = _initConv(origin[0]);
     pos[0] = (lon-origin[1]) * xScale;
-    pos[1] = (lat-origin[0]) * yScale;  
+    pos[1] = (lat-origin[0]) * yScale;
     return pos;
   }
 
@@ -1435,6 +1435,225 @@
     let yScale = 111132.92 - 559.82*Math.cos(2*rlat) + 1.175*Math.cos(4*rlat) - 0.0023*Math.cos(6*rlat);
     let xScale = 111412.84*Math.cos(rlat) - 93.5*Math.cos(3*rlat) + 0.118*Math.cos(5*rlat);
     return [xScale, yScale];
+  }
+
+  /**
+   * A message which requests the transmission of the datagram from the Unet
+   *
+   * @typedef {Message} DatagramReq
+   * @property {number[]} data - data as an Array of bytes
+   * @property {number} from - from/source node address
+   * @property {number} to - to/destination node address
+   * @property {number} protocol - protocol number to be used to send this Datagram
+   * @property {boolean} reliability - true if Datagram should be reliable, false if unreliable
+   * @property {number} ttl - time-to-live for the datagram. Time-to-live is advisory, and an agent may choose it ignore it
+   */
+
+  /**
+   * Notification of received datagram message received by the Unet node.
+   *
+   * @typedef {Message} DatagramNtf
+   * @property {number[]} data - data as an Array of bytes
+   * @property {number} from - from/source node address
+   * @property {number} to - to/destination node address
+   * @property {number} protocol - protocol number to be used to send this Datagram
+   * @property {number} ttl - time-to-live for the datagram. Time-to-live is advisory, and an agent may choose it ignore it
+   */
+
+  /**
+   * An identifier for an agent or a topic.
+   * @external AgentID
+   * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
+   */
+
+  /**
+   * Services supported by fjage agents.
+   * @external Services
+   * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
+   */
+
+  /**
+   *  An action represented by a message.
+   * @external Performative
+   * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
+   */
+
+  /**
+   * Function to creates a unqualified message class based on a fully qualified name.
+   * @external MessageClass
+   * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
+   */
+
+  /**
+   * A caching CachingAgentID which caches Agent parameters locally.
+   *
+   * @class
+   * @extends AgentID
+   * @param {string | AgentID} name - name of the agent or an AgentID to copy
+   * @param {boolean} topic - name of topic
+   * @param {Gateway} owner - Gateway owner for this AgentID
+   * @param {number} [opts.greedy=true] - greedily fetches and caches all parameters if this Agent
+   *
+  */
+  class CachingAgentID extends AgentID {
+
+    constructor(name, topic, owner, greedy=true) {
+      if (name instanceof AgentID) {
+        super(name.getName(), name.topic, name.owner);
+      } else {
+        super(name, topic, owner);
+      }
+      this.greedy = greedy;
+      this.cache = {};
+    }
+
+    /**
+     * Sets parameter(s) on the Agent referred to by this AgentID, and caches the parameter(s).
+     *
+     * @param {(string|string[])} params - parameters name(s) to be set
+     * @param {(Object|Object[])} values - parameters value(s) to be set
+     * @param {number} [index=-1] - index of parameter(s) to be set
+     * @param {number} [timeout=5000] - timeout for the response
+     * @returns {Promise<(Object|Object[])>} - a promise which returns the new value(s) of the parameters
+     */
+    async set(params, values, index=-1, timeout=5000) {
+      let s = await super.set(params, values, index, timeout);
+      this._updateCache(params, s, index);
+    }
+
+    /**
+     * Gets parameter(s) on the Agent referred to by this AgentID, getting them from the cache if possible.
+     *
+     * @param {(string|string[])} params - parameters name(s) to be fetched
+     * @param {number} [index=-1] - index of parameter(s) to be fetched
+     * @param {number} [timeout=5000] - timeout for the response
+     * @param {number} [maxage=1000] - maximum age of the cached result to retreive
+     * @returns {Promise<(Object|Object[])>} - a promise which returns the value(s) of the parameters
+     */
+    async get(params, index=-1, timeout=5000, maxage=5000) {
+      if (this._isCached(params, index, maxage)) return this._getCache(params, index);
+      if (this.greedy && !(Array.isArray(params) && params.includes('name')) && params != 'name') {
+        let rsp = await super.get(null, index, timeout);
+        this._updateCache(null, rsp, index);
+        if (Array.isArray(params)) {
+          return params.map(p => {
+            let f = Object.keys(rsp).find(rv => this._toNamed(rv) === p);
+            return f ? rsp[f] : null;
+          });
+        } else {
+          let f = Object.keys(rsp).find(rv => this._toNamed(rv) === params);
+          return f ? rsp[f] : null;
+        }
+      } else {
+        let r = await super.get(params, index, timeout);
+        this._updateCache(params, r, index);
+        return r;
+      }
+    }
+
+    _updateCache(params, vals, index) {
+      if (vals == null || Array.isArray(vals) && vals.every(v => v == null)) return;
+      if (params == null) {
+        params = Object.keys(vals);
+        vals = Object.values(vals);
+      } else if (!Array.isArray(params)) params = [params];
+      if (!Array.isArray(vals)) vals = [vals];
+      params = params.map(this._toNamed);
+      if (this.cache[index.toString()] === undefined) this.cache[index.toString()] = {};
+      let c = this.cache[index.toString()];
+      for (let i = 0; i < params.length; i++) {
+        if (c[params[i]] === undefined) c[params[i]] = {};
+        c[params[i]].value = vals[i];
+        c[params[i]].ctime = Date.now();
+      }
+    }
+
+    _isCached(params, index, maxage) {
+      if (maxage <= 0) return false;
+      if (params == null) return false;
+      let c = this.cache[index.toString()];
+      if (!c) {
+        return false;
+      }
+      if (!Array.isArray(params)) params = [params];
+      const rv = params.every(p => {
+        p = this._toNamed(p);
+        return (p in c) && (Date.now() - c[p].ctime <= maxage);
+      });
+      return rv;
+    }
+
+    _getCache(params, index) {
+      let c = this.cache[index.toString()];
+      if (!c) return null;
+      if (!Array.isArray(params)){
+        if (params in c) return c[params].value;
+        return null;
+      }else {
+        return params.map(p => p in c ? c[p].value : null);
+      }
+    }
+
+    _toNamed(param) {
+      const idx = param.lastIndexOf('.');
+      if (idx < 0) return param;
+      else return param.slice(idx+1);
+    }
+
+  }
+
+
+  class Gateway extends Gateway$1{
+
+    /**
+     * Get an AgentID for a given agent name.
+     *
+     * @param {string} name - name of agent
+     * @param {Boolean} caching - if the AgentID should cache parameters
+     * @returns {AgentID|CachingAgentID} - AgentID for the given name
+     */
+    agent(name, caching=true) {
+      const aid = super.agent(name);
+      return caching ? new CachingAgentID(aid) : aid;
+    }
+
+    /**
+     * Returns an object representing the named topic.
+     *
+     * @param {string|AgentID} topic - name of the topic or AgentID
+     * @param {string} topic2 - name of the topic if the topic param is an AgentID
+     * @param {Boolean} caching - if the AgentID should cache parameters
+     * @returns {AgentID|CachingAgentID} - object representing the topic
+     */
+    topic(topic, topic2, caching=true) {
+      const aid = super.topic(topic, topic2);
+      return caching ? new CachingAgentID(aid) : aid;
+    }
+
+    /**
+     * Finds an agent that provides a named service. If multiple agents are registered
+     * to provide a given service, any of the agents' id may be returned.
+     *
+     * @param {string} service - the named service of interest
+     * @param {Boolean} caching - if the AgentID should cache parameters
+     * @returns {Promise<?AgentID|CachingAgentID>} - a promise which returns an agent id for an agent that provides the service when resolved
+     */
+    async agentForService(service, caching=true) {
+      const aid = await super.agentForService(service);
+      return caching ? new CachingAgentID(aid) : aid;
+    }
+
+    /**
+     * Finds all agents that provides a named service.
+     *
+     * @param {string} service - the named service of interest
+     * @param {Boolean} caching - if the AgentID should cache parameters
+     * @returns {Promise<?AgentID|CachingAgentID[]>} - a promise which returns an array of all agent ids that provides the service when resolved
+     */
+    async agentsForService(service, caching=true) {
+      const aids = await super.agentsForService(service);
+      return caching ? aids.map(a => new CachingAgentID(a)) : aids;
+    }
   }
 
   const REQUEST_TIMEOUT = 1000;
@@ -1675,31 +1894,34 @@
     /**
      * Gets an AgentID providing a specified service for low-level access to UnetStack
      * @param {string} svc - the named service of interest
+     * @param {Boolean} caching - if the AgentID should cache parameters
      * @returns {Promise<?AgentID>} - a promise which returns an {@link AgentID} that provides the service when resolved
      */
-    async agentForService(svc) {
+    async agentForService(svc, caching=true) {
       if (this.gw == null) return null;
-      return await this.gw.agentForService(svc);
+      return await this.gw.agentForService(svc, caching);
     }
 
     /**
      *
      * @param {string} svc - the named service of interest
+     * @param {Boolean} caching - if the AgentID should cache parameters
      * @returns {Promise<AgentID[]>} - a promise which returns an array of {@link AgentID|AgentIDs} that provides the service when resolved
      */
-    async agentsForService(svc) {
+    async agentsForService(svc, caching=true) {
       if (this.gw == null) return null;
-      return await this.gw.agentsForService(svc);
+      return await this.gw.agentsForService(svc, caching``);
     }
 
     /**
      * Gets a named AgentID for low-level access to UnetStack.
      * @param {string} name - name of agent
+     * @param {Boolean} caching - if the AgentID should cache parameters
      * @returns {AgentID} - AgentID for the given name
      */
-    agent(name) {
+    agent(name, caching=true) {
       if (this.gw == null) return null;
-      return this.gw.agent(name);
+      return this.gw.agent(name, caching);
     }
 
     /**
@@ -1720,6 +1942,7 @@
   }
 
   exports.AgentID = AgentID;
+  exports.CachingAgentID = CachingAgentID;
   exports.Gateway = Gateway;
   exports.Message = Message;
   exports.MessageClass = MessageClass;

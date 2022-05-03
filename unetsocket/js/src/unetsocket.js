@@ -1,5 +1,5 @@
-import {Gateway, Performative} from 'fjage';
-import {Services, UnetMessages, Protocol} from './unetutils';
+import {Performative} from 'fjage';
+import {Gateway, Services, UnetMessages, Protocol} from './unetutils';
 
 const REQUEST_TIMEOUT = 1000;
 
@@ -239,31 +239,34 @@ export default class UnetSocket {
   /**
    * Gets an AgentID providing a specified service for low-level access to UnetStack
    * @param {string} svc - the named service of interest
+   * @param {Boolean} caching - if the AgentID should cache parameters
    * @returns {Promise<?AgentID>} - a promise which returns an {@link AgentID} that provides the service when resolved
    */
-  async agentForService(svc) {
+  async agentForService(svc, caching=true) {
     if (this.gw == null) return null;
-    return await this.gw.agentForService(svc);
+    return await this.gw.agentForService(svc, caching);
   }
 
   /**
    *
    * @param {string} svc - the named service of interest
+   * @param {Boolean} caching - if the AgentID should cache parameters
    * @returns {Promise<AgentID[]>} - a promise which returns an array of {@link AgentID|AgentIDs} that provides the service when resolved
    */
-  async agentsForService(svc) {
+  async agentsForService(svc, caching=true) {
     if (this.gw == null) return null;
-    return await this.gw.agentsForService(svc);
+    return await this.gw.agentsForService(svc, caching``);
   }
 
   /**
    * Gets a named AgentID for low-level access to UnetStack.
    * @param {string} name - name of agent
+   * @param {Boolean} caching - if the AgentID should cache parameters
    * @returns {AgentID} - AgentID for the given name
    */
-  agent(name) {
+  agent(name, caching=true) {
     if (this.gw == null) return null;
-    return this.gw.agent(name);
+    return this.gw.agent(name, caching);
   }
 
   /**

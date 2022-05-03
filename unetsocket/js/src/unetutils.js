@@ -1,4 +1,4 @@
-import {AgentID, MessageClass, Services, Gateway} from 'fjage';
+import {AgentID, MessageClass, Services, Gateway as FjageGateway} from 'fjage';
 
 const DatagramReq = MessageClass('org.arl.unet.DatagramReq');
 const DatagramNtf = MessageClass('org.arl.unet.DatagramNtf');
@@ -228,16 +228,11 @@ function _initConv(lat){
  */
 
 /**
- * @external Gateway
- * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
- */
-
-/**
  * A caching CachingAgentID which caches Agent parameters locally.
  *
  * @class
  * @extends AgentID
- * @param {string} name - name of the agent
+ * @param {string | AgentID} name - name of the agent or an AgentID to copy
  * @param {boolean} topic - name of topic
  * @param {Gateway} owner - Gateway owner for this AgentID
  * @param {number} [opts.greedy=true] - greedily fetches and caches all parameters if this Agent
@@ -280,7 +275,7 @@ class CachingAgentID extends AgentID {
    */
   async get(params, index=-1, timeout=5000, maxage=5000) {
     if (this._isCached(params, index, maxage)) return this._getCache(params, index);
-    if (this.greedy) {
+    if (this.greedy && !(Array.isArray(params) && params.includes('name')) && params != 'name') {
       let rsp = await super.get(null, index, timeout);
       this._updateCache(null, rsp, index);
       if (Array.isArray(params)) {
@@ -305,6 +300,7 @@ class CachingAgentID extends AgentID {
       params = Object.keys(vals);
       vals = Object.values(vals);
     } else if (!Array.isArray(params)) params = [params];
+    if (!Array.isArray(vals)) vals = [vals];
     params = params.map(this._toNamed);
     if (this.cache[index.toString()] === undefined) this.cache[index.toString()] = {};
     let c = this.cache[index.toString()];
@@ -325,8 +321,7 @@ class CachingAgentID extends AgentID {
     if (!Array.isArray(params)) params = [params];
     const rv = params.every(p => {
       p = this._toNamed(p);
-      const have = (p in c) && (Date.now() - c[p].ctime <= maxage);
-      return have;
+      return (p in c) && (Date.now() - c[p].ctime <= maxage);
     });
     return rv;
   }
@@ -350,4 +345,58 @@ class CachingAgentID extends AgentID {
 
 }
 
-export {AgentID, Services, UnetMessages, Protocol, CachingAgentID};
+
+class Gateway extends FjageGateway{
+
+  /**
+   * Get an AgentID for a given agent name.
+   *
+   * @param {string} name - name of agent
+   * @param {Boolean} caching - if the AgentID should cache parameters
+   * @returns {AgentID|CachingAgentID} - AgentID for the given name
+   */
+  agent(name, caching=true) {
+    const aid = super.agent(name);
+    return caching ? new CachingAgentID(aid) : aid;
+  }
+
+  /**
+   * Returns an object representing the named topic.
+   *
+   * @param {string|AgentID} topic - name of the topic or AgentID
+   * @param {string} topic2 - name of the topic if the topic param is an AgentID
+   * @param {Boolean} caching - if the AgentID should cache parameters
+   * @returns {AgentID|CachingAgentID} - object representing the topic
+   */
+  topic(topic, topic2, caching=true) {
+    const aid = super.topic(topic, topic2);
+    return caching ? new CachingAgentID(aid) : aid;
+  }
+
+  /**
+   * Finds an agent that provides a named service. If multiple agents are registered
+   * to provide a given service, any of the agents' id may be returned.
+   *
+   * @param {string} service - the named service of interest
+   * @param {Boolean} caching - if the AgentID should cache parameters
+   * @returns {Promise<?AgentID|CachingAgentID>} - a promise which returns an agent id for an agent that provides the service when resolved
+   */
+  async agentForService(service, caching=true) {
+    const aid = await super.agentForService(service);
+    return caching ? new CachingAgentID(aid) : aid;
+  }
+
+  /**
+   * Finds all agents that provides a named service.
+   *
+   * @param {string} service - the named service of interest
+   * @param {Boolean} caching - if the AgentID should cache parameters
+   * @returns {Promise<?AgentID|CachingAgentID[]>} - a promise which returns an array of all agent ids that provides the service when resolved
+   */
+  async agentsForService(service, caching=true) {
+    const aids = await super.agentsForService(service);
+    return caching ? aids.map(a => new CachingAgentID(a)) : aids;
+  }
+}
+
+export {AgentID, Services, UnetMessages, Protocol, Gateway, CachingAgentID};
