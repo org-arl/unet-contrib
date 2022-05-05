@@ -294,12 +294,35 @@ describe('A CachingAgentID', function () {
     let maxFrameLength = await phy.get('maxFrameLength',1);
     await phy.get(null); // get all
     gw.connector.sock.send.calls.reset();
-    await delay(5000);
+    await delay(6000);
     await phy.get('refPowerLevel');
     let clockOffset2 = await phy.get('clockOffset');
     let maxFrameLength2 = await phy.get('maxFrameLength',1);
     expect(gw.connector.sock.send).toHaveBeenCalledTimes(2);
     expect(maxFrameLength).toBe(maxFrameLength2);
     expect(clockOffset).toBe(clockOffset2);
+  });
+
+
+  it('should not fetch all parameters if not configured to be greedy', async function () {
+    let phy = await gw.agentForService(Services.PHYSICAL);
+    expect(phy).toBeInstanceOf(CachingAgentID);
+    let nongreedyphy = new CachingAgentID(phy, null, null, false);
+    spyOn(gw.connector.sock, 'send').and.callThrough();
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('clockOffset');
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(1);
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('clockOffset');
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(0);
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('MTU');
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(1);
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('maxFrameLength',1);
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(1);
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('maxFrameLength',1);
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(0);
   });
 });
