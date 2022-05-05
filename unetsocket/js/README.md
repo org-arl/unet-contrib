@@ -1,21 +1,19 @@
-JavaScript Helper Library for UnetStack
-==========================
+# JavaScript Helper Library for UnetStack
 
 The JavaScript Helper Library for UnetStack is a JavaScript library that enables controlling of a UnetStack Node from JavaScript, both Browser-based (over WebSockets) and Node.JS (TCP).
 
 The library contains helper methods, commonly used [Messages](https://fjage.readthedocs.io/en/latest/messages.html) and [Services](https://fjage.readthedocs.io/en/latest/services.html) in Unet, and an implementation of the [UnetSocket API](https://unetstack.net/handbook/unet-handbook_unetsocket_api.html), which is a high-level [Socket-like](https://en.wikipedia.org/wiki/Network_socket) API for communicating over an Unet.
 
-
 ## Installation
 
 ```sh
 $ npm install unetjs
+...
 ```
 
 ## Documentation
 
-The API documentation of the latest version of unet.js is published at https://github.com/org-arl/unet-contrib/tree/master/unetsocket/js/docs
-
+The API documentation of the latest version of unet.js is published at [https://github.com/org-arl/unet-contrib/tree/master/unetsocket/js/docs](https://github.com/org-arl/unet-contrib/tree/master/unetsocket/js/docs)
 
 ## Usage
 
@@ -57,9 +55,45 @@ rxNtf instanceof UnetMessages.DatagramReq; // returns true;
 
 ### UnetSocket
 
-The UnetSocket API is a high-level API exposed by UnetStack to allow users to communicate over an Unet. It is a socket-style API, which allows a user to send [Datagrams]() to specific nodes, or as a broadcast, and similarly listen to Datagrams from specific nodes, etc. A detailed explanation of UnetSocket API can be found in the [Unet Handbook](https://unetstack.net/handbook/unet-handbook_unetsocket_api.html)
+The UnetSocket API is a high-level API exposed by UnetStack to allow users to communicate over an Unet. It is a socket-style API, which allows a user to send [Datagrams](https://unetstack.net/handbook/unet-handbook_datagram_service.html) to specific nodes, or as a broadcast, and similarly listen to Datagrams from specific nodes, etc. A detailed explanation of UnetSocket API can be found in the [Unet Handbook](https://unetstack.net/handbook/unet-handbook_unetsocket_api.html)
 
 The JavaScript version of the UnetSocket API allows a user to connect to a node in an Unet from a browser/Node.JS-based application and communicate with other nodes in the Unet. The Datagrams received on those nodes could be consumed by other instances of the UnetSocket, either directly on the node, or on a remote [Gateway](https://fjage.readthedocs.io/en/latest/remote.html#interacting-with-agents-using-a-gateway) connected to that node.
+
+### Caching Parameter Responses
+
+The UnetSocket API allows a user to cache responses to parameter requests. This is useful in a scenario where the parameters aren't changing very often, and the user wants to reduce the round trip time for parameter requests.
+
+UnetSocket API acheives this using two mechanism, firstly, it can request ALL of the parameters from an Agent instead of just one, and then cache the responses. This is called the `greedy` mode. The greedy mode is enabled by default but can be disabled by setting the `greedy` property to `false` in the `CachingAgentID` constructor.
+
+Secondly, the UnetSocket API caches the responses to parameter requests for a limited time. If the user requests the same parameter again, the UnetSocket will return the cached response. The time to cache a response is set by the `cacheTime` property in the `CachingAgentID` constructor.
+
+```js
+import {UnetMessages, Gateway} from 'unetjs'
+let gw = new Gateway({...});
+let nodeinfo = await gw.agentForService(Services.NODE_INFO); // returns a CachingAgentID by default.
+let cLoc = nodeinfo.get('location'); // this will request all the Parameters from the Agent, and cache the responses.
+...
+cLoc = nodeinfo.get('location', maxage=5000); // this will return the cached response if it was called within 5000ms of the original request.
+...
+cLoc = nodeinfo.get('location', maxage=0); // this will force the Gateway to request the parameter again.
+```
+
+```js
+import {UnetMessages, Gateway} from 'unetjs'
+let gw = new Gateway({...});
+let nodeinfo = await gw.agentForService(Services.NODE_INFO); // returns a CachingAgentID by default.
+let nonCachingNodeInfo = await gw.agentForService(Services.NODE_INFO, false); // returns an AgentID without caching (original fjage.js functionality).
+let cLoc = nonCachingNodeInfo.get('location'); // this will request the `location` parameter from the Agent.
+...
+cLoc = nonCachingNodeInfo.get('location'); // this will request the `location` parameter from the Agent again.
+
+let nonGreedyNodeInfo = await gw.agentForService(Services.NODE_INFO, true, false); // returns an CachingAgentID that's not greedy.
+let cLoc = nonGreedyNodeInfo.get('location'); // this will request the `location` parameter from the Agent.
+...
+cLoc = nonCachingNodeInfo.get('location'); // this will request the `location` parameter from the cache.
+...
+let cLoc = nonGreedyNodeInfo.get('heading'); // this will request the `heading` parameter from the Agent.
+```
 
 ### Importing/Modules
 
@@ -92,6 +126,7 @@ const gw = new Gateway({
 ```
 
 ### [UMD](dist)
+
 ```js
 <script src="unet.min.js"></script>
 <script>

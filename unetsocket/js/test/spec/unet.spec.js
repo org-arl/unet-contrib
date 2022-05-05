@@ -1,4 +1,4 @@
-/* global it xit expect spyOn describe AgentID CachingAgentID UnetMessages Gateway Services beforeAll isBrowser isJsDom isNode UnetSocket Protocol*/
+/* global it expect spyOn describe AgentID CachingAgentID UnetMessages Gateway Services beforeAll isBrowser isJsDom isNode UnetSocket Protocol toGps toLocal beforeEach jasmine*/
 
 const DatagramNtf = UnetMessages.DatagramNtf;
 
