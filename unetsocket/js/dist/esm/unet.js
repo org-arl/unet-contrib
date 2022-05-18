@@ -1,4 +1,4 @@
-/* unet.js v1.1.0 2022-05-05T02:26:16.079Z */
+/* unet.js v2.0.1 2022-05-18T03:51:58.752Z */
 
 /* fjage.js v1.9.1-rc6 */
 
@@ -1488,7 +1488,7 @@ function _initConv(lat){
  * @param {string | AgentID} name - name of the agent or an AgentID to copy
  * @param {boolean} topic - name of topic
  * @param {Gateway} owner - Gateway owner for this AgentID
- * @param {number} [opts.greedy=true] - greedily fetches and caches all parameters if this Agent
+ * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
  *
 */
 class CachingAgentID extends AgentID {
@@ -1523,7 +1523,7 @@ class CachingAgentID extends AgentID {
    * @param {(string|string[])} params - parameters name(s) to be fetched
    * @param {number} [index=-1] - index of parameter(s) to be fetched
    * @param {number} [timeout=5000] - timeout for the response
-   * @param {number} [maxage=1000] - maximum age of the cached result to retreive
+   * @param {number} [maxage=5000] - maximum age of the cached result to retreive
    * @returns {Promise<(Object|Object[])>} - a promise which returns the value(s) of the parameters
    */
   async get(params, index=-1, timeout=5000, maxage=5000) {
@@ -1605,12 +1605,13 @@ class CachingGateway extends Gateway{
    * Get an AgentID for a given agent name.
    *
    * @param {string} name - name of agent
-   * @param {Boolean} caching - if the AgentID should cache parameters
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
    * @returns {AgentID|CachingAgentID} - AgentID for the given name
    */
-  agent(name, caching=true) {
+  agent(name, caching=true, greedy=true) {
     const aid = super.agent(name);
-    return caching ? new CachingAgentID(aid) : aid;
+    return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
   }
 
   /**
@@ -1618,12 +1619,13 @@ class CachingGateway extends Gateway{
    *
    * @param {string|AgentID} topic - name of the topic or AgentID
    * @param {string} topic2 - name of the topic if the topic param is an AgentID
-   * @param {Boolean} caching - if the AgentID should cache parameters
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
    * @returns {AgentID|CachingAgentID} - object representing the topic
    */
-  topic(topic, topic2, caching=true) {
+  topic(topic, topic2, caching=true, greedy=true) {
     const aid = super.topic(topic, topic2);
-    return caching ? new CachingAgentID(aid) : aid;
+    return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
   }
 
   /**
@@ -1631,24 +1633,26 @@ class CachingGateway extends Gateway{
    * to provide a given service, any of the agents' id may be returned.
    *
    * @param {string} service - the named service of interest
-   * @param {Boolean} caching - if the AgentID should cache parameters
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
    * @returns {Promise<?AgentID|CachingAgentID>} - a promise which returns an agent id for an agent that provides the service when resolved
    */
-  async agentForService(service, caching=true) {
+  async agentForService(service, caching=true, greedy=true) {
     const aid = await super.agentForService(service);
-    return caching ? new CachingAgentID(aid) : aid;
+    return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
   }
 
   /**
    * Finds all agents that provides a named service.
    *
    * @param {string} service - the named service of interest
-   * @param {Boolean} caching - if the AgentID should cache parameters
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
    * @returns {Promise<?AgentID|CachingAgentID[]>} - a promise which returns an array of all agent ids that provides the service when resolved
    */
-  async agentsForService(service, caching=true) {
+  async agentsForService(service, caching=true, greedy=true) {
     const aids = await super.agentsForService(service);
-    return caching ? aids.map(a => new CachingAgentID(a)) : aids;
+    return caching ? aids.map(a => new CachingAgentID(a, null, null, greedy)) : aids;
   }
 }
 
