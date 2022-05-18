@@ -1,4 +1,4 @@
-import {AgentID, MessageClass, Services} from 'fjage';
+import {AgentID, MessageClass, Services, Gateway} from 'fjage';
 
 const DatagramReq = MessageClass('org.arl.unet.DatagramReq');
 const DatagramNtf = MessageClass('org.arl.unet.DatagramNtf');
@@ -169,7 +169,7 @@ export function toLocal(origin, lat, lon) {
   let pos = [];
   let [xScale,yScale] = _initConv(origin[0]);
   pos[0] = (lon-origin[1]) * xScale;
-  pos[1] = (lat-origin[0]) * yScale;  
+  pos[1] = (lat-origin[0]) * yScale;
   return pos;
 }
 
@@ -228,8 +228,179 @@ function _initConv(lat){
  */
 
 /**
- * @external Gateway
- * @see {@link https://org-arl.github.io/fjage/jsdoc/|fjåge.js Documentation}
- */
+ * A caching CachingAgentID which caches Agent parameters locally.
+ *
+ * @class
+ * @extends AgentID
+ * @param {string | AgentID} name - name of the agent or an AgentID to copy
+ * @param {boolean} topic - name of topic
+ * @param {Gateway} owner - Gateway owner for this AgentID
+ * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
+ *
+*/
+class CachingAgentID extends AgentID {
 
-export {AgentID, Services, UnetMessages, Protocol};
+  constructor(name, topic, owner, greedy=true) {
+    if (name instanceof AgentID) {
+      super(name.getName(), name.topic, name.owner);
+    } else {
+      super(name, topic, owner);
+    }
+    this.greedy = greedy;
+    this.cache = {};
+  }
+
+  /**
+   * Sets parameter(s) on the Agent referred to by this AgentID, and caches the parameter(s).
+   *
+   * @param {(string|string[])} params - parameters name(s) to be set
+   * @param {(Object|Object[])} values - parameters value(s) to be set
+   * @param {number} [index=-1] - index of parameter(s) to be set
+   * @param {number} [timeout=5000] - timeout for the response
+   * @returns {Promise<(Object|Object[])>} - a promise which returns the new value(s) of the parameters
+   */
+  async set(params, values, index=-1, timeout=5000) {
+    let s = await super.set(params, values, index, timeout);
+    this._updateCache(params, s, index);
+  }
+
+  /**
+   * Gets parameter(s) on the Agent referred to by this AgentID, getting them from the cache if possible.
+   *
+   * @param {(string|string[])} params - parameters name(s) to be fetched
+   * @param {number} [index=-1] - index of parameter(s) to be fetched
+   * @param {number} [timeout=5000] - timeout for the response
+   * @param {number} [maxage=5000] - maximum age of the cached result to retreive
+   * @returns {Promise<(Object|Object[])>} - a promise which returns the value(s) of the parameters
+   */
+  async get(params, index=-1, timeout=5000, maxage=5000) {
+    if (this._isCached(params, index, maxage)) return this._getCache(params, index);
+    if (this.greedy && !(Array.isArray(params) && params.includes('name')) && params != 'name') {
+      let rsp = await super.get(null, index, timeout);
+      this._updateCache(null, rsp, index);
+      if (Array.isArray(params)) {
+        return params.map(p => {
+          let f = Object.keys(rsp).find(rv => this._toNamed(rv) === p);
+          return f ? rsp[f] : null;
+        });
+      } else {
+        let f = Object.keys(rsp).find(rv => this._toNamed(rv) === params);
+        return f ? rsp[f] : null;
+      }
+    } else{
+      let r = await super.get(params, index, timeout);
+      this._updateCache(params, r, index);
+      return r;
+    }
+  }
+
+  _updateCache(params, vals, index) {
+    if (vals == null || Array.isArray(vals) && vals.every(v => v == null)) return;
+    if (params == null) {
+      params = Object.keys(vals);
+      vals = Object.values(vals);
+    } else if (!Array.isArray(params)) params = [params];
+    if (!Array.isArray(vals)) vals = [vals];
+    params = params.map(this._toNamed);
+    if (this.cache[index.toString()] === undefined) this.cache[index.toString()] = {};
+    let c = this.cache[index.toString()];
+    for (let i = 0; i < params.length; i++) {
+      if (c[params[i]] === undefined) c[params[i]] = {};
+      c[params[i]].value = vals[i];
+      c[params[i]].ctime = Date.now();
+    }
+  }
+
+  _isCached(params, index, maxage) {
+    if (maxage <= 0) return false;
+    if (params == null) return false;
+    let c = this.cache[index.toString()];
+    if (!c) {
+      return false;
+    }
+    if (!Array.isArray(params)) params = [params];
+    const rv = params.every(p => {
+      p = this._toNamed(p);
+      return (p in c) && (Date.now() - c[p].ctime <= maxage);
+    });
+    return rv;
+  }
+
+  _getCache(params, index) {
+    let c = this.cache[index.toString()];
+    if (!c) return null;
+    if (!Array.isArray(params)){
+      if (params in c) return c[params].value;
+      return null;
+    }else {
+      return params.map(p => p in c ? c[p].value : null);
+    }
+  }
+
+  _toNamed(param) {
+    const idx = param.lastIndexOf('.');
+    if (idx < 0) return param;
+    else return param.slice(idx+1);
+  }
+
+}
+
+
+class CachingGateway extends Gateway{
+
+  /**
+   * Get an AgentID for a given agent name.
+   *
+   * @param {string} name - name of agent
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
+   * @returns {AgentID|CachingAgentID} - AgentID for the given name
+   */
+  agent(name, caching=true, greedy=true) {
+    const aid = super.agent(name);
+    return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
+  }
+
+  /**
+   * Returns an object representing the named topic.
+   *
+   * @param {string|AgentID} topic - name of the topic or AgentID
+   * @param {string} topic2 - name of the topic if the topic param is an AgentID
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
+   * @returns {AgentID|CachingAgentID} - object representing the topic
+   */
+  topic(topic, topic2, caching=true, greedy=true) {
+    const aid = super.topic(topic, topic2);
+    return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
+  }
+
+  /**
+   * Finds an agent that provides a named service. If multiple agents are registered
+   * to provide a given service, any of the agents' id may be returned.
+   *
+   * @param {string} service - the named service of interest
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
+   * @returns {Promise<?AgentID|CachingAgentID>} - a promise which returns an agent id for an agent that provides the service when resolved
+   */
+  async agentForService(service, caching=true, greedy=true) {
+    const aid = await super.agentForService(service);
+    return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
+  }
+
+  /**
+   * Finds all agents that provides a named service.
+   *
+   * @param {string} service - the named service of interest
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
+   * @returns {Promise<?AgentID|CachingAgentID[]>} - a promise which returns an array of all agent ids that provides the service when resolved
+   */
+  async agentsForService(service, caching=true, greedy=true) {
+    const aids = await super.agentsForService(service);
+    return caching ? aids.map(a => new CachingAgentID(a, null, null, greedy)) : aids;
+  }
+}
+
+export {AgentID, Services, UnetMessages, Protocol, CachingGateway as Gateway, CachingAgentID};

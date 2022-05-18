@@ -1,28 +1,32 @@
-/* global it expect describe */
+/* global it expect spyOn describe AgentID CachingAgentID UnetMessages Gateway Services beforeAll isBrowser isJsDom isNode UnetSocket Protocol toGps toLocal beforeEach jasmine*/
 
 const DatagramNtf = UnetMessages.DatagramNtf;
 
 let gwOpts = [];
 if (isBrowser){
-  gwOpts = [{ 
+  gwOpts = [{
     hostname: 'localhost',
     port : '8081',
     pathname: '/ws/'
-  }, { 
+  }, {
     hostname: 'localhost',
     port : '8082',
     pathname: '/ws/'
   }];
 } else if (isJsDom || isNode){
-  gwOpts = [{ 
+  gwOpts = [{
     hostname: 'localhost',
     port : '1101',
     pathname: ''
-  }, { 
+  }, {
     hostname: 'localhost',
     port : '1102',
     pathname: ''
   }, ];
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 describe('A UnetSocket', function () {
@@ -245,4 +249,80 @@ describe('Unet Utils', function () {
     expect(loc[1]).toEqual(14.485309);
   });
 
+});
+
+describe('A CachingAgentID', function () {
+  var gw;
+  beforeAll(() => {
+    gw = new Gateway(gwOpts[0]);
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+  });
+
+  it('should be creatable from an AgentID', async function () {
+    const caid = new CachingAgentID('agent-name', true, gw);
+    const caid1 = new CachingAgentID(new AgentID('agent-name', true, gw));
+    expect(caid.getName()).toBe('agent-name');
+    expect(caid.isTopic()).toBe(true);
+    expect(caid.toJSON()).toBe('#agent-name');
+    expect(caid1.getName()).toBe('agent-name');
+    expect(caid1.isTopic()).toBe(true);
+    expect(caid1.toJSON()).toBe('#agent-name');
+  });
+
+  it('should only return cached values for parameters if within maxage', async function () {
+    let phy = await gw.agentForService(Services.PHYSICAL);
+    expect(phy).toBeInstanceOf(CachingAgentID);
+    spyOn(gw.connector.sock, 'send').and.callThrough();
+    let clockOffset = await phy.get('clockOffset');
+    let maxFrameLength = await phy.get('maxFrameLength',1);
+    await phy.get(null); // get all
+    gw.connector.sock.send.calls.reset();
+    let clockOffset2 = await phy.get('clockOffset');
+    let maxFrameLength2 = await phy.get('maxFrameLength',1);
+    await phy.get('refPowerLevel');
+    expect(gw.connector.sock.send).not.toHaveBeenCalled();
+    expect(maxFrameLength).toBe(maxFrameLength2);
+    expect(clockOffset).toBe(clockOffset2);
+
+  });
+
+  it('should return new values for parameters if beyond maxage', async function () {
+    let phy = await gw.agentForService(Services.PHYSICAL);
+    expect(phy).toBeInstanceOf(CachingAgentID);
+    spyOn(gw.connector.sock, 'send').and.callThrough();
+    let clockOffset = await phy.get('clockOffset');
+    let maxFrameLength = await phy.get('maxFrameLength',1);
+    await phy.get(null); // get all
+    gw.connector.sock.send.calls.reset();
+    await delay(6000);
+    await phy.get('refPowerLevel');
+    let clockOffset2 = await phy.get('clockOffset');
+    let maxFrameLength2 = await phy.get('maxFrameLength',1);
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(2);
+    expect(maxFrameLength).toBe(maxFrameLength2);
+    expect(clockOffset).toBe(clockOffset2);
+  });
+
+
+  it('should not fetch all parameters if not configured to be greedy', async function () {
+    let phy = await gw.agentForService(Services.PHYSICAL);
+    expect(phy).toBeInstanceOf(CachingAgentID);
+    let nongreedyphy = new CachingAgentID(phy, null, null, false);
+    spyOn(gw.connector.sock, 'send').and.callThrough();
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('clockOffset');
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(1);
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('clockOffset');
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(0);
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('MTU');
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(1);
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('maxFrameLength',1);
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(1);
+    gw.connector.sock.send.calls.reset();
+    await nongreedyphy.get('maxFrameLength',1);
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(0);
+  });
 });
