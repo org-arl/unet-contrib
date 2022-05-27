@@ -67,7 +67,9 @@ Now, edit/create a file called `/home/myname/.matlab/R2016a/javaclasspath.txt` a
 /home/myname/matlab-api/jars/unet-framework-*.jar
 /home/myname/matlab-api/jars/unet-basic-*.jar
 /home/myname/matlab-api/jars/unet-yoda-*.jar
-/home/myname/matlab-api/jars/groovy-all-*.jar
+/home/myname/matlab-api/jars/groovy-*.jar
+/home/myname/matlab-api/jars/websocket-servlet-*.jar
+
 ```
 
 Of course, when doing this, use your actual folders, not `/home/myname/...`.
