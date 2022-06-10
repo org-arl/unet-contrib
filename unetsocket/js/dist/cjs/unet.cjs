@@ -1,4 +1,4 @@
-/* unet.js v2.0.1 2022-05-18T03:51:58.752Z */
+/* unet.js v2.0.2 2022-06-10T03:18:03.319Z */
 
 'use strict';
 
@@ -1661,6 +1661,7 @@ class CachingGateway extends Gateway{
    */
   async agentForService(service, caching=true, greedy=true) {
     const aid = await super.agentForService(service);
+    if (!aid) return aid;
     return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
   }
 
