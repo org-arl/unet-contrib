@@ -386,6 +386,7 @@ class CachingGateway extends Gateway{
    */
   async agentForService(service, caching=true, greedy=true) {
     const aid = await super.agentForService(service);
+    if (!aid) return aid;
     return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
   }
 
