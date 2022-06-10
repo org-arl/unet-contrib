@@ -4,30 +4,32 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.unet = {}));
 })(this, (function (exports) { 'use strict';
 
-  /* fjage.js v1.9.1-rc6 */
+  /* fjage.js v1.10.1 */
 
-  /* global window self */
+  const isBrowser =
+    typeof window !== "undefined" && typeof window.document !== "undefined";
 
-  const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+  const isNode =
+    typeof process !== "undefined" &&
+    process.versions != null &&
+    process.versions.node != null;
 
-  /* eslint-disable no-restricted-globals */
-  const isWebWorker = typeof self === 'object'
-    && self.constructor
-    && self.constructor.name === 'DedicatedWorkerGlobalScope';
-  /* eslint-enable no-restricted-globals */
-
-  const isNode = typeof process !== 'undefined'
-    && process.versions != null
-    && process.versions.node != null;
+  const isWebWorker =
+    typeof self === "object" &&
+    self.constructor &&
+    self.constructor.name === "DedicatedWorkerGlobalScope";
 
   /**
    * @see https://github.com/jsdom/jsdom/releases/tag/12.0.0
    * @see https://github.com/jsdom/jsdom/issues/1537
    */
-  /* eslint-disable no-undef */
-  const isJsDom = () => (typeof window !== 'undefined' && window.name === 'nodejs')
-    || navigator.userAgent.includes('Node.js')
-    || navigator.userAgent.includes('jsdom');
+  const isJsDom =
+    (typeof window !== "undefined" && window.name === "nodejs") ||
+    (typeof navigator !== "undefined" &&
+      (navigator.userAgent.includes("Node.js") ||
+        navigator.userAgent.includes("jsdom")));
+
+  typeof Deno !== "undefined" && typeof Deno.core !== "undefined";
 
   const SOCKET_OPEN = 'open';
   const SOCKET_OPENING = 'opening';
@@ -623,9 +625,9 @@
 
   /**
    * A gateway for connecting to a fjage master container. The new version of the constructor
-   * uses an options object instead of individual parameters. The old version with 
-   * 
-   * 
+   * uses an options object instead of individual parameters. The old version with
+   *
+   *
    * @class
    * @param {Object} opts
    * @param {string} [opts.hostname="localhost"] - hostname/ip address of the master container to connect to
@@ -646,7 +648,7 @@
       if (typeof opts === 'string' || opts instanceof String){
         opts = {
           'hostname': opts,
-          'port' : port || gObj.location.port, 
+          'port' : port || gObj.location.port,
           'pathname' : pathname,
           'timeout' : timeout
         };
@@ -815,7 +817,7 @@
         return 'inReplyTo' in msg && msg.inReplyTo == filter;
       } else if (Object.prototype.hasOwnProperty.call(filter, 'msgID')) {
         return 'inReplyTo' in msg && msg.inReplyTo == filter.msgID;
-      } else if (filter.__proto__.name == 'Message') {
+      } else if (filter.__proto__.name == 'Message' || filter.__proto__.__proto__.name == 'Message') {
         return filter.__clazz__ == msg.__clazz__;
       } else if (typeof filter == 'function') {
         return filter(msg);
@@ -842,13 +844,13 @@
       if (f.length ) return f[0];
       return null;
     }
-    
+
     /** @private */
     _addGWCache(gw){
       if (!gObj.fjage || !gObj.fjage.gateways) return;
       gObj.fjage.gateways.push(gw);
     }
-    
+
     /** @private */
     _removeGWCache(gw){
       if (!gObj.fjage || !gObj.fjage.gateways) return;
@@ -1051,7 +1053,7 @@
     }
 
     /**
-     * Sends a request and waits for a response. This method returns a {Promise} which resolves when a response 
+     * Sends a request and waits for a response. This method returns a {Promise} which resolves when a response
      * is received or if no response is received after the timeout.
      *
      * @param {string} msg - message to send
@@ -1064,10 +1066,10 @@
     }
 
     /**
-     * Returns a response message received by the gateway. This method returns a {Promise} which resolves when 
+     * Returns a response message received by the gateway. This method returns a {Promise} which resolves when
      * a response is received or if no response is received after the timeout.
      *
-     * @param {function} [filter=] - original message to which a response is expected, or a MessageClass of the type 
+     * @param {function} [filter=] - original message to which a response is expected, or a MessageClass of the type
      * of message to match, or a closure to use to match against the message
      * @param {number} [timeout=0] - timeout in milliseconds
      * @returns {Promise<?Message>} - received response message, null on timeout
@@ -1127,7 +1129,7 @@
    * @param {string} name - fully qualified name of the message class to be created
    * @param {class} [parent=Message] - class of the parent MessageClass to inherit from
    * @returns {function} - constructor for the unqualified message class
-   * @example 
+   * @example
    * const ParameterReq = MessageClass('org.arl.fjage.param.ParameterReq');
    * let pReq = new ParameterReq()
    */
@@ -1164,7 +1166,7 @@
       s += s4();
     return s;
   }
-    
+
   // convert from base 64 to array
   /** @private */
   function _b64toArray(base64, dtype, littleEndian=true) {
