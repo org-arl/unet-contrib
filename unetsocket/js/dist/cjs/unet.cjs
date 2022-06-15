@@ -1,4 +1,4 @@
-/* unet.js v2.0.3 2022-06-10T23:18:39.778Z */
+/* unet.js v2.0.4 2022-06-15T07:08:11.042Z */
 
 'use strict';
 
@@ -1555,6 +1555,7 @@ class CachingAgentID extends AgentID {
     if (this.greedy && !(Array.isArray(params) && params.includes('name')) && params != 'name') {
       let rsp = await super.get(null, index, timeout);
       this._updateCache(null, rsp, index);
+      if (!rsp) return Array.isArray(params) ? new Array(params.length).fill(null) : null;
       if (Array.isArray(params)) {
         return params.map(p => {
           let f = Object.keys(rsp).find(rv => this._toNamed(rv) === p);
