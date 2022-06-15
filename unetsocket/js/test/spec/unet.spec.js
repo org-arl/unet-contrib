@@ -283,7 +283,26 @@ describe('A CachingAgentID', function () {
     expect(gw.connector.sock.send).not.toHaveBeenCalled();
     expect(maxFrameLength).toBe(maxFrameLength2);
     expect(clockOffset).toBe(clockOffset2);
+  });
 
+  it('should not greedily get all parameters when asked for special parameters ', async function () {
+    let phy = await gw.agentForService(Services.PHYSICAL);
+    expect(phy).toBeInstanceOf(CachingAgentID);
+    spyOn(gw.connector.sock, 'send').and.callThrough();
+    gw.connector.sock.send.calls.reset();
+    await phy.get('name');
+    await phy.get('clockOffset');
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(2);
+  });
+
+  it('should not greedily get all parameters when asked for special parameters as a part of a list', async function () {
+    let phy = await gw.agentForService(Services.PHYSICAL);
+    expect(phy).toBeInstanceOf(CachingAgentID);
+    spyOn(gw.connector.sock, 'send').and.callThrough();
+    gw.connector.sock.send.calls.reset();
+    await phy.get(['name', 'refPowerLevel']);
+    await phy.get('clockOffset');
+    expect(gw.connector.sock.send).toHaveBeenCalledTimes(2);
   });
 
   it('should return new values for parameters if beyond maxage', async function () {

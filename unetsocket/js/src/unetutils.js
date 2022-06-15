@@ -248,6 +248,7 @@ class CachingAgentID extends AgentID {
     }
     this.greedy = greedy;
     this.cache = {};
+    this.specialParams = ['name', 'version'];
   }
 
   /**
@@ -275,7 +276,9 @@ class CachingAgentID extends AgentID {
    */
   async get(params, index=-1, timeout=5000, maxage=5000) {
     if (this._isCached(params, index, maxage)) return this._getCache(params, index);
-    if (this.greedy && !(Array.isArray(params) && params.includes('name')) && params != 'name') {
+    if (this.greedy &&
+      !(Array.isArray(params) && [...new Set([...params, ...this.specialParams])].length!=0) &&
+      !this.specialParams.includes(params)) {
       let rsp = await super.get(null, index, timeout);
       this._updateCache(null, rsp, index);
       if (!rsp) return Array.isArray(params) ? new Array(params.length).fill(null) : null;
