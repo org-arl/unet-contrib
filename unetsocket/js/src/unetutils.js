@@ -278,6 +278,7 @@ class CachingAgentID extends AgentID {
     if (this.greedy && !(Array.isArray(params) && params.includes('name')) && params != 'name') {
       let rsp = await super.get(null, index, timeout);
       this._updateCache(null, rsp, index);
+      if (!rsp) return Array.isArray(params) ? new Array(params.length).fill(null) : null;
       if (Array.isArray(params)) {
         return params.map(p => {
           let f = Object.keys(rsp).find(rv => this._toNamed(rv) === p);
