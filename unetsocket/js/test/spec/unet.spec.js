@@ -1,4 +1,4 @@
-/* global it expect spyOn describe AgentID CachingAgentID UnetMessages Gateway Services beforeAll isBrowser isJsDom isNode UnetSocket Protocol toGps toLocal beforeEach jasmine*/
+/* global it xit expect spyOn describe AgentID CachingAgentID UnetMessages Gateway Services beforeAll isBrowser isJsDom isNode UnetSocket Protocol toGps toLocal beforeEach jasmine*/
 
 const DatagramNtf = UnetMessages.DatagramNtf;
 
@@ -343,5 +343,25 @@ describe('A CachingAgentID', function () {
     gw.connector.sock.send.calls.reset();
     await nongreedyphy.get('maxFrameLength',1);
     expect(gw.connector.sock.send).toHaveBeenCalledTimes(0);
+  });
+
+  xit('should be able to update it\'s cache based on ParamChangeNtf', async function () {
+
+  });
+
+  xit('should automatically update it\'s cache when polling is enabled', async function () {
+
+  });
+
+  xit('should stop updating cache when polling is disabled', async function () {
+
+  });
+
+  xit('should trigger listener when a parameter value in the cache changes', async function () {
+
+  });
+
+  xit('should not trigger listener when a parameter value in the cache doesn\'t change', async function () {
+
   });
 });

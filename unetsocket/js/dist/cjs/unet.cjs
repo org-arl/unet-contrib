@@ -1,4 +1,4 @@
-/* unet.js v2.0.6 2022-06-15T08:30:00.284Z */
+/* unet.js v2.0.6 2022-07-09T06:16:45.992Z */
 
 'use strict';
 
@@ -1526,6 +1526,16 @@ class CachingAgentID extends AgentID {
     this.greedy = greedy;
     this.cache = {};
     this.specialParams = ['name', 'version'];
+    this._paramChangeListeners = {};
+    this.owner.subscribe(this);
+    this.owner.addMessageListener(msg => {
+      if (msg instanceof MessageClass.ParamChangeNtf) {
+        for (let [param, value] of Object.entries(msg.paramValues)) {
+          this._updateCache(this._toNamed(param), value, msg.index);
+        }
+      }
+    });
+    this._pollingids = {};
   }
 
   /**
@@ -1576,6 +1586,55 @@ class CachingAgentID extends AgentID {
     }
   }
 
+  /**
+   * Trigger a callback when a the value of the given parameter changes in the cache.
+   *
+   * @param {string} param - parameter name to be fetched
+   * @param {Function} listener - callback function to be called when the parameter(s) change
+   * @param {number} [index=-1] - index of parameter(s) to be fetched
+   * @returns {Boolean} - true if the callback was registered
+   */
+  addParamListener(param, listener, index=-1){
+    let p = { param: param, index: index };
+    if (!this._paramChangeListeners[p]) this._paramChangeListeners[p] = {
+      polling: 0,
+      timeoutid : null,
+      lastupdated: Date.now(),
+      listeners : []
+    };
+    let pcl = this._paramChangeListeners[p];
+    pcl.listeners.push({
+      'listener': listener,
+    });
+  }
+
+  /**
+   * Enable/disable background polling of all agent parameters to keep the local
+   * cache up to date.
+   *
+   * @param {number} interval - maximum interval between two consecutive polls, in milliseconds, 0 to disable
+   * @param {number} index=-1 - index of parameter(s) to be polled
+   * @return {undefined}
+   */
+  enablePolling(interval, index=-1){
+    if (this._pollingids[index]) clearInterval(this._pollingids[index]);
+    if (interval) {
+      this._pollingids[index] = setInterval(() => {
+        this.get(null, index);
+      }, interval);
+    }
+  }
+
+  _triggerListener(param, index, value){
+    let p = { param: param, index: index };
+    if (!Object.keys(this._paramChangeListeners).includes(p)) return;
+    let pcl = this._paramChangeListeners[p];
+    if (pcl) {
+      pcl.lastupdated = Date.now();
+      pcl.listeners.forEach(l => l.listener(value));
+    }
+  }
+
   _updateCache(params, vals, index) {
     if (vals == null || Array.isArray(vals) && vals.every(v => v == null)) return;
     if (params == null) {
@@ -1587,7 +1646,8 @@ class CachingAgentID extends AgentID {
     if (this.cache[index.toString()] === undefined) this.cache[index.toString()] = {};
     let c = this.cache[index.toString()];
     for (let i = 0; i < params.length; i++) {
-      if (c[params[i]] === undefined) c[params[i]] = {};
+      if (c[params[i]] === undefined) c[params[i]] = {value:0, ctime:0};
+      if (c[params[i]].value !== vals[i]) this._triggerListener(params[i], index, vals[i]);
       c[params[i]].value = vals[i];
       c[params[i]].ctime = Date.now();
     }
