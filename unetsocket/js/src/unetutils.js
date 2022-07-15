@@ -263,6 +263,7 @@ class CachingAgentID extends AgentID {
   async set(params, values, index=-1, timeout=5000) {
     let s = await super.set(params, values, index, timeout);
     this._updateCache(params, s, index);
+    return s;
   }
 
   /**

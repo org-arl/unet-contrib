@@ -1,4 +1,4 @@
-/* unet.js v2.0.6 2022-06-15T08:30:00.284Z */
+/* unet.js v2.0.6 2022-07-14T10:44:50.860Z */
 
 /* fjage.js v1.10.1 */
 
@@ -1518,6 +1518,7 @@ class CachingAgentID extends AgentID {
   async set(params, values, index=-1, timeout=5000) {
     let s = await super.set(params, values, index, timeout);
     this._updateCache(params, s, index);
+    return s;
   }
 
   /**
