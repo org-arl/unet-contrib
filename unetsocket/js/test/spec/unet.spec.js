@@ -12,6 +12,10 @@ if (isBrowser){
     hostname: 'localhost',
     port : '8082',
     pathname: '/ws/'
+  },{
+    hostname: 'localhost',
+    port : '8083',
+    pathname: '/ws/'
   }];
 } else if (isJsDom || isNode){
   gwOpts = [{
@@ -22,7 +26,11 @@ if (isBrowser){
     hostname: 'localhost',
     port : '1102',
     pathname: ''
-  }, ];
+  }, {
+    hostname: 'localhost',
+    port : '1103',
+    pathname: ''
+  }];
 }
 
 function delay(ms) {
@@ -30,6 +38,10 @@ function delay(ms) {
 }
 
 describe('A UnetSocket', function () {
+  beforeAll(() => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+  });
+
   it('should be able to be constructed', async function () {
     let usock = await new UnetSocket(gwOpts[0].hostname, gwOpts[0].port);
     expect(usock).toBeInstanceOf(UnetSocket);
@@ -141,7 +153,7 @@ describe('A UnetSocket', function () {
     let usock1 = await new UnetSocket(gwOpts[0].hostname, gwOpts[0].port);
     let usock2 = await new UnetSocket(gwOpts[1].hostname, gwOpts[1].port);
     expect(usock2.bind(Protocol.USER)).toBeTrue();
-    usock2.setTimeout(1000);
+    usock2.setTimeout(3000);
 
     expect(await usock1.send([1,2,3])).toBeFalse();
     expect(await usock1.send([4,5,6], 31)).toBeTrue();
@@ -159,7 +171,7 @@ describe('A UnetSocket', function () {
     let usock1 = await new UnetSocket(gwOpts[0].hostname, gwOpts[0].port);
     let usock2 = await new UnetSocket(gwOpts[1].hostname, gwOpts[1].port);
     expect(usock2.bind(Protocol.USER)).toBeTrue();
-    usock2.setTimeout(1000);
+    usock2.setTimeout(3000);
 
     usock1.connect(31, Protocol.USER);
     expect(await usock1.send([1,2,3])).toBeTrue();
@@ -183,7 +195,7 @@ describe('A UnetSocket', function () {
     let usock1 = await new UnetSocket(gwOpts[0].hostname, gwOpts[0].port);
     let usock2 = await new UnetSocket(gwOpts[1].hostname, gwOpts[1].port);
     expect(usock2.bind(Protocol.USER)).toBeTrue();
-    usock2.setTimeout(1000);
+    usock2.setTimeout(3000);
     usock1.connect(31, Protocol.USER);
 
     usock1.disconnect();
@@ -253,8 +265,12 @@ describe('Unet Utils', function () {
 
 describe('A CachingAgentID', function () {
   var gw;
+  var gw2;
+  var gw3;
   beforeAll(() => {
     gw = new Gateway(gwOpts[0]);
+    gw2 = new Gateway(gwOpts[1]);
+    gw3 = new Gateway(gwOpts[2]);
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
   });
 
@@ -345,23 +361,62 @@ describe('A CachingAgentID', function () {
     expect(gw.connector.sock.send).toHaveBeenCalledTimes(0);
   });
 
-  xit('should be able to update it\'s cache based on ParamChangeNtf', async function () {
-
+  it('should be able to update it\'s cache based on ParamChangeNtf', async function () {
+    let dummy = gw3.agent('dummy');
+    expect(dummy).toBeInstanceOf(CachingAgentID);
+    let gw3SendSpy = spyOn(gw3, 'send').and.callThrough();
+    gw3SendSpy.calls.reset();
+    await delay(1000);
+    let p1val1 = await dummy.get('param1');
+    expect(gw3SendSpy).toHaveBeenCalledTimes(0);
+    gw3SendSpy.calls.reset();
+    await delay(1000);
+    let p1val2 = await dummy.get('param1');
+    expect(gw3SendSpy).toHaveBeenCalledTimes(0);
+    expect(p1val1).not.toBe(p1val2);
   });
 
-  xit('should automatically update it\'s cache when polling is enabled', async function () {
-
+  it('should automatically update it\'s cache when polling is enabled', async function () {
+    let dummy = gw3.agent('dummy');
+    expect(dummy).toBeInstanceOf(CachingAgentID);
+    let gw3SendSpy = spyOn(gw3, 'send').and.callThrough();
+    dummy.enablePolling(1000);
+    await delay(2000);
+    gw3SendSpy.calls.reset();
+    let p1val2 = await dummy.get('param2');
+    expect(gw3SendSpy).toHaveBeenCalledTimes(0);
+    expect(p1val2).not.toEqual(null);
   });
 
-  xit('should stop updating cache when polling is disabled', async function () {
-
+  it('should stop updating cache when polling is disabled', async function () {
+    let dummy = gw3.agent('dummy');
+    expect(dummy).toBeInstanceOf(CachingAgentID);
+    let gw3SendSpy = spyOn(gw3, 'send').and.callThrough();
+    dummy.enablePolling(0);
+    await delay(2000);
+    gw3SendSpy.calls.reset();
+    let p1val2 = await dummy.get('param2');
+    expect(gw3SendSpy).toHaveBeenCalledTimes(1);
+    expect(p1val2).not.toEqual(null);
   });
 
-  xit('should trigger listener when a parameter value in the cache changes', async function () {
-
+  it('should trigger listener when a parameter value in the cache changes', function (done) {
+    let dummy = gw3.agent('dummy');
+    expect(dummy).toBeInstanceOf(CachingAgentID);
+    let callback = val => {
+      expect(val).not.toEqual(null);
+      dummy.removeParamListener('param1', callback);
+      done();
+    };
+    dummy.addParamListener('param1', callback);
   });
 
-  xit('should not trigger listener when a parameter value in the cache doesn\'t change', async function () {
-
+  it('should not trigger listener when a parameter value in the cache doesn\'t change', async function () {
+    let dummy = gw3.agent('dummy');
+    expect(dummy).toBeInstanceOf(CachingAgentID);
+    let callbackSpy = jasmine.createSpy();
+    dummy.addParamListener('param3', callbackSpy);
+    await delay(5000);
+    expect(callbackSpy).toHaveBeenCalledTimes(0);
   });
 });

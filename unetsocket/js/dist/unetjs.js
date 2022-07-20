@@ -1508,12 +1508,14 @@
       this.greedy = greedy;
       this.cache = {};
       this.specialParams = ['name', 'version'];
-      this._paramChangeListeners = {};
-      this.owner.subscribe(this);
+      this._paramChangeListeners = new Map();
+      this.owner.subscribe(this.owner.topic('org.arl.unet.Topics.PARAMCHANGE', null, false));
       this.owner.addMessageListener(msg => {
-        if (msg instanceof MessageClass.ParamChangeNtf) {
-          for (let [param, value] of Object.entries(msg.paramValues)) {
-            this._updateCache(this._toNamed(param), value, msg.index);
+        if (this.topic || msg.sender == this.name ){
+          if (msg instanceof MessageClass.ParamChangeNtf) {
+            for (let [param, value] of Object.entries(msg.paramValues)) {
+              this._updateCache(this._toNamed(param), value, msg.index);
+            }
           }
         }
       });
@@ -1578,16 +1580,38 @@
      */
     addParamListener(param, listener, index=-1){
       let p = { param: param, index: index };
-      if (!this._paramChangeListeners[p]) this._paramChangeListeners[p] = {
-        polling: 0,
-        timeoutid : null,
-        lastupdated: Date.now(),
-        listeners : []
-      };
-      let pcl = this._paramChangeListeners[p];
-      pcl.listeners.push({
-        'listener': listener,
+      let pcl;
+      this._paramChangeListeners.forEach((val, key) => {
+        if (key.param == p.param && key.index == p.index) pcl = val;
       });
+      if (!pcl) {
+        this._paramChangeListeners.set(p, {
+          lastupdated: Date.now(),
+          listeners : [listener]
+        });
+      }else {
+        pcl.listeners.push(listener);
+      }
+    }
+
+    /**
+     * Remove a parameter change callback.
+     *
+     * @param {string} param - parameter name of the listener to be removed
+     * @param {Function} listener - callback function to be called when the parameter(s) change
+     * @param {number} [index=-1] - index of parameter(s) to be fetched
+     * @returns {Boolean} - true if the callback was registered
+     */
+    removeParamListener(param, listener, index=-1){
+      let p = { param: param, index: index };
+      let pcl;
+      this._paramChangeListeners.forEach((val, key) => {
+        if (key.param == p.param && key.index == p.index) pcl = val;
+      });
+      if (pcl){
+        pcl.listeners = pcl.listeners.filter(l => l !== listener);
+        if (pcl.listeners.length == 0) this._paramChangeListeners.delete(p);
+      }
     }
 
     /**
@@ -1609,11 +1633,13 @@
 
     _triggerListener(param, index, value){
       let p = { param: param, index: index };
-      if (!Object.keys(this._paramChangeListeners).includes(p)) return;
-      let pcl = this._paramChangeListeners[p];
+      let pcl;
+      this._paramChangeListeners.forEach((val, key) => {
+        if (key.param == p.param && key.index == p.index) pcl = val;
+      });
       if (pcl) {
         pcl.lastupdated = Date.now();
-        pcl.listeners.forEach(l => l.listener(value));
+        pcl.listeners.forEach(l => l(value));
       }
     }
 
