@@ -1,5 +1,5 @@
-import {Performative} from 'fjage';
-import {Gateway, Services, UnetMessages, Protocol} from './unetutils';
+import {Gateway, Performative} from 'fjage';
+import {CachingAgentID, Services, UnetMessages, Protocol} from './unetutils';
 
 const REQUEST_TIMEOUT = 1000;
 
@@ -237,38 +237,45 @@ export default class UnetSocket {
   getGateway() { return this.gw; }
 
   /**
-   * Gets an AgentID providing a specified service for low-level access to UnetStack
-   * @param {string} svc - the named service of interest
-   * @param {Boolean} caching - if the AgentID should cache parameters
-   * @returns {Promise<?AgentID>} - a promise which returns an {@link AgentID} that provides the service when resolved
-   */
-  async agentForService(svc, caching=true) {
-    if (this.gw == null) return null;
-    return await this.gw.agentForService(svc, caching);
-  }
-
-  /**
+   * Finds an agent that provides a named service. If multiple agents are registered
+   * to provide a given service, any of the agents' id may be returned.
    *
-   * @param {string} svc - the named service of interest
-   * @param {Boolean} caching - if the AgentID should cache parameters
-   * @returns {Promise<AgentID[]>} - a promise which returns an array of {@link AgentID|AgentIDs} that provides the service when resolved
+   * @param {string} service - the named service of interest
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
+   * @returns {Promise<?AgentID|CachingAgentID>} - a promise which returns an agent id for an agent that provides the service when resolved
    */
-  async agentsForService(svc, caching=true) {
-    if (this.gw == null) return null;
-    return await this.gw.agentsForService(svc, caching``);
+  async agentForService(service, caching=true, greedy=true) {
+    const aid = await this.gw.agentForService(service);
+    if (!aid) return aid;
+    return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
   }
 
   /**
-   * Gets a named AgentID for low-level access to UnetStack.
-   * @param {string} name - name of agent
-   * @param {Boolean} caching - if the AgentID should cache parameters
-   * @returns {AgentID} - AgentID for the given name
+   * Finds all agents that provides a named service.
+   *
+   * @param {string} service - the named service of interest
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
+   * @returns {Promise<?AgentID|CachingAgentID[]>} - a promise which returns an array of all agent ids that provides the service when resolved
    */
-  agent(name, caching=true) {
-    if (this.gw == null) return null;
-    return this.gw.agent(name, caching);
+  async agentsForService(service, caching=true, greedy=true) {
+    const aids = await this.gw.agentsForService(service);
+    return caching ? aids.map(a => new CachingAgentID(a, null, null, greedy)) : aids;
   }
 
+  /**
+   * Get an AgentID for a given agent name.
+   *
+   * @param {string} name - name of agent
+   * @param {Boolean} [caching=true] - if the AgentID should cache parameters
+   * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
+   * @returns {AgentID|CachingAgentID} - AgentID for the given name
+   */
+  agent(name, caching=true, greedy=true) {
+    const aid = super.agent(name);
+    return caching ? new CachingAgentID(aid, null, null, greedy) : aid;
+  }
   /**
    * Resolve node name to node address.
    * @param {string} nodeName - name of the node to resolve
