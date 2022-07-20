@@ -12,10 +12,6 @@ if (isBrowser){
     hostname: 'localhost',
     port : '8082',
     pathname: '/ws/'
-  },{
-    hostname: 'localhost',
-    port : '8083',
-    pathname: '/ws/'
   }];
 } else if (isJsDom || isNode){
   gwOpts = [{
@@ -25,10 +21,6 @@ if (isBrowser){
   }, {
     hostname: 'localhost',
     port : '1102',
-    pathname: ''
-  }, {
-    hostname: 'localhost',
-    port : '1103',
     pathname: ''
   }];
 }
@@ -266,11 +258,9 @@ describe('Unet Utils', function () {
 describe('A CachingAgentID', function () {
   var gw;
   var gw2;
-  var gw3;
   beforeAll(() => {
     gw = new Gateway(gwOpts[0]);
     gw2 = new Gateway(gwOpts[1]);
-    gw3 = new Gateway(gwOpts[2]);
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
   });
 
@@ -362,46 +352,46 @@ describe('A CachingAgentID', function () {
   });
 
   it('should be able to update it\'s cache based on ParamChangeNtf', async function () {
-    let dummy = gw3.agent('dummy');
+    let dummy = gw2.agent('dummy');
     expect(dummy).toBeInstanceOf(CachingAgentID);
-    let gw3SendSpy = spyOn(gw3, 'send').and.callThrough();
-    gw3SendSpy.calls.reset();
+    let gw2SendSpy = spyOn(gw2, 'send').and.callThrough();
+    gw2SendSpy.calls.reset();
     await delay(1000);
     let p1val1 = await dummy.get('param1');
-    expect(gw3SendSpy).toHaveBeenCalledTimes(0);
-    gw3SendSpy.calls.reset();
+    expect(gw2SendSpy).toHaveBeenCalledTimes(0);
+    gw2SendSpy.calls.reset();
     await delay(1000);
     let p1val2 = await dummy.get('param1');
-    expect(gw3SendSpy).toHaveBeenCalledTimes(0);
+    expect(gw2SendSpy).toHaveBeenCalledTimes(0);
     expect(p1val1).not.toBe(p1val2);
   });
 
   it('should automatically update it\'s cache when polling is enabled', async function () {
-    let dummy = gw3.agent('dummy');
+    let dummy = gw2.agent('dummy');
     expect(dummy).toBeInstanceOf(CachingAgentID);
-    let gw3SendSpy = spyOn(gw3, 'send').and.callThrough();
+    let gw2SendSpy = spyOn(gw2, 'send').and.callThrough();
     dummy.enablePolling(1000);
     await delay(2000);
-    gw3SendSpy.calls.reset();
+    gw2SendSpy.calls.reset();
     let p1val2 = await dummy.get('param2');
-    expect(gw3SendSpy).toHaveBeenCalledTimes(0);
+    expect(gw2SendSpy).toHaveBeenCalledTimes(0);
     expect(p1val2).not.toEqual(null);
   });
 
   it('should stop updating cache when polling is disabled', async function () {
-    let dummy = gw3.agent('dummy');
+    let dummy = gw2.agent('dummy');
     expect(dummy).toBeInstanceOf(CachingAgentID);
-    let gw3SendSpy = spyOn(gw3, 'send').and.callThrough();
+    let gw2SendSpy = spyOn(gw2, 'send').and.callThrough();
     dummy.enablePolling(0);
     await delay(2000);
-    gw3SendSpy.calls.reset();
+    gw2SendSpy.calls.reset();
     let p1val2 = await dummy.get('param2');
-    expect(gw3SendSpy).toHaveBeenCalledTimes(1);
+    expect(gw2SendSpy).toHaveBeenCalledTimes(1);
     expect(p1val2).not.toEqual(null);
   });
 
   it('should trigger listener when a parameter value in the cache changes', function (done) {
-    let dummy = gw3.agent('dummy');
+    let dummy = gw2.agent('dummy');
     expect(dummy).toBeInstanceOf(CachingAgentID);
     let callback = val => {
       expect(val).not.toEqual(null);
@@ -412,7 +402,7 @@ describe('A CachingAgentID', function () {
   });
 
   it('should not trigger listener when a parameter value in the cache doesn\'t change', async function () {
-    let dummy = gw3.agent('dummy');
+    let dummy = gw2.agent('dummy');
     expect(dummy).toBeInstanceOf(CachingAgentID);
     let callbackSpy = jasmine.createSpy();
     dummy.addParamListener('param3', callbackSpy);
