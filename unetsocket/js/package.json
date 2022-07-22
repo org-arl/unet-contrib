@@ -1,6 +1,6 @@
 {
   "name": "unetjs",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "JavaScript Helper Library for UnetStack",
   "main": "./dist/cjs/unet.cjs",
   "exports": {
@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/org-arl/unet-contrib#readme",
   "dependencies": {
-    "fjage": "^1.10.2"
+    "fjage": "^1.10.3"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.9",

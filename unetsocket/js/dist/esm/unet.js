@@ -1,6 +1,6 @@
-/* unet.js v2.0.8 2022-07-21T08:08:24.416Z */
+/* unet.js v2.0.9 2022-07-22T04:20:25.056Z */
 
-/* fjage.js v1.10.2 */
+/* fjage.js v1.10.3 */
 
 const isBrowser =
   typeof window !== "undefined" && typeof window.document !== "undefined";
@@ -468,12 +468,16 @@ class AgentID {
     let msg = new ParameterReq();
     msg.recipient = this.name;
     if (Array.isArray(params)){
+      msg.param = params.shift();
+      msg.value = values.shift();
       msg.requests = params.map((p, i) => {
         return {
           'param': p,
           'value': values[i]
         };
       });
+      // Add back for generating a response
+      params.unshift(msg.param);
     } else {
       msg.param = params;
       msg.value = values;
@@ -508,7 +512,12 @@ class AgentID {
     let msg = new ParameterReq();
     msg.recipient = this.name;
     if (params){
-      if (Array.isArray(params)) msg.requests = params.map(p => {return {'param': p};});
+      if (Array.isArray(params)) {
+        msg.param = params.shift();
+        msg.requests = params.map(p => {return {'param': p};});
+        // Add back for generating a response
+        params.unshift(msg.param);
+      }
       else msg.param = params;
     }
     msg.index = Number.isInteger(index) ? index : -1;
