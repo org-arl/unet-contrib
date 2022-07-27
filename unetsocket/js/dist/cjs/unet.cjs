@@ -1,4 +1,4 @@
-/* unet.js v2.0.9 2022-07-22T04:20:25.056Z */
+/* unet.js v2.0.10 2022-07-27T05:47:35.162Z */
 
 'use strict';
 
@@ -1305,7 +1305,8 @@ let UnetServices = {
   'REMOTE': 'org.arl.unet.Services.REMOTE',
   'STATE_MANAGER': 'org.arl.unet.Services.STATE_MANAGER',
   'DEVICE_INFO': 'org.arl.unet.Services.DEVICE_INFO',
-  'DOA': 'org.arl.unet.Services.DOA'
+  'DOA': 'org.arl.unet.Services.DOA',
+  'SCHEDULER':'org.arl.unet.Services.SCHEDULER'
 };
 
 Object.assign(Services, UnetServices);
