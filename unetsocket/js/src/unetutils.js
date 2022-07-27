@@ -19,7 +19,8 @@ let UnetServices = {
   'REMOTE': 'org.arl.unet.Services.REMOTE',
   'STATE_MANAGER': 'org.arl.unet.Services.STATE_MANAGER',
   'DEVICE_INFO': 'org.arl.unet.Services.DEVICE_INFO',
-  'DOA': 'org.arl.unet.Services.DOA'
+  'DOA': 'org.arl.unet.Services.DOA',
+  'SCHEDULER':'org.arl.unet.Services.SCHEDULER'
 };
 
 Object.assign(Services, UnetServices);
