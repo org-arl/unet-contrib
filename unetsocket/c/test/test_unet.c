@@ -64,7 +64,8 @@ int main(int argc, char* argv[]) {
   int rv;
   int port_tx = 1100;
   int port_rx = 1100;
-  uint8_t data[7] = {1,2,3,4,5,6,7};
+  uint8_t data_tx[7] = {1,2,3,4,5,6,7};
+  uint8_t data_rx[7] = {0,0,0,0,0,0,0};
   float range = 0;
   int framelength = 0;
   float powerlevel = 0;
@@ -118,7 +119,7 @@ int main(int argc, char* argv[]) {
   if (rv == 0) printf("Range measured is : %f \n", range);
   test_assert("Ranging", rv == 0);
   // send data
-  rv = unetsocket_send(sock_tx, data, 7, rx_node_address, DATA);
+  rv = unetsocket_send(sock_tx, data_tx, 7, rx_node_address, DATA);
   test_assert("unetsocket_send", rv == 0);
   // bind to protocol
   if (unetsocket_bind(sock_rx, 0) == 0 && unetsocket_bind(sock_rx, USER+1) == 0 && unetsocket_bind(sock_rx, 10) == -1) {
@@ -159,10 +160,17 @@ int main(int argc, char* argv[]) {
   trv = unetsocket_get_timeout(sock_tx);
   test_assert("unetsocket_get_timeout", trv == -1);
   // receive
-  unetsocket_send(sock_tx, data, 7, rx_node_address, DATA);
+  unetsocket_send(sock_tx, data_tx, 7, rx_node_address, DATA);
   unetsocket_set_timeout(sock_rx, 10000);
   ntf = unetsocket_receive(sock_rx);
-  test_assert("unetsocket_receive", strcmp("org.arl.unet.DatagramNtf", fjage_msg_get_clazz(ntf))==0);
+  fjage_msg_get_byte_array(ntf, "data", data_rx, 7);
+  bool rx_test_data_match_flag = true;
+  for (int i = 0; i < 7; i++) {
+    if (data_tx[i] != data_rx[i]) {
+      rx_test_data_match_flag = false;
+    }
+  }
+  test_assert("unetsocket_receive", strcmp("org.arl.unet.DatagramNtf", fjage_msg_get_clazz(ntf))==0 && rx_test_data_match_flag);
   fjage_msg_destroy(ntf);
   // power level
   rv = unetsocket_ext_set_powerlevel(sock_tx, 1, -6);
