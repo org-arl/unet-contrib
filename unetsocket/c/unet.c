@@ -393,10 +393,7 @@ fjage_msg_t unetsocket_receive(unetsocket_t sock) {
     if (usock->timeout < 0) time_remaining = 15*TIMEOUT;
   	else if (usock->timeout > 0) {
   	  time_remaining = deadline - _time_in_ms();
-  	  if (time_remaining < 0) {
-        printf("Timed out.. %ld - %ld - %lld\n", time_remaining, deadline, _time_in_ms());
-        return NULL;
-      }
+  	  if (time_remaining < 0) return NULL;
   	}
     pthread_mutex_lock(&usock->rxlock);
   	fjage_msg_t msg = fjage_receive_any(usock->gw, list, 2, time_remaining);
@@ -405,6 +402,7 @@ fjage_msg_t unetsocket_receive(unetsocket_t sock) {
   	  int rv = fjage_msg_get_int(msg, "protocol", 0);
   	  if ((rv == DATA || rv >= USER) && (usock->local_protocol < 0 || usock->local_protocol == rv)) return msg;
   	}
+    if (usock->timeout == 0) return NULL;
   }
   usock->quit = false;
   return NULL;
