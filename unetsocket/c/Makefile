@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS += -std=c99 -Wall -Wextra -Werror -Wfloat-equal -Wconversion -Wparentheses -pedantic -Wunused-parameter -Wunused-variable -Wreturn-type -Wno-unused-function -Wredundant-decls -Wreturn-type -Wunused-value -Wswitch-default -Wuninitialized -Winit-self -O2
+CFLAGS += -g -std=c99 -Wall -Wextra -Werror -Wfloat-equal -Wconversion -Wparentheses -pedantic -Wunused-parameter -Wunused-variable -Wreturn-type -Wno-unused-function -Wredundant-decls -Wreturn-type -Wunused-value -Wswitch-default -Wuninitialized -Winit-self -O2
 FJAGE_VER=229b37c063eec87870cf129dbf94f766a97d0cb0
 FJAGE_DIR=fjage-$(FJAGE_VER)
 BUILD = build

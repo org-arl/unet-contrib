@@ -102,6 +102,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 #endif
+  printf("Connecting to TX at %s:%d and RX at %s:%d\n", argv[1], port_tx, argv[2], port_rx);
   // create a unet socket connection to modems
   sock_tx = unetsocket_open(argv[1], port_tx);
   test_assert("unetsocket_open_tx", sock_tx != NULL);
