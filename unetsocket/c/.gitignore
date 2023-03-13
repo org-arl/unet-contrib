@@ -1,5 +1,15 @@
 samples/rxdata
 samples/txdata
+samples/bbrecord
+samples/execcmd
+samples/npulses
+samples/pbrecord
+samples/range
+samples/rs232_wakeup
+samples/setpowerlevel
+samples/txdata-reliable
+samples/txsignal
+samples/wakeup
 
 fjage.h
 

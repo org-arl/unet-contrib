@@ -35,73 +35,73 @@ txdata.o: samples/txdata.c unet.h fjage.h
 	$(CC) $(CFLAGS) -c samples/txdata.c -o samples/txdata.o
 
 txdata: txdata.o
-	$(CC) -o samples/txdata samples/txdata.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/txdata samples/txdata.o libunet.a libfjage.a -lm
 
 txdata-reliable.o: samples/txdata-reliable.c unet.h fjage.h
 	$(CC) $(CFLAGS) -c samples/txdata-reliable.c -o samples/txdata-reliable.o
 
 txdata-reliable: txdata-reliable.o
-	$(CC) -o samples/txdata-reliable samples/txdata-reliable.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/txdata-reliable samples/txdata-reliable.o libunet.a libfjage.a -lm
 
 rxdata.o: samples/rxdata.c unet.h fjage.h
 	$(CC) $(CFLAGS) -c samples/rxdata.c -o samples/rxdata.o
 
 rxdata: rxdata.o
-	$(CC) -o samples/rxdata samples/rxdata.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/rxdata samples/rxdata.o libunet.a libfjage.a -lm
 
 range.o: samples/range.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/range.c -o samples/range.o
 
 range: range.o unet_ext.o
-	$(CC) -o samples/range unet_ext.o samples/range.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/range unet_ext.o samples/range.o libunet.a libfjage.a -lm
 
 setpowerlevel.o: samples/setpowerlevel.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/setpowerlevel.c -o samples/setpowerlevel.o
 
 setpowerlevel: setpowerlevel.o unet_ext.o
-	$(CC) -o samples/setpowerlevel unet_ext.o samples/setpowerlevel.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/setpowerlevel unet_ext.o samples/setpowerlevel.o libunet.a libfjage.a -lm
 
 txsignal.o: samples/txsignal.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/txsignal.c -o samples/txsignal.o
 
 txsignal: txsignal.o
-	$(CC) -o samples/txsignal unet_ext.o samples/txsignal.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/txsignal unet_ext.o samples/txsignal.o libunet.a libfjage.a -lm
 
 pbrecord.o: samples/pbrecord.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/pbrecord.c -o samples/pbrecord.o
 
 pbrecord: pbrecord.o unet_ext.o
-	$(CC) -o samples/pbrecord unet_ext.o samples/pbrecord.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/pbrecord unet_ext.o samples/pbrecord.o libunet.a libfjage.a -lm
 
 bbrecord.o: samples/bbrecord.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/bbrecord.c -o samples/bbrecord.o
 
 bbrecord: bbrecord.o
-	$(CC) -o samples/bbrecord unet_ext.o samples/bbrecord.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/bbrecord unet_ext.o samples/bbrecord.o libunet.a libfjage.a -lm
 
 npulses.o: samples/npulses.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/npulses.c -o samples/npulses.o
 
 npulses: npulses.o unet_ext.o
-	$(CC) -o samples/npulses unet_ext.o samples/npulses.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/npulses unet_ext.o samples/npulses.o libunet.a libfjage.a -lm
 
 execcmd.o: samples/execcmd.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/execcmd.c -o samples/execcmd.o
 
 execcmd: execcmd.o unet_ext.o
-	$(CC) -o samples/execcmd unet_ext.o samples/execcmd.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/execcmd unet_ext.o samples/execcmd.o libunet.a libfjage.a -lm
 
 wakeup.o: samples/wakeup.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/wakeup.c -o samples/wakeup.o
 
 wakeup: wakeup.o unet_ext.o
-	$(CC) -o samples/wakeup unet_ext.o samples/wakeup.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/wakeup unet_ext.o samples/wakeup.o libunet.a libfjage.a -lm
 
 rs232_wakeup.o: samples/rs232_wakeup.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c samples/rs232_wakeup.c -o samples/rs232_wakeup.o
 
 rs232_wakeup: rs232_wakeup.o unet_ext.o
-	$(CC) -o samples/rs232_wakeup unet_ext.o samples/rs232_wakeup.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o samples/rs232_wakeup unet_ext.o samples/rs232_wakeup.o libunet.a libfjage.a -lm
 
 test: test_unet unet_ext.o
 	rm -rf *.zip
@@ -111,7 +111,7 @@ test_unet.o: test/test_unet.c unet.h fjage.h unet_ext.o
 	$(CC) $(CFLAGS) -c test/test_unet.c -o test/test_unet.o
 
 test_unet: test_unet.o
-	$(CC) -o test/test_unet unet_ext.o test/test_unet.o libunet.a libfjage.a -lpthread -lm
+	$(CC) -o test/test_unet unet_ext.o test/test_unet.o libunet.a libfjage.a -lm
 
 clean:
 	rm -rf c-api libunet.a *.o samples/*.o test/*.o test/test_unet samples/wakeup samples/rs232_wakeup samples/txdata samples/txdata-reliable samples/rxdata samples/range samples/setpowerlevel samples/txsignal samples/pbrecord samples/bbrecordedsignal.txt samples/pbrecordedsignal.txt samples/bbrecord samples/npulses samples/gpio samples/execcmd
