@@ -102,6 +102,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 #endif
+  printf("Connecting to TX at %s:%d and RX at %s:%d\n", argv[1], port_tx, argv[2], port_rx);
   // create a unet socket connection to modems
   sock_tx = unetsocket_open(argv[1], port_tx);
   test_assert("unetsocket_open_tx", sock_tx != NULL);
@@ -159,19 +160,51 @@ int main(int argc, char* argv[]) {
   unetsocket_set_timeout(sock_tx, -10);
   trv = unetsocket_get_timeout(sock_tx);
   test_assert("unetsocket_get_timeout", trv == -1);
+  // flushing
+  unetsocket_set_timeout(sock_rx, 10000);
+  ntf = unetsocket_receive(sock_rx);
+  while (ntf != NULL) ntf = unetsocket_receive(sock_rx);
+
   // receive
   unetsocket_send(sock_tx, data_tx, 7, rx_node_address, DATA);
   unetsocket_set_timeout(sock_rx, 10000);
   ntf = unetsocket_receive(sock_rx);
+  test_assert("unetsocket_receive(1)", ntf != NULL);
   fjage_msg_get_byte_array(ntf, "data", data_rx, 7);
   bool rx_test_data_match_flag = true;
   for (int i = 0; i < 7; i++) {
     if (data_tx[i] != data_rx[i]) {
       rx_test_data_match_flag = false;
+      break;
     }
   }
-  test_assert("unetsocket_receive", strcmp("org.arl.unet.DatagramNtf", fjage_msg_get_clazz(ntf))==0 && rx_test_data_match_flag);
+  test_assert("unetsocket_receive(2)", strcmp("org.arl.unet.DatagramNtf", fjage_msg_get_clazz(ntf))==0 && rx_test_data_match_flag);
   fjage_msg_destroy(ntf);
+
+  // flushing
+  unetsocket_set_timeout(sock_rx, 10000);
+  ntf = unetsocket_receive(sock_rx);
+  while (ntf != NULL) ntf = unetsocket_receive(sock_rx);
+
+  // receive larger datagram (more than 1450 bytes)
+  uint8_t large_buf[3000] = {0};
+  for (size_t i = 0; i < 3000; i++) large_buf[i] = (uint8_t) (i % 256);
+
+  unetsocket_send(sock_tx, large_buf, 3000, rx_node_address, DATA);
+  unetsocket_set_timeout(sock_rx, 40000);
+  ntf = unetsocket_receive(sock_rx);
+  test_assert("unetsocket_receive_large(1)", ntf != NULL);
+  fjage_msg_get_byte_array(ntf, "data", large_buf, 3000);
+  rx_test_data_match_flag = true;
+  for (int i = 0; i < 3000; i++) {
+    if (large_buf[i] != i % 256) {
+      rx_test_data_match_flag = false;
+      break;
+    }
+  }
+  test_assert("unetsocket_receive_large(2)", strcmp("org.arl.unet.DatagramNtf", fjage_msg_get_clazz(ntf))==0 && rx_test_data_match_flag);
+  fjage_msg_destroy(ntf);
+
   // power level
   rv = unetsocket_ext_set_powerlevel(sock_tx, 1, -6);
   test_assert("Power level", rv == 0);

@@ -1,7 +1,6 @@
 #define _DEFAULT_SOURCE
 #include <stdlib.h>
 #include <errno.h>
-#include "pthreadwindows.h"
 #include "fjage.h"
 #include "unet.h"
 #include "unet_ext.h"
@@ -19,8 +18,6 @@
 
 typedef struct {
   fjage_gw_t gw;
-  pthread_t tid;
-  pthread_mutex_t rxlock, txlock;
   int local_protocol;
   int remote_address;
   int remote_protocol;
@@ -47,123 +44,33 @@ static long long _time_in_ms(void) {
   return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
 }
 
-static void *monitor(void *p) {
-  _unetsocket_t *usock = p;
-  long deadline = -1;
-  int rv;
-  if (usock->timeout == 0) deadline = 0;
-  if (usock->timeout > 0) deadline = _time_in_ms() + usock->timeout;
-  const char *list[] = {"org.arl.unet.DatagramNtf", "org.arl.unet.phy.RxFrameNtf"};
-  while (!usock->quit) {
-    long time_remaining = -1;
-    if (usock->timeout == 0) time_remaining = 0;
-  	if (usock->timeout > 0) {
-  	  time_remaining = deadline - _time_in_ms();
-  	  if (time_remaining <= 0) return NULL;
-  	}
-    pthread_mutex_lock(&usock->rxlock);
-  	fjage_msg_t msg = fjage_receive_any(usock->gw, list, 2, usock->timeout<0?15*TIMEOUT:time_remaining);
-  	pthread_mutex_unlock(&usock->rxlock);
-  	if (msg == NULL) return NULL;
-  	if (msg != NULL) {
-  	  rv = fjage_msg_get_int(msg, "protocol", 0);
-  	  if (rv == DATA || rv >= USER) {
-    		if (usock->local_protocol < 0) {
-    		  usock->ntf = msg;
-    		  pthread_exit(NULL);
-    		}
-    		if (usock->local_protocol == rv) {
-    		  usock->ntf = msg;
-    		  pthread_exit(NULL);
-    		}
-  	  }
-  	  fjage_msg_destroy(msg);
-  	}
-  }
-  return NULL;
-}
-
 static fjage_msg_t receive(_unetsocket_t *usock, const char *clazz, const char *id, long timeout) {
-  pthread_mutex_lock(&usock->txlock);
   fjage_interrupt(usock->gw);
-  int rv = pthread_mutex_trylock(&usock->rxlock);
-  while (rv == EBUSY)
-  {
-    Sleep(100);
-    fjage_interrupt(usock->gw);
-    rv = pthread_mutex_trylock(&usock->rxlock);
-  }
-  fjage_msg_t msg = fjage_receive(usock->gw, clazz, id, timeout);
-  pthread_mutex_unlock(&usock->rxlock);
-  pthread_mutex_unlock(&usock->txlock);
-  return msg;
+  return fjage_receive(usock->gw, clazz, id, timeout);
 }
 
 static fjage_msg_t request(_unetsocket_t *usock, const fjage_msg_t request, long timeout) {
-  pthread_mutex_lock(&usock->txlock);
   fjage_interrupt(usock->gw);
-  int rv = pthread_mutex_trylock(&usock->rxlock);
-  while (rv == EBUSY)
-  {
-    Sleep(100);
-    fjage_interrupt(usock->gw);
-    rv = pthread_mutex_trylock(&usock->rxlock);
-  }
-  fjage_msg_t msg = fjage_request(usock->gw, request, timeout);
-  pthread_mutex_unlock(&usock->rxlock);
-  pthread_mutex_unlock(&usock->txlock);
-  return msg;
+  return fjage_request(usock->gw, request, timeout);
 }
 
 static fjage_aid_t agent_for_service(_unetsocket_t *usock, const char *service) {
-  pthread_mutex_lock(&usock->txlock);
   fjage_interrupt(usock->gw);
-  int rv = pthread_mutex_trylock(&usock->rxlock);
-  while (rv == EBUSY)
-  {
-    Sleep(100);
-    fjage_interrupt(usock->gw);
-    rv = pthread_mutex_trylock(&usock->rxlock);
-  }
-  fjage_aid_t aid = fjage_agent_for_service(usock->gw, service);
-  pthread_mutex_unlock(&usock->rxlock);
-  pthread_mutex_unlock(&usock->txlock);
-  return aid;
+  return fjage_agent_for_service(usock->gw, service);
 }
 
 static int agents_for_service(_unetsocket_t *usock, const char *service, fjage_aid_t* agents, int max) {
-  pthread_mutex_lock(&usock->txlock);
   fjage_interrupt(usock->gw);
-  int rv = pthread_mutex_trylock(&usock->rxlock);
-  while (rv == EBUSY)
-  {
-    Sleep(100);
-    fjage_interrupt(usock->gw);
-    rv = pthread_mutex_trylock(&usock->rxlock);
-  }
-  int as = fjage_agents_for_service(usock->gw, service, agents, max);
-  pthread_mutex_unlock(&usock->rxlock);
-  pthread_mutex_unlock(&usock->txlock);
-  return as;
+  return fjage_agents_for_service(usock->gw, service, agents, max);
 }
 
-unetsocket_t unetsocket_open(const char* hostname, int port) {
-  _unetsocket_t *usock = malloc(sizeof(_unetsocket_t));
-  if (usock == NULL) return NULL;
-  usock->gw = fjage_tcp_open(hostname, port);
-  if (usock->gw == NULL) {
-    free(usock);
-    return NULL;
-  }
+unetsocket_t unetsocket_setup(_unetsocket_t *usock){
   usock->local_protocol = -1;
   usock->remote_address = -1;
   usock->remote_protocol = 0;
   usock->timeout = -1;
   usock->provider = NULL;
   usock->quit = true;
-  usock->ntf = NULL;
-  pthread_mutex_init(&usock->rxlock, NULL);
-  pthread_mutex_init(&usock->txlock, NULL);
   int nagents = agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", NULL, 0);
   fjage_aid_t* agents = malloc((unsigned long)nagents*sizeof(fjage_aid_t));
   for (int i=0; i< nagents; i++) agents[i] = NULL;
@@ -172,9 +79,7 @@ unetsocket_t unetsocket_open(const char* hostname, int port) {
     free(agents);
     return NULL;
   }
-  for(int i = 0; i < nagents; i++) {
-    fjage_subscribe_agent(usock->gw, agents[i]);
-  }
+  for(int i = 0; i < nagents; i++) fjage_subscribe_agent(usock->gw, agents[i]);
   free(agents);
   // check the parameter request class name
   fjage_msg_t msg;
@@ -194,6 +99,18 @@ unetsocket_t unetsocket_open(const char* hostname, int port) {
   fjage_msg_destroy(msg);
   fjage_aid_destroy(aid);
   return usock;
+}
+
+
+unetsocket_t unetsocket_open(const char* hostname, int port) {
+  _unetsocket_t *usock = malloc(sizeof(_unetsocket_t));
+  if (usock == NULL) return NULL;
+  usock->gw = fjage_tcp_open(hostname, port);
+  if (usock->gw == NULL) {
+    free(usock);
+    return NULL;
+  }
+  return unetsocket_setup(usock);
 }
 
 #ifndef _WIN32
@@ -205,45 +122,7 @@ unetsocket_t unetsocket_rs232_open(const char* devname, int baud, const char* se
     free(usock);
     return NULL;
   }
-  usock->local_protocol = -1;
-  usock->remote_address = -1;
-  usock->remote_protocol = 0;
-  usock->timeout = -1;
-  usock->provider = NULL;
-  usock->quit = true;
-  usock->ntf = NULL;
-  pthread_mutex_init(&usock->rxlock, NULL);
-  pthread_mutex_init(&usock->txlock, NULL);
-  int nagents = agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", NULL, 0);
-  fjage_aid_t* agents = malloc((unsigned long)nagents*sizeof(fjage_aid_t));
-  for (int i=0; i< nagents; i++) agents[i] = NULL;
-  if (agents_for_service(usock, "org.arl.unet.Services.DATAGRAM", agents, nagents) < 0) {
-    free(usock);
-    free(agents);
-    return NULL;
-  }
-  for(int i = 0; i < nagents; i++) {
-    fjage_subscribe_agent(usock->gw, agents[i]);
-  }
-  free(agents);
-  // check the parameter request class name
-  fjage_msg_t msg;
-  fjage_aid_t aid;
-  aid = agent_for_service(usock, "org.arl.unet.Services.NODE_INFO");
-  msg = fjage_msg_create(NEWPARAMETERREQ, FJAGE_REQUEST);
-  fjage_msg_set_recipient(msg, aid);
-  fjage_msg_add_int(msg, "index", -1);
-  fjage_msg_add_string(msg, "param", "version");
-  msg = request(usock, msg, 5 * TIMEOUT);
-  if (msg != NULL && fjage_msg_get_performative(msg) == FJAGE_INFORM) {
-    parameterreq = NEWPARAMETERREQ;
-    parameterrsp = NEWPARAMETERRSP;
-    rangereq = NEWRANGEREQ;
-    rangentf = NEWRANGENTF;
-  }
-  fjage_msg_destroy(msg);
-  fjage_aid_destroy(aid);
-  return usock;
+  return unetsocket_setup(usock);
 }
 #endif
 
@@ -422,16 +301,26 @@ int unetsocket_send_request(unetsocket_t sock, fjage_msg_t req) {
 fjage_msg_t unetsocket_receive(unetsocket_t sock) {
   if (sock == NULL) return NULL;
   _unetsocket_t *usock = sock;
-  if (pthread_create(&usock->tid, NULL, monitor, usock) < 0) {
-  	pthread_mutex_destroy(&usock->rxlock);
-  	pthread_mutex_destroy(&usock->txlock);
-  	fjage_close(usock->gw);
-    free(usock);
-    return NULL;
+  long deadline = _time_in_ms() + usock->timeout;
+  // TODO make this list more exhaustive
+  const char *list[] = {"org.arl.unet.DatagramNtf", "org.arl.unet.phy.RxFrameNtf"};
+  usock->quit = false;
+  while (!usock->quit) {
+    long time_remaining = 0;
+    if (usock->timeout < 0) time_remaining = 15*TIMEOUT;
+  	else if (usock->timeout > 0) {
+  	  time_remaining = deadline - _time_in_ms();
+  	  if (time_remaining < 0) return NULL;
+  	}
+  	fjage_msg_t msg = fjage_receive_any(usock->gw, list, 2, time_remaining);
+  	if (msg != NULL) {
+  	  int rv = fjage_msg_get_int(msg, "protocol", 0);
+  	  if ((rv == DATA || rv >= USER) && (usock->local_protocol < 0 || usock->local_protocol == rv)) return msg;
+  	}
+    if (usock->timeout == 0) return NULL;
   }
   usock->quit = false;
-  pthread_join(usock->tid, NULL);
-  return usock->ntf;
+  return NULL;
 }
 
 void unetsocket_cancel(unetsocket_t sock) {
