@@ -48,10 +48,10 @@ samples/%.o: samples/%.c unet.h fjage.h unet.o libfjage.a
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 samples/%: samples/%.o unet_ext.o unet.o libfjage.a
-	$(CC) -o $@ $< unet_ext.o unet.o libfjage.a -lm
+	$(CC) -o $@ $< unet_ext.o unet.o libfjage.a -lm -lpthread
 
 test/%: test/%.o unet_ext.o unet.o libfjage.a
-	$(CC) -o $@ $< unet_ext.o unet.o libfjage.a -lm
+	$(CC) -o $@ $< unet_ext.o unet.o libfjage.a -lm -lpthread
 
 $(CONTRIB_DIR): $(BUILD_API)
 	curl -LO https://github.com/org-arl/fjage/archive/$(FJAGE_VER).zip
