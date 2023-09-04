@@ -163,18 +163,18 @@ int unetsocket_ext_npulses(unetsocket_t sock, float *signal, int nsamples, int r
     error("Pulse delay is less than 5 ms...");
     return -1;
   }
-  if ((unetsocket_ext_iget(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", &npulses_cache) < 0) || (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses) < 0))
+  if ((unetsocket_ext_iget(usock, 0, "org.arl.unet.Services.BASEBAND", "npulses", &npulses_cache) < 0) || (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "npulses", npulses) < 0))
   {
     error("Unable to get/set npulses...");
     return -1;
   }
-  if ((unetsocket_ext_iget(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", &pulsedelay_cache) < 0) || (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", pulsedelay) < 0))
+  if ((unetsocket_ext_iget(usock, 0, "org.arl.unet.Services.BASEBAND", "pulsedelay", &pulsedelay_cache) < 0) || (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "pulsedelay", pulsedelay) < 0))
   {
-    unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses_cache);
+    unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "npulses", npulses_cache);
     error("Unable to get/set pulse delay...");
     return -1;
   }
-  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.PHYSICAL");
+  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.BASEBAND");
   msg = fjage_msg_create("org.arl.unet.bb.TxBasebandSignalReq", FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, bb);
   fjage_msg_add_float(msg, "fc", 0);
@@ -184,14 +184,14 @@ int unetsocket_ext_npulses(unetsocket_t sock, float *signal, int nsamples, int r
   {
     fjage_msg_destroy(msg);
     msg = receive(usock, "org.arl.unet.phy.TxFrameNtf", NULL, (pri*npulses)+(2*TIMEOUT));
-    unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses_cache);
-    unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", pulsedelay_cache);
+    unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "npulses", npulses_cache);
+    unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "pulsedelay", pulsedelay_cache);
     fjage_msg_destroy(msg);
     return 0;
   }
   fjage_msg_destroy(msg);
-  unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "npulses", npulses_cache);
-  unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pulsedelay", pulsedelay_cache);
+  unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "npulses", npulses_cache);
+  unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "pulsedelay", pulsedelay_cache);
   return -1;
 }
 
@@ -410,7 +410,7 @@ int unetsocket_ext_pbrecord(unetsocket_t sock, float *buf, int nsamples) {
   int pbscnt = 0;
   float tempbuf[PBSBLK];
   pbscnt = (int)ceil((float)nsamples / PBSBLK);
-  if (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.PHYSICAL", "pbscnt", pbscnt) < 0) return -1;
+  if (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "pbscnt", pbscnt) < 0) return -1;
   for (int i = 0; i < pbscnt; i++)
   {
     fjage_msg_t rxsigntf = receive(usock, "org.arl.unet.bb.RxBasebandSignalNtf", NULL, 5 * TIMEOUT);
@@ -429,10 +429,11 @@ int unetsocket_ext_tx_signal(unetsocket_t sock, float *signal, int nsamples, flo
   _unetsocket_t *usock = sock;
   fjage_msg_t msg;
   fjage_aid_t bb;
-  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.PHYSICAL");
+  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.BASEBAND");
   msg = fjage_msg_create("org.arl.unet.bb.TxBasebandSignalReq", FJAGE_REQUEST);
   fjage_msg_set_recipient(msg, bb);
-  if ((int)fc == 0) fjage_msg_add_float(msg, "fc", fc);
+  fjage_msg_add_float(msg, "fc", fc);
+  fjage_msg_add_bool(msg, "signal__isComplex", fc != 0.0);
   if (signal != NULL) fjage_msg_add_float_array(msg, "signal", signal, ((int)fc ? 2 : 1)*nsamples);
   if (id != NULL) strcpy(id, fjage_msg_get_id(msg));
   msg = request(usock, msg, 5 * TIMEOUT);
@@ -452,7 +453,7 @@ int unetsocket_ext_bbrecord(unetsocket_t sock, float *buf, int nsamples) {
   fjage_msg_t msg;
   fjage_aid_t bb;
   msg = fjage_msg_create("org.arl.unet.bb.RecordBasebandSignalReq", FJAGE_REQUEST);
-  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.PHYSICAL");
+  bb = fjage_agent_for_service(usock->gw, "org.arl.unet.Services.BASEBAND");
   fjage_msg_set_recipient(msg, bb);
   fjage_msg_add_int(msg, "recLength", nsamples);
   msg = request(usock, msg, 5 * TIMEOUT);
