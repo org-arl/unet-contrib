@@ -410,10 +410,14 @@ int unetsocket_ext_pbrecord(unetsocket_t sock, float *buf, int nsamples) {
   int pbscnt = 0;
   float tempbuf[PBSBLK];
   pbscnt = (int)ceil((float)nsamples / PBSBLK);
+  fjage_subscribe_agent(usock->gw, fjage_agent_for_service(usock->gw, "org.arl.unet.Services.BASEBAND"));
+  printf("Requesting %d blocks of %d samples each...\n", pbscnt, PBSBLK);
+  if (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "pbsblk", PBSBLK) < 0) return -1;
   if (unetsocket_ext_iset(usock, 0, "org.arl.unet.Services.BASEBAND", "pbscnt", pbscnt) < 0) return -1;
   for (int i = 0; i < pbscnt; i++)
   {
     fjage_msg_t rxsigntf = receive(usock, "org.arl.unet.bb.RxBasebandSignalNtf", NULL, 5 * TIMEOUT);
+    if (rxsigntf == NULL) return -1;
     fjage_msg_get_float_array(rxsigntf, "signal", tempbuf, PBSBLK);
     fjage_msg_destroy(rxsigntf);
     unsigned long remaining = (unsigned long) (nsamples - (i * PBSBLK));

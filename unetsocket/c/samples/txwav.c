@@ -13,7 +13,15 @@
 #include <stdlib.h>
 #include "../unet.h"
 #include "../unet_ext.h"
-#include "wav_file.h"
+
+#define DR_WAV_IMPLEMENTATION
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-int-conversion"
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#include "dr_wav.h"
+#pragma GCC diagnostic pop
+
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -21,16 +29,14 @@
 #include <sys/time.h>
 #endif
 
-#define BUF_LENGTH 1024
-
 static int error(const char *msg) {
   printf("\n*** ERROR: %s\n\n", msg);
   return -1;
 }
 
 int main(int argc, char *argv[]) {
-  WAV_FILE_INFO wavinfo;
   unetsocket_t sock;
+  char *ipaddr;
   char *fname;
   int port = 1100;
   int rv;
@@ -42,6 +48,7 @@ int main(int argc, char *argv[]) {
       "A usage example: \n"
       "txdata 192.168.1.20 passband.wav 1100\n");
   } else {
+    ipaddr = argv[1];
     fname = argv[2];
     if (argc > 3) port = (int)strtol(argv[3], NULL, 10);
   }
@@ -49,22 +56,27 @@ int main(int argc, char *argv[]) {
   // check if file exists
   FILE *fp = fopen(fname, "rb");
   if (fp == NULL) return error("File does not exist\n");
+  fclose(fp);
 
-  // open and parse the wavefile
-  wavinfo = wav_read_header (fp);
-  if (wavinfo.NumberOfChannels == 0) return error("Error reading wav file\n");
-  else if (wavinfo.NumberOfSamples <= 0) return error("Empty wav file\n");
+  unsigned int channels;
+  unsigned int sampleRate;
+  drwav_uint64 totalPCMFrameCount;
+  float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fname, &channels, &sampleRate, &totalPCMFrameCount, NULL);
+  if (pSampleData == NULL) {
+    return error("Error opening and reading wav file\n");
+  }
+
+  printf("Wav file [%s] : fs=%d, nchannels=%d, nsamples=%llu\n", fname, sampleRate, channels, totalPCMFrameCount);
+
+  if (channels != 1) return error("Only mono wav files are supported\n");
 
   #ifndef _WIN32
   // Check valid ip address
-    struct hostent *server = gethostbyname(argv[1]);
+    struct hostent *server = gethostbyname(ipaddr);
     if (server == NULL) return error("Enter a valid ip addreess\n");
   #endif
 
-  // Open a unet socket connection to modem
-  printf("Connecting to %s:%d\n",argv[1],port);
-
-  sock = unetsocket_open(argv[1], port);
+  sock = unetsocket_open(ipaddr, port);
   if (sock == NULL) return error("Couldn't open unet socket");
 
   // Get bb.dacrate parameter
@@ -73,26 +85,18 @@ int main(int argc, char *argv[]) {
     return error("Failed to get dacrate parameter \n");
   }
 
-  if ((int)txsamplingfreq != wavinfo.SampleRate) {
-    printf("\n*** ERROR: Sampling frequency of wav file does not match dacrate parameter %f != %d \n\n", txsamplingfreq, wavinfo.SampleRate);
-    return -1;
-  }
-  double* input = malloc(BUF_LENGTH*sizeof(double));
-  float* signal = malloc((unsigned long)wavinfo.NumberOfSamples*sizeof(float));
-  float maxvalue = (float)(((int)1) << wavinfo.BytesPerSample*8);
+  printf("UnetStack [%s:%d] : bb.dacrate=%d \n", ipaddr, port, (int)txsamplingfreq);
 
-  // read the wav file
-  int s=0;
-  int count=0;
-  while ((count = (int)wav_read_data (input, fp, wavinfo, BUF_LENGTH)) == BUF_LENGTH) {
-    for (int i = 0; i < count; i++) signal[s++] = (float)(input[i]/maxvalue);
-  }
+  if ((unsigned int)txsamplingfreq != sampleRate) printf("Wavfile samplerate and bb.dacrate must match! %d vs %d \n", (int)txsamplingfreq, sampleRate);
 
-  rv = unetsocket_ext_tx_signal(sock, signal, s, 0, NULL);
+  rv = unetsocket_ext_tx_signal(sock, pSampleData, (int)totalPCMFrameCount, 0, NULL);
   if (rv == 0) {
-    printf("Transmitted %d samples\n", wavinfo.NumberOfSamples);
+    printf("Transmitted %llu samples\n", totalPCMFrameCount);
     return 0;
   } else {
     return error("Failed to transmit signal\n");
   }
+
+  drwav_free(pSampleData, NULL);
+  unetsocket_close(sock);
 }
