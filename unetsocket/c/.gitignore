@@ -10,6 +10,8 @@ samples/setpowerlevel
 samples/txdata-reliable
 samples/txsignal
 samples/wakeup
+samples/txwav
+samples/rxwav
 
 fjage.h
 
