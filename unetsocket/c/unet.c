@@ -1,6 +1,7 @@
 #define _DEFAULT_SOURCE
 #include <stdlib.h>
 #include <errno.h>
+#include "pthreadwindows.h"
 #include "fjage.h"
 #include "unet.h"
 #include "unet_ext.h"
@@ -18,6 +19,7 @@
 
 typedef struct {
   fjage_gw_t gw;
+  pthread_mutex_t rxlock, txlock;
   int local_protocol;
   int remote_address;
   int remote_protocol;
@@ -65,6 +67,8 @@ static int agents_for_service(_unetsocket_t *usock, const char *service, fjage_a
 }
 
 unetsocket_t unetsocket_setup(_unetsocket_t *usock){
+  pthread_mutex_init(&usock->rxlock, NULL);
+  pthread_mutex_init(&usock->txlock, NULL);
   usock->local_protocol = -1;
   usock->remote_address = -1;
   usock->remote_protocol = 0;

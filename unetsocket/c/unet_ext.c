@@ -19,7 +19,6 @@
 
 typedef struct {
   fjage_gw_t gw;
-  pthread_t tid;
   pthread_mutex_t rxlock, txlock;
   int local_protocol;
   int remote_address;
