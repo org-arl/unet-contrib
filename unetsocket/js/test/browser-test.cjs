@@ -18,7 +18,7 @@ if (process.argv.includes('-m')) {
 } else {
   (async () => {
     console.log('Launching puppeteer..');
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ headless: 'new',});
     const page = await browser.newPage();
     page.on('console', msg => {
       msg.type() == 'error' && console.log('PAGE ERR:', msg.text());

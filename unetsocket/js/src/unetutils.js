@@ -411,4 +411,4 @@ class CachingGateway extends Gateway{
   }
 }
 
-export {AgentID, Services, UnetMessages, Protocol, CachingGateway as Gateway, CachingAgentID};
+export {AgentID, Services, UnetMessages, Protocol, CachingGateway, CachingAgentID};

@@ -1,5 +1,5 @@
-import {Performative} from 'fjage';
-import {Gateway, Services, UnetMessages, Protocol} from './unetutils';
+import {Gateway, Performative} from 'fjage';
+import {Services, UnetMessages, Protocol} from './unetutils';
 
 const REQUEST_TIMEOUT = 1000;
 

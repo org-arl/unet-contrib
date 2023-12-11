@@ -4,7 +4,7 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.unet = {}));
 })(this, (function (exports) { 'use strict';
 
-  /* fjage.js v1.10.3 */
+  /* fjage.js v1.11.2 */
 
   const isBrowser =
     typeof window !== "undefined" && typeof window.document !== "undefined";
@@ -29,10 +29,13 @@
       (navigator.userAgent.includes("Node.js") ||
         navigator.userAgent.includes("jsdom")));
 
-  typeof Deno !== "undefined" && typeof Deno.core !== "undefined";
+  typeof Deno !== "undefined" &&
+    typeof Deno.version !== "undefined" &&
+    typeof Deno.version.deno !== "undefined";
 
   const SOCKET_OPEN = 'open';
   const SOCKET_OPENING = 'opening';
+  const DEFAULT_RECONNECT_TIME$1 = 5000;       // ms, delay between retries to connect to the server.
 
   var createConnection;
 
@@ -44,17 +47,24 @@
 
     /**
       * Create an TCPConnector to connect to a fjage master over TCP
-      * @param {Object} opts
-      * @param {String} [opts.hostname='localhost'] - ip address/hostname of the master container to connect to
-      * @param {number} opts.port - port number of the master container to connect to
+     * @param {Object} opts
+     * @param {string} [opts.hostname='localhost'] - hostname/ip address of the master container to connect to
+     * @param {number} opts.port - port number of the master container to connect to
+     * @param {string} opts.pathname - path of the master container to connect to
+     * @param {boolean} opts.keepAlive - try to reconnect if the connection is lost
+     * @param {number} [opts.reconnectTime=5000] - time before reconnection is attempted after an error
       */
     constructor(opts = {}) {
       this.url = new URL('tcp://localhost');
       let host = opts.hostname || 'localhost';
       let port = opts.port || -1;
-      this.url.hostname = opts.hostname;
-      this.url.port = opts.port;
+      this.url.hostname = host;
+      this.url.port = port;
       this._buf = '';
+      this._reconnectTime = opts.reconnectTime || DEFAULT_RECONNECT_TIME$1;
+      this._keepAlive = opts.keepAlive || true;
+      this._firstConn = true;               // if the Gateway has managed to connect to a server before
+      this._firstReConn = true;             // if the Gateway has attempted to reconnect to a server before
       this.pendingOnOpen = [];              // list of callbacks make as soon as gateway is open
       this.connListeners = [];              // external listeners wanting to listen connection events
       this._sockInit(host, port);
@@ -79,7 +89,7 @@
         }
       }else {
         this._sockSetup(host, port);
-      }  
+      }
     }
 
     _sockSetup(host, port){
@@ -98,18 +108,18 @@
     }
 
     _sockReconnect(){
-      if (this._firstConn || !this.keepAlive || this.sock.readyState == SOCKET_OPENING || this.sock.readyState == SOCKET_OPEN) return;
+      if (this._firstConn || !this._keepAlive || this.sock.readyState == SOCKET_OPENING || this.sock.readyState == SOCKET_OPEN) return;
       if (this._firstReConn) this._sendConnEvent(false);
       this._firstReConn = false;
-      if(this.debug) console.log('Reconnecting to ', this.sock.remoteAddress + ':' + this.sock.remotePort);
       setTimeout(() => {
         this.pendingOnOpen = [];
-        this._sockSetup(this.sock.url);
+        this._sockSetup(this.url.hostname, this.url.port);
       }, this._reconnectTime);
     }
 
     _onSockOpen() {
       this._sendConnEvent(true);
+      this._firstConn = false;
       this.sock.on('close', this._sockReconnect.bind(this));
       this.sock.on('data', this._processSockData.bind(this));
       this.pendingOnOpen.forEach(cb => cb());
@@ -166,7 +176,7 @@
      * @ignore
      * @param {string} s - incoming message string
      */
-    
+
     /**
      * Add listener for connection events
      * @param {function} listener - a listener callback that is called when the connection is opened/closed
@@ -197,12 +207,16 @@
       if (this.sock.readyState == SOCKET_OPENING) {
         this.pendingOnOpen.push(() => {
           this.sock.send('{"alive": false}\n');
-          this.sock.onclose = null;
+          this.sock.removeAllListeners('connect');
+          this.sock.removeAllListeners('error');
+          this.sock.removeAllListeners('close');
           this.sock.destroy();
         });
       } else if (this.sock.readyState == SOCKET_OPEN) {
         this.sock.send('{"alive": false}\n');
-        this.sock.onclose = null;
+        this.sock.removeAllListeners('connect');
+        this.sock.removeAllListeners('error');
+        this.sock.removeAllListeners('close');
         this.sock.destroy();
       }
     }
@@ -227,11 +241,11 @@
      */
     constructor(opts = {}) {
       this.url = new URL('ws://localhost');
-      this.url.hostname = opts.hostname;      
+      this.url.hostname = opts.hostname;
       this.url.port = opts.port;
       this.url.pathname = opts.pathname;
       this._reconnectTime = opts.reconnectTime || DEFAULT_RECONNECT_TIME;
-      this._keepAlive = opts.keepAlive;
+      this._keepAlive = opts.keepAlive || true;
       this.debug = opts.debug || false;      // debug info to be logged to console?
       this._firstConn = true;               // if the Gateway has managed to connect to a server before
       this._firstReConn = true;             // if the Gateway has attempted to reconnect to a server before
@@ -317,7 +331,7 @@
      * @ignore
      * @param {string} s - incoming message string
      */
-    
+
     /**
      * Add listener for connection events
      * @param {function} listener - a listener callback that is called when the connection is opened/closed
@@ -360,6 +374,7 @@
   }
 
   /* global global Buffer */
+
 
   const DEFAULT_QUEUE_SIZE = 128;        // max number of old unreceived messages to store
 
@@ -688,7 +703,13 @@
     _sendEvent(type, val) {
       if (Array.isArray(this.eventListeners[type])) {
         this.eventListeners[type].forEach(l => {
-          l && {}.toString.call(l) === '[object Function]' && l(val);
+          if (l && {}.toString.call(l) === '[object Function]'){
+            try {
+              l(val);
+            } catch (error) {
+              console.warn('Error in event listener : ' + error);
+            }
+          }
         });
       }
     }
@@ -717,18 +738,26 @@
           var consumed = false;
           if (Array.isArray(this.eventListeners['message'])){
             for (var i = 0; i < this.eventListeners['message'].length; i++) {
-              if (this.eventListeners['message'][i](msg)) {
-                consumed = true;
-                break;
+              try {
+                if (this.eventListeners['message'][i](msg)) {
+                  consumed = true;
+                  break;
+                }
+              } catch (error) {
+                console.warn('Error in message listener : ' + error);
               }
             }
           }
           // iterate over internal callbacks, until one consumes the message
           for (var key in this.listener){
             // callback returns true if it has consumed the message
-            if (this.listener[key](msg)) {
-              consumed = true;
-              break;
+            try {
+              if (this.listener[key](msg)) {
+                consumed = true;
+                break;
+              }
+            } catch (error) {
+              console.warn('Error in listener : ' + error);
             }
           }
           if(!consumed) {
@@ -816,6 +845,7 @@
           this.connector.write('{"alive": true}');
           this._update_watch();
         }
+        this._sendEvent('conn', state);
       });
       return conn;
     }
@@ -829,7 +859,12 @@
       } else if (filter.__proto__.name == 'Message' || filter.__proto__.__proto__.name == 'Message') {
         return filter.__clazz__ == msg.__clazz__;
       } else if (typeof filter == 'function') {
-        return filter(msg);
+        try {
+          return filter(msg);
+        }catch(e){
+          console.warn('Error in filter : ' + e);
+          return false;
+        }
       } else {
         return msg instanceof filter;
       }
@@ -1099,7 +1134,7 @@
         let timer;
         if (timeout > 0){
           timer = setTimeout(() => {
-            delete this.listener[lid];
+            this.listener[lid] && delete this.listener[lid];
             if (this.debug) console.log('Receive Timeout : ' + filter);
             resolve();
           }, timeout);
@@ -1107,7 +1142,7 @@
         this.listener[lid] = msg => {
           if (!this._matchMessage(filter, msg)) return false;
           if(timer) clearTimeout(timer);
-          delete this.listener[lid];
+          this.listener[lid] && delete this.listener[lid];
           resolve(msg);
           return true;
         };
@@ -1706,7 +1741,7 @@
 
     constructor(hostname, port, path='') {
       return (async () => {
-        this.gw = new CachingGateway({
+        this.gw = new Gateway({
           hostname : hostname,
           port : port,
           path : path
@@ -1966,7 +2001,8 @@
 
   exports.AgentID = AgentID;
   exports.CachingAgentID = CachingAgentID;
-  exports.Gateway = CachingGateway;
+  exports.CachingGateway = CachingGateway;
+  exports.Gateway = Gateway;
   exports.Message = Message;
   exports.MessageClass = MessageClass;
   exports.Performative = Performative;

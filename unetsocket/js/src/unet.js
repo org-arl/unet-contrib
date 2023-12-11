@@ -1,6 +1,6 @@
-import {MessageClass, Message, Performative} from 'fjage';
-import {Gateway, AgentID, CachingAgentID, Services, UnetMessages, Protocol, toGps, toLocal} from './unetutils';
+import {Gateway, MessageClass, Message, Performative} from 'fjage';
+import {CachingGateway, AgentID, CachingAgentID, Services, UnetMessages, Protocol, toGps, toLocal} from './unetutils';
 import UnetSocket from './unetsocket';
 
 
-export {AgentID, CachingAgentID, Gateway, MessageClass, Message, UnetMessages, Performative, Services, Protocol, UnetSocket, toGps, toLocal};
+export {AgentID, CachingAgentID, Gateway, CachingGateway, MessageClass, Message, UnetMessages, Performative, Services, Protocol, UnetSocket, toGps, toLocal};

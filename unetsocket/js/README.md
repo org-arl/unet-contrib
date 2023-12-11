@@ -63,14 +63,18 @@ The JavaScript version of the UnetSocket API allows a user to connect to a node 
 
 The UnetSocket API allows a user to cache responses to parameter requests. This is useful in a scenario where the parameters aren't changing very often, and the user wants to reduce the round trip time for parameter requests.
 
+> This behaviour used to be enabled by default in unetsocket.js v2.0.0 till v2.0.10. From v3.0.0 onwards, this behaviour is **disabled** by default but a available as an option.
+
+You can use the `CachingGateway` class instead of the `Gateway` class to enable this behaviour.
+
 UnetSocket API acheives this using two mechanism, firstly, it can request ALL of the parameters from an Agent instead of just one, and then cache the responses. This is called the `greedy` mode. The greedy mode is enabled by default but can be disabled by setting the `greedy` property to `false` in the `CachingAgentID` constructor.
 
 Secondly, the UnetSocket API caches the responses to parameter requests for a limited time. If the user requests the same parameter again, the UnetSocket will return the cached response. The time to cache a response is set by the `cacheTime` property in the `CachingAgentID` constructor.
 
 ```js
-import {UnetMessages, Gateway} from 'unetjs'
-let gw = new Gateway({...});
-let nodeinfo = await gw.agentForService(Services.NODE_INFO); // returns a CachingAgentID by default.
+import {UnetMessages, CachingGateway} from 'unetjs'
+let gw = new CachingGateway({...});
+let nodeinfo = await gw.agentForService(Services.NODE_INFO); // returns a CachingAgentID
 let cLoc = nodeinfo.get('location'); // this will request all the Parameters from the Agent, and cache the responses.
 ...
 cLoc = nodeinfo.get('location', maxage=5000); // this will return the cached response if it was called within 5000ms of the original request.
@@ -79,9 +83,9 @@ cLoc = nodeinfo.get('location', maxage=0); // this will force the Gateway to req
 ```
 
 ```js
-import {UnetMessages, Gateway} from 'unetjs'
-let gw = new Gateway({...});
-let nodeinfo = await gw.agentForService(Services.NODE_INFO); // returns a CachingAgentID by default.
+import {UnetMessages, CachingGateway} from 'unetjs'
+let gw = new CachingGateway({...});
+let nodeinfo = await gw.agentForService(Services.NODE_INFO); // returns a CachingAgentID
 let nonCachingNodeInfo = await gw.agentForService(Services.NODE_INFO, false); // returns an AgentID without caching (original fjage.js functionality).
 let cLoc = nonCachingNodeInfo.get('location'); // this will request the `location` parameter from the Agent.
 ...

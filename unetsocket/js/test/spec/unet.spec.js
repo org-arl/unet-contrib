@@ -1,4 +1,4 @@
-/* global it expect spyOn describe AgentID CachingAgentID UnetMessages Gateway Services beforeAll isBrowser isJsDom isNode UnetSocket Protocol toGps toLocal beforeEach jasmine*/
+/* global it expect spyOn describe AgentID CachingGateway CachingAgentID UnetMessages Gateway Services beforeAll isBrowser isJsDom isNode UnetSocket Protocol toGps toLocal beforeEach jasmine*/
 
 const DatagramNtf = UnetMessages.DatagramNtf;
 
@@ -254,7 +254,7 @@ describe('Unet Utils', function () {
 describe('A CachingAgentID', function () {
   var gw;
   beforeAll(() => {
-    gw = new Gateway(gwOpts[0]);
+    gw = new CachingGateway(gwOpts[0]);
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
   });
 
