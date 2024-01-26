@@ -4,7 +4,7 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.unet = {}));
 })(this, (function (exports) { 'use strict';
 
-  /* fjage.js v1.11.2 */
+  /* fjage.js v1.12.0 */
 
   const isBrowser =
     typeof window !== "undefined" && typeof window.document !== "undefined";
@@ -504,14 +504,17 @@
       msg.index = Number.isInteger(index) ? index : -1;
       const rsp = await this.owner.request(msg, timeout);
       var ret = Array.isArray(params) ? new Array(params.length).fill(null) : null;
-      if (!rsp || rsp.perf != Performative.INFORM || !rsp.param) return ret;
+      if (!rsp || rsp.perf != Performative.INFORM || !rsp.param) {
+        if (this.owner._returnNullOnFailedResponse) return ret;
+        else throw new Error(`Unable to set ${this.name}.${params} to ${values}`);
+      }
       if (Array.isArray(params)) {
         if (!rsp.values) rsp.values = {};
         if (rsp.param) rsp.values[rsp.param] = rsp.value;
         const rvals = Object.keys(rsp.values);
         return params.map( p => {
           let f = rvals.find(rv => rv.endsWith(p));
-          return f ? rsp.values[f] : null;
+          return f ? rsp.values[f] : undefined;
         });
       } else {
         return rsp.value;
@@ -542,7 +545,10 @@
       msg.index = Number.isInteger(index) ? index : -1;
       const rsp = await this.owner.request(msg, timeout);
       var ret = Array.isArray(params) ? new Array(params.length).fill(null) : null;
-      if (!rsp || rsp.perf != Performative.INFORM || (params && (!rsp.param))) return ret;
+      if (!rsp || rsp.perf != Performative.INFORM || !rsp.param) {
+        if (this.owner._returnNullOnFailedResponse) return ret;
+        else throw new Error(`Unable to get ${this.name}.${params}`);
+      }
       // Request for listing of all parameters.
       if (!params) {
         if (!rsp.values) rsp.values = {};
@@ -554,7 +560,7 @@
         const rvals = Object.keys(rsp.values);
         return params.map(p => {
           let f = rvals.find(rv => rv.endsWith(p));
-          return f ? rsp.values[f] : null;
+          return f ? rsp.values[f] : undefined;
         });
       } else {
         return rsp.value;
@@ -638,12 +644,17 @@
           return null;
         }
       }
-      let qclazz = obj.clazz;
-      let clazz = qclazz.replace(/^.*\./, '');
-      let rv = MessageClass[clazz] ? new MessageClass[clazz] : new Message();
-      rv.__clazz__ = qclazz;
-      rv._inflate(obj.data);
-      return rv;
+      try {
+        let qclazz = obj.clazz;
+        let clazz = qclazz.replace(/^.*\./, '');
+        let rv = MessageClass[clazz] ? new MessageClass[clazz] : new Message();
+        rv.__clazz__ = qclazz;
+        rv._inflate(obj.data);
+        return rv;
+      } catch (err) {
+        console.warn('Error trying to deserialize JSON object : ', obj, err);
+        return null;
+      }
     }
   }
 
@@ -660,6 +671,7 @@
    * @param {string} [opts.keepAlive=true]     - try to reconnect if the connection is lost
    * @param {number} [opts.queueSize=128]      - size of the queue of received messages that haven't been consumed yet
    * @param {number} [opts.timeout=1000]       - timeout for fjage level messages in ms
+   * @param {boolean} [opts.returnNullOnFailedResponse=true] - return null instead of throwing an error when a parameter is not found
    * @param {string} [hostname="localhost"]    - <strike>Deprecated : hostname/ip address of the master container to connect to</strike>
    * @param {number} [port=]                   - <strike>Deprecated : port number of the master container to connect to</strike>
    * @param {string} [pathname=="/ws/"]        - <strike>Deprecated : path of the master container to connect to (for WebSockets)</strike>
@@ -688,6 +700,7 @@
       this._timeout = opts.timeout;         // timeout for fjage level messages (agentForService etc)
       this._keepAlive = opts.keepAlive;     // reconnect if connection gets closed/errored
       this._queueSize = opts.queueSize;      // size of queue
+      this._returnNullOnFailedResponse = opts.returnNullOnFailedResponse; // null or error
       this.pending = {};                    // msgid to callback mapping for pending requests to server
       this.subscriptions = {};              // hashset for all topics that are subscribed
       this.listener = {};                   // set of callbacks that want to listen to incoming messages
@@ -1039,6 +1052,30 @@
     }
 
     /**
+     * Gets a list of all agents in the container.
+     * @returns {Promise<AgentID[]>} - a promise which returns an array of all agent ids when resolved
+     */
+    async agents() {
+      let rq = { action: 'agents' };
+      let rsp = await this._msgTxRx(rq);
+      if (!rsp || !Array.isArray(rsp.agentIDs)) throw new Error('Unable to get agents');
+      return rsp.agentIDs.map(aid => new AgentID(aid, false, this));
+    }
+
+    /**
+     * Check if an agent with a given name exists in the container.
+     *
+     * @param {AgentID|String} agentID - the agent id to check
+     * @returns {Promise<boolean>} - a promise which returns true if the agent exists when resolved
+     */
+    async containsAgent(agentID) {
+      let rq = { action: 'containsAgent', agentID: agentID instanceof AgentID ? agentID.getName() : agentID };
+      let rsp = await this._msgTxRx(rq);
+      if (!rsp) throw new Error('Unable to check if agent exists');
+      return !!rsp.answer;
+    }
+
+    /**
      * Finds an agent that provides a named service. If multiple agents are registered
      * to provide a given service, any of the agents' id may be returned.
      *
@@ -1048,7 +1085,11 @@
     async agentForService(service) {
       let rq = { action: 'agentForService', service: service };
       let rsp = await this._msgTxRx(rq);
-      if (!rsp || !rsp.agentID) return;
+      if (!rsp) {
+        if (this._returnNullOnFailedResponse) return null;
+        else throw new Error('Unable to get agent for service');
+      }
+      if (!rsp.agentID) return null;
       return new AgentID(rsp.agentID, false, this);
     }
 
@@ -1062,7 +1103,11 @@
       let rq = { action: 'agentsForService', service: service };
       let rsp = await this._msgTxRx(rq);
       let aids = [];
-      if (!rsp || !Array.isArray(rsp.agentIDs)) return aids;
+      if (!rsp) {
+        if (this._returnNullOnFailedResponse) return aids;
+        else throw new Error('Unable to get agents for service');
+      }
+      if (!Array.isArray(rsp.agentIDs)) return aids;
       for (var i = 0; i < rsp.agentIDs.length; i++)
         aids.push(new AgentID(rsp.agentIDs[i], false, this));
       return aids;
@@ -1281,7 +1326,8 @@
       'pathname' : '/ws/',
       'timeout': 1000,
       'keepAlive' : true,
-      'queueSize': DEFAULT_QUEUE_SIZE
+      'queueSize': DEFAULT_QUEUE_SIZE,
+      'returnNullOnFailedResponse': true
     });
     DEFAULT_URL = new URL('ws://localhost');
     // Enable caching of Gateways
@@ -1295,7 +1341,8 @@
       'pathname': '',
       'timeout': 1000,
       'keepAlive' : true,
-      'queueSize': DEFAULT_QUEUE_SIZE
+      'queueSize': DEFAULT_QUEUE_SIZE,
+      'returnNullOnFailedResponse': true
     });
     DEFAULT_URL = new URL('tcp://localhost');
     gObj.atob = a => Buffer.from(a, 'base64').toString('binary');
