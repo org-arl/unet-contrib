@@ -12,6 +12,9 @@ samples/txsignal
 samples/wakeup
 samples/txwav
 samples/rxwav
+samples/exec
+samples/txdatagram
+samples/rxdatagram
 
 fjage.h
 

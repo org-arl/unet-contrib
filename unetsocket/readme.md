@@ -15,7 +15,6 @@ This directory contains a collection of libaries and examples for using UnetSock
 
 Along with the UnetSocket API, these libaries also provide language-specific (and language idiomatic) helpers for working with UnetStack. For example, type definitions, service definitions, and other language-specific utilities. Individual library documentation will provide more details.
 
-
 ## Examples
 
 Along with the libraries, this directory also contains examples of using UnetSocket API in various programming languages to perform common tasks. These examples are intended to be used as a starting point for building your own applications.
