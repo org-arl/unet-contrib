@@ -54,12 +54,11 @@ int main(int argc, char *argv[]) {
     const char *agent = NULL;               // The name (AgentID) of the agent to send the request to. (Use either agent or service, not both)
     const char *service = NULL;             // The name of the service to send the request to. (Use either agent or service, not both)
     int protocol = 0;                       // The protocol to use [0, 32-64]
-    bool reliability = false;               // If true, an acknowledgment is requested
-    uint node = 0;                          // The destination node [0-256] (0=broadcast)
+    bool reliability = true;               // If true, an acknowledgment is requested
+    uint node = 31;                          // The destination node [0-256] (0=broadcast)
     uint8_t data[4] = {1, 2, 3, 4};         // The data to send
     uint data_len = 4;                      // The length of the data to send
-    // int timeout = 1000;                     // The timeout in milliseconds, for waiting for an acknowledgment (if reliability is requested)
-
+    int timeout = 30000;                    // The timeout in milliseconds, for waiting for an acknowledgment (if reliability is requested)
 
     // Check if the parameters are valid
     if (node == 0 && reliability) return error("Reliability is not supported for broadcast (node=0) datagrams");
@@ -93,7 +92,14 @@ int main(int argc, char *argv[]) {
     fjage_msg_add_int(msg, "protocol", protocol);
     fjage_msg_add_bool(msg, "reliability", reliability);
     int rv = unetsocket_send_request(sock, msg);
-    // If reliability is requested, wait for the acknowledgment
+    if (reliability){
+        if (rv < 0) return error("Failed to send the datagram");
+        unetsocket_set_timeout(sock, timeout);
+        fjage_msg_t rsp = unetsocket_receive(sock);
+        if (rsp == NULL) return error("Failed to receive an acknowledgment");
+        const char *rsp_type = fjage_msg_get_clazz(rsp);
+        rv = strcmp(rsp_type, "org.arl.unet.DatagramDeliveryNtf") == 0 ? 0 : -1;
+    }
     fjage_aid_destroy(aid);
     unetsocket_close(sock);
     return rv;

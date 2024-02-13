@@ -307,7 +307,7 @@ fjage_msg_t unetsocket_receive(unetsocket_t sock) {
   _unetsocket_t *usock = sock;
   long deadline = _time_in_ms() + usock->timeout;
   // TODO make this list more exhaustive
-  const char *list[] = {"org.arl.unet.DatagramNtf", "org.arl.unet.phy.RxFrameNtf"};
+  const char *list[] = {"org.arl.unet.DatagramNtf", "org.arl.unet.phy.RxFrameNtf", "org.arl.unet.DatagramDeliveryNtf"};
   usock->quit = false;
   while (!usock->quit) {
     long time_remaining = 0;
@@ -316,7 +316,7 @@ fjage_msg_t unetsocket_receive(unetsocket_t sock) {
   	  time_remaining = deadline - _time_in_ms();
   	  if (time_remaining < 0) return NULL;
   	}
-  	fjage_msg_t msg = fjage_receive_any(usock->gw, list, 2, time_remaining);
+  	fjage_msg_t msg = fjage_receive_any(usock->gw, list, 3, time_remaining);
   	if (msg != NULL) {
   	  int rv = fjage_msg_get_int(msg, "protocol", 0);
   	  if ((rv == DATA || rv >= USER) && (usock->local_protocol < 0 || usock->local_protocol == rv)) return msg;
