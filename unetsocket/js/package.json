@@ -1,6 +1,6 @@
 {
   "name": "unetjs",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "JavaScript Helper Library for UnetStack",
   "main": "./dist/cjs/unet.cjs",
   "exports": {
