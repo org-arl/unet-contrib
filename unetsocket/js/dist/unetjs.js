@@ -1777,7 +1777,7 @@
    *
    * @class UnetSocket
    * @param {string} [hostname] - hostname/ip address of the master container to connect to
-   * @param {number} [port] - port number of the master container to connect to
+   * @param {string} [port] - port number of the master container to connect to
    * @param {string} [path='']  - path of the master container to connect to (for WebSockets)
    * @returns {Promise<UnetSocket>} - Promise which resolves to the UnetSocket object being constructed
    *
