@@ -4,7 +4,7 @@ This repostiory contains open-source contributions to the [Unet project](http://
 
 ## Discussions
 
-Please use the [Discussions](https://github.com/org-arl/unet-contrib/discussions) tab to ask questions, share ideas, and discuss topics related to UnetStack.
+Please use [[Discussions](https://github.com/org-arl/unet-contrib/discussions)](https://github.com/org-arl/unet-support/discussions) to ask questions, share ideas, and discuss topics related to UnetStack.
 
 ## Repo Structure
 
