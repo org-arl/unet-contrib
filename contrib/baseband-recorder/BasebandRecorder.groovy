@@ -7,12 +7,15 @@ import org.arl.fjage.TickerBehavior
 import org.arl.fjage.param.Parameter
 import org.arl.unet.Services
 import org.arl.unet.UnetAgent
+import org.arl.unet.bb.BasebandSignalMonitorParam
+import org.arl.unet.bb.RecordBasebandSignalReq
+import org.arl.unet.bb.RxBasebandSignalNtf
 
 @CompileStatic
 class BasebandRecorder extends UnetAgent{
 
     public int recLength = 1024        // length of recording in baseband samples
-    public int interval = 10000        // interval between recordings in milliseconds. 0 means no recording
+    public int interval = 0            // interval between recordings in milliseconds. 0 means no recording
 
     enum Params implements Parameter {
         recLength, interval
@@ -23,10 +26,12 @@ class BasebandRecorder extends UnetAgent{
     private AgentID bbmon
     private AgentID notify
 
+    @Override
     protected void setup() {
         super.setup()
     }
 
+    @Override
     protected void startup() {
         subscribeForService(Services.BASEBAND)
         bb = agentForService(Services.BASEBAND)
@@ -39,6 +44,7 @@ class BasebandRecorder extends UnetAgent{
         if (interval > 0) setupPeriodicRecordings()
     }
 
+    @Override
     List<Parameter> getParameterList(){ return allOf(Params) }
 
     void setInterval(int interval) {
