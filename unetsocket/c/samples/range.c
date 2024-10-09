@@ -1,19 +1,18 @@
-///////////////////////////////////////////////////////////////////////////////
-//
-// Measure distance to another node.
-//
-// In terminal window (an example):
-//
-// $ make samples
-// $ ./range <ip_address> <rx_node_address> [port]
-//
-////////////////////////////////////////////////////////////////////////////////
+/*
+ * range : measure the range to a modem
+ *
+ * Usage: range [-i ipaddress] [-p port] [node]
+ *
+ * Example : range 42
+ *           range -p 1101 -i localhost 32
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "../unet.h"
 #include "../unet_ext.h"
-#include "../fjage.h"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -22,55 +21,50 @@
 #endif
 
 static int error(const char *msg) {
-  printf("\n*** ERROR: %s\n\n", msg);
-  return -1;
+  fprintf(stderr, "\n*** ERROR: %s\n", msg);
+  exit(EXIT_FAILURE);
+}
+
+void parse_args(int argc, char *argv[], char **ip, int *port) {
+    int opt;
+    while ((opt = getopt(argc, argv, "p:i:")) != -1) {
+        switch (opt) {
+        case 'p':
+            *port = atoi(optarg);
+            break;
+        case 'i':
+            *ip = optarg;
+            break;
+        default: /* '?' */
+            fprintf(stderr, "Usage: %s [-i ipaddress] [-p port] [command]\n", argv[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
-  unetsocket_t sock;
-  int address = 0;
-  int port = 1100;
-  int rv;
-  float* range = calloc(1,sizeof(float));
-  if (argc <= 3) {
-    error("Usage : range <ip_address> <rx_node_address> <port> \n"
-      "ip_address: IP address of the transmitter modem. \n"
-      "rx_node_address: Node address of the modem to which range is to be measured. \n"
-      "port: port number of transmitter modem. \n"
-      "A usage example: \n"
-      "range 192.168.1.20 31 1101\n");
-    return -1;
-  } else {
-  	address = (int)strtol(argv[2], NULL, 10);
-    port = (int)strtol(argv[3], NULL, 10);
-  }
-#ifndef _WIN32
-  // Check valid ip address
-  struct hostent *server = gethostbyname(argv[1]);
-  if (server == NULL) {
-    error("Enter a valid ip addreess\n");
-    return -1;
-  }
-#endif
 
-  // Open a unet socket connection to modem
-  printf("Connecting to %s:%d\n",argv[1],port);
+    // Parse the command line arguments (IP/Port)
+    char *ip = "localhost";
+    int port = 1101;
+    parse_args(argc, argv, &ip, &port);
 
-  sock = unetsocket_open(argv[1], port);
-  if (sock == NULL) return error("Couldn't open unet socket");
+   /******** Parameters ********/
+    // Set the values request parameters here!
+    int node = optind < argc ? atoi(argv[optind]) : 1;      // Get the node address to range to
+    int timeout = 1000;                                     // The timeout in milliseconds
 
-  // ranging
-  rv = unetsocket_ext_get_range(sock, address, range);
-  if (rv == 0) {
-    printf("Range measured is : %f \n", *range);
-  } else {
-    error("Raging not successful");
-  }
+    unetsocket_t sock = unetsocket_open(ip, port);
+    if (sock == NULL) return error("Couldn't open unet socket");
+    unetsocket_set_timeout(sock, timeout);
 
-  // Close the unet socket
-  unetsocket_close(sock);
+    // ranging
+    float range;
+    int rv = unetsocket_ext_get_range(sock, node, &range);
+    if (rv == 0) printf("%0.1f m", range);
+    else error("Raging not successful");
 
-  printf("Ranging Complete\n");
-
-  return 0;
+    // Close the unet socket
+    unetsocket_close(sock);
+    return 0;
 }
