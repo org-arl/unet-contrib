@@ -1,5 +1,6 @@
 import {Gateway, Performative} from 'fjage';
-import {Services, UnetMessages, Protocol} from './unetutils';
+// eslint-disable-next-line no-unused-vars
+import {Services, UnetMessages, Protocol, AgentID, CachingGateway} from './unetutils';
 
 const REQUEST_TIMEOUT = 1000;
 
@@ -16,17 +17,26 @@ const RxFrameNtf = UnetMessages.RxFrameNtf;
  *
  *
  * @class UnetSocket
- * @param {string} [hostname] - hostname/ip address of the master container to connect to
- * @param {string} [port] - port number of the master container to connect to
- * @param {string} [path='']  - path of the master container to connect to (for WebSockets)
- * @returns {Promise<UnetSocket>} - Promise which resolves to the UnetSocket object being constructed
+ * @property {Gateway} gw - Gateway to the UnetStack
+ * @property {number} localProtocol - protocol number that the socket is bound to
+ * @property {number} remoteAddress - default destination node address for a connected socket
+ * @property {number} remoteProtocol - default transmission protocol number
+ * @property {number} timeout - timeout for datagram reception
+ * @property {AgentID} provider - agent providing the service for the socket
  *
  * @example
  * let socket = await new UnetSocket('localhost', 8081, '/ws/');
  */
 export default class UnetSocket {
 
+  /**
+   * Constructs a new UnetSocket to connect to a running Unet instance.
+   * @param {string} [hostname] - hostname/ip address of the master container to connect to
+   * @param {string} [port] - port number of the master container to connect to
+   * @param {string} [path='']  - path of the master container to connect to (for WebSockets)
+   */
   constructor(hostname, port, path='') {
+    // @ts-ignore asynch constructor isn't supported by TypeScript
     return (async () => {
       this.gw = new Gateway({
         hostname : hostname,
@@ -128,7 +138,7 @@ export default class UnetSocket {
 
   /**
    * Gets the local node address of the Unet node connected to.
-   * @returns {Promise<int>} - local node address, or -1 on error
+   * @returns {Promise<number>} - local node address, or -1 on error
    */
   async getLocalAddress() {
     if (this.gw == null) return -1;
@@ -209,6 +219,7 @@ export default class UnetSocket {
       req.recipient = this.provider;
     }
     const rsp = await this.gw.request(req, REQUEST_TIMEOUT);
+    // @ts-ignore
     return (rsp != null && rsp.perf == Performative.AGREE);
   }
 
@@ -240,11 +251,12 @@ export default class UnetSocket {
    * Gets an AgentID providing a specified service for low-level access to UnetStack
    * @param {string} svc - the named service of interest
    * @param {Boolean} caching - if the AgentID should cache parameters
-   * @returns {Promise<?AgentID>} - a promise which returns an {@link AgentID} that provides the service when resolved
+   * @returns {Promise<AgentID>} - a promise which returns an {@link AgentID} that provides the service when resolved
    */
   async agentForService(svc, caching=true) {
     if (this.gw == null) return null;
-    return await this.gw.agentForService(svc, caching);
+    if (this.gw instanceof CachingGateway) return await this.gw.agentForService(svc, caching);
+    else return await this.gw.agentForService(svc);
   }
 
   /**
@@ -255,7 +267,8 @@ export default class UnetSocket {
    */
   async agentsForService(svc, caching=true) {
     if (this.gw == null) return null;
-    return await this.gw.agentsForService(svc, caching``);
+    if (this.gw instanceof CachingGateway) return await this.gw.agentsForService(svc, caching);
+    else return await this.gw.agentsForService(svc);
   }
 
   /**
@@ -266,13 +279,14 @@ export default class UnetSocket {
    */
   agent(name, caching=true) {
     if (this.gw == null) return null;
-    return this.gw.agent(name, caching);
+    if (this.gw instanceof CachingGateway) return this.gw.agent(name, caching);
+    else return this.gw.agent(name);
   }
 
   /**
    * Resolve node name to node address.
    * @param {string} nodeName - name of the node to resolve
-   * @returns {Promise<?number>} - address of the node, or null if unable to resolve
+   * @returns {Promise<number>} - address of the node, or null if unable to resolve
    */
   async host(nodeName) {
     const arp = await this.agentForService(Services.ADDRESS_RESOLUTION);
@@ -282,6 +296,7 @@ export default class UnetSocket {
     req.recipient = arp;
     const rsp = await this.gw.request(req, REQUEST_TIMEOUT);
     if (rsp == null || ! Object.prototype.hasOwnProperty.call(rsp, 'address')) return null;
+    // @ts-ignore
     return rsp.address;
   }
 }

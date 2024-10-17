@@ -1,0 +1,20 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        // "noEmit": true,
+        "allowJs": true,
+        "checkJs": true,
+        "declaration": true,
+        "target": "es2020",
+        "resolveJsonModule": true,
+        "moduleResolution": "bundler",
+        "noImplicitAny": false,
+        "emitDeclarationOnly": true,
+        "outDir": "dist/esm",
+        "declarationMap": true,
+        "paths": {
+            "fjage": ["./node_modules/fjage/dist"]
+        }
+    },
+    "include": ["./src/*.js"]
+}

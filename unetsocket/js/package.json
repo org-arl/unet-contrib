@@ -15,7 +15,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "rm -rf dist/ && eslint src/*.js && rollup --silent -c rollup.config.js",
+    "build": "rm -rf dist/ && eslint src/*.js && tsc && rollup --silent -c rollup.config.js",
     "test": "node test/spec/create-spec.cjs && test/get-unet.sh && test/sim.sh start && sleep 10 && jasmine test/spec/unetSpec.cjs; node test/browser-test.cjs; test/sim.sh stop",
     "docs": "rm -rf docs/*; documentation build src/unetsocket.js src/unetutils.js -f md --github -o docs/readme.md",
     "clean": "rm -rf dist/"
@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/org-arl/unet-contrib#readme",
   "dependencies": {
-    "fjage": "^1.13.0"
+    "fjage": "^1.13.4"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.23.3",
@@ -49,6 +49,7 @@
     "jasmine": "^5.1.0",
     "node-static": "^0.7.11",
     "puppeteer": "^22.11.2",
-    "rollup": "^4.8.0"
+    "rollup": "^4.8.0",
+    "typescript": "^5.6.3"
   }
 }

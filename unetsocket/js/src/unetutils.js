@@ -1,10 +1,16 @@
-import {AgentID, MessageClass, Services, Gateway} from 'fjage';
+// eslint-disable-next-line no-unused-vars
+import {AgentID, MessageClass, Services, Gateway, Message} from 'fjage';
 
 const DatagramReq = MessageClass('org.arl.unet.DatagramReq');
 const DatagramNtf = MessageClass('org.arl.unet.DatagramNtf');
 const BasebandSignal = MessageClass('org.arl.unet.bb.BasebandSignal');
 
-let UnetServices = {
+/**
+ * Well-known services used in UnetStack
+ *
+ * @enum {string}
+ */
+const UnetDefaultServices = {
   'NODE_INFO': 'org.arl.unet.Services.NODE_INFO',
   'ADDRESS_RESOLUTION': 'org.arl.unet.Services.ADDRESS_RESOLUTION',
   'DATAGRAM': 'org.arl.unet.Services.DATAGRAM',
@@ -23,13 +29,14 @@ let UnetServices = {
   'SCHEDULER':'org.arl.unet.Services.SCHEDULER'
 };
 
-Object.assign(Services, UnetServices);
+// combine UnetDefaultServices and Services into a new object UnetServices
+const UnetServices = Object.assign({}, Services, UnetDefaultServices);
 
 /**
  * Well-known protocol number assignments used in UnetStack
- * @typedef {Object.<string, number>} Protocol
+ * @enum {number}
  */
-let Protocol = {
+const Protocol = {
   'DATA' : 0,               // Protocol number for user application data.
   'RANGING' : 1,            // Protocol number for use by ranging agents.
   'LINK' : 2,               // Protocol number for use by link agents.
@@ -45,9 +52,9 @@ let Protocol = {
 
 /**
  * Well-known protocol Messages used in UnetStack
- * @typedef {Object.<string, MessageClass>} UnetMessages
+ * @enum {typeof Message}
  */
-let UnetMessages = {
+const UnetMessages = {
   // unet
   'TestReportNtf'          : MessageClass('org.arl.unet.TestReportNtf'),
   'AbnormalTerminationNtf' : MessageClass('org.arl.unet.AbnormalTerminationNtf'),
@@ -145,10 +152,10 @@ let UnetMessages = {
 
 /**
   * Convert coordinates from a local coordinates to GPS coordinate
-  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
-  * @param {Number} x - X coordinate of the local coordinate to be converted
-  * @param {Number} y - Y coordinate of the local coordinate to be converted
-  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  * @param {Array<number>} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {number} x - X coordinate of the local coordinate to be converted
+  * @param {number} y - Y coordinate of the local coordinate to be converted
+  * @returns {Array<number>} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
   */
 
 export function toGps(origin, x, y) {
@@ -161,10 +168,10 @@ export function toGps(origin, x, y) {
 
 /**
   * Convert coordinates from a GPS coordinates to local coordinate
-  * @param {Array} origin - Local coordinate system's origin as `[latitude, longitude]`
-  * @param {Number} lat - Latitude of the GPS coordinate to be converted
-  * @param {Number} lon - Longitude of the GPS coordinate to be converted
-  * @returns {Array} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
+  * @param {Array<number>} origin - Local coordinate system's origin as `[latitude, longitude]`
+  * @param {number} lat - Latitude of the GPS coordinate to be converted
+  * @param {number} lon - Longitude of the GPS coordinate to be converted
+  * @returns {Array<number>} - GPS coordinates (in decimal degrees) as `[latitude, longitude]`
   */
 export function toLocal(origin, lat, lon) {
   let pos = [];
@@ -174,6 +181,11 @@ export function toLocal(origin, lat, lon) {
   return pos;
 }
 
+/**
+ * Initialize the conversion factor for the given latitude
+ * @param {number} lat - Latitude in decimal degrees
+ * @returns {Array<number>} - xScale and yScale
+ */
 function _initConv(lat){
   let rlat = lat * Math.PI/180;
   let yScale = 111132.92 - 559.82*Math.cos(2*rlat) + 1.175*Math.cos(4*rlat) - 0.0023*Math.cos(6*rlat);
@@ -280,7 +292,7 @@ class CachingAgentID extends AgentID {
     if (this._isCached(params, index, maxage)) return this._getCache(params, index);
     if (this.greedy &&
       !(Array.isArray(params) && [...new Set([...params, ...this.specialParams])].length!=0) &&
-      !this.specialParams.includes(params)) {
+      !(Array.isArray(params) ? params.every(p => this.specialParams.includes(p)) : this.specialParams.includes(params))) {
       let rsp = await super.get(null, index, timeout);
       this._updateCache(null, rsp, index);
       if (!rsp) return Array.isArray(params) ? new Array(params.length).fill(null) : null;
@@ -389,7 +401,7 @@ class CachingGateway extends Gateway{
    * @param {string} service - the named service of interest
    * @param {Boolean} [caching=true] - if the AgentID should cache parameters
    * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
-   * @returns {Promise<?AgentID|CachingAgentID>} - a promise which returns an agent id for an agent that provides the service when resolved
+   * @returns {Promise<AgentID|CachingAgentID>} - a promise which returns an agent id for an agent that provides the service when resolved
    */
   async agentForService(service, caching=true, greedy=true) {
     const aid = await super.agentForService(service);
@@ -403,7 +415,7 @@ class CachingGateway extends Gateway{
    * @param {string} service - the named service of interest
    * @param {Boolean} [caching=true] - if the AgentID should cache parameters
    * @param {Boolean} [greedy=true] - greedily fetches and caches all parameters if this Agent
-   * @returns {Promise<?AgentID|CachingAgentID[]>} - a promise which returns an array of all agent ids that provides the service when resolved
+   * @returns {Promise<AgentID[] | CachingAgentID[]>} - a promise which returns an array of all agent ids that provides the service when resolved
    */
   async agentsForService(service, caching=true, greedy=true) {
     const aids = await super.agentsForService(service);
@@ -411,4 +423,4 @@ class CachingGateway extends Gateway{
   }
 }
 
-export {AgentID, Services, UnetMessages, Protocol, CachingGateway, CachingAgentID};
+export {AgentID, UnetServices as Services, UnetMessages, Protocol, CachingGateway, CachingAgentID};
