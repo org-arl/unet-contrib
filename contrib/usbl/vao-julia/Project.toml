@@ -1,0 +1,5 @@
+[deps]
+ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
+Fjage = "e0fd600c-be67-11e9-1f90-d366689e4029"
+UnderwaterAcoustics = "0efb1f7a-1ce7-46d2-9f48-546a4c8fbb99"
+VirtualAcousticOcean = "629e117c-1786-4222-ab4a-1acab234d923"
