@@ -1,0 +1,23 @@
+#!/bin/bash
+cd $(dirname $0)
+echo ""
+echo "##############################################"
+echo "# Installing juliaup"
+curl -fsSL https://install.julialang.org | sh
+echo ""
+echo ""
+
+echo "##############################################"
+echo "# Installing julia 1.12.4"
+echo ""
+juliaup add 1.12.4
+echo ""
+echo ""
+
+echo "##############################################"
+echo "# Installing packages"
+echo ""
+JULIA_LOAD_PATH="@:@stdlib" julia +1.12.4 --project=usbl-julia --startup-file=no -e 'using Pkg; Pkg.instantiate()'
+JULIA_LOAD_PATH="@:@stdlib" julia +1.12.4 --project=vao-julia --startup-file=no -e 'using Pkg; Pkg.instantiate()'
+echo ""
+echo "Done!"
